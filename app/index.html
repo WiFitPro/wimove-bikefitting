@@ -1694,6 +1694,9 @@ function initControls(){
   /* Modell-Feinwerte der Segmente nur für Admins sichtbar */
   for(const k of ["hipStand","ankleH","sitBack","sink","hipFwd","hipSit","shoulderDrop","protr","kneeBack","armAdd"]){ const n=document.getElementById("pn_"+k); if(n) n.closest(".param").classList.add("adminOnly"); }
   { const pc=document.getElementById("pCleat"); if(pc) pc.classList.add("adminOnly"); }
+  /* Haltung: Nutzer sehen nur den Rückenwinkel */
+  for(const k of ["elbowT","footAngle"]){ const n=document.getElementById("pn_"+k); if(n) n.closest(".param").classList.add("adminOnly"); }
+  { const sb=document.getElementById("styleStdBox"); if(sb) sb.classList.add("adminOnly"); }
   syncPerson=()=>{ s1();s1b();s1c();s2();s3();s3b();s4();s5(); try{ decorateNorms(); }catch(e){} markPending(); };
   document.querySelectorAll(".subtab").forEach(b=>b.onclick=()=>{ const R=b.dataset.side==="R";
     document.querySelectorAll(".subtab").forEach(x=>x.setAttribute("aria-selected",x===b));
