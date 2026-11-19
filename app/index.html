@@ -2103,7 +2103,9 @@ function markBasic(){
   const adv=[$("stdBox"),$("pSeg").closest("details"),$("pHalt").closest("details"),$("pmDetails"),$("calibList").closest("details"),$("cpBtn").closest("section"),$("evBtn").closest("section"),...document.querySelectorAll("#tab-bike details")];
   adv.push($("cmpOptBike").closest(".row"));   // Rahmenvergleich bleibt, nur die Knöpfe zum Bike Set Up entfallen
   adv.push($("loadOptFit"),$("loadIstFit"),$("fitBtn"),$("loadIst").closest("section"),$("loadBtnT"));   // Laden aus Set-up / Excel und Bauteile anpassen
-  document.querySelectorAll('.tab[data-tab="befund"],.tab[data-tab="setup"],.tab[data-tab="data"]').forEach(t=>adv.push(t));
+  document.querySelectorAll('.tab[data-tab="befund"],.tab[data-tab="setup"]').forEach(t=>adv.push(t));
+  /* Tab „Daten“ in WiFitBasic nur mit Konto (Passwort, Abmelden) und – für Admins – Benutzerverwaltung */
+  $("newPersonBtn").closest("section").classList.add("adv"); $("exportBtn").closest("section").classList.add("adv");
   adv.forEach(e=>e&&e.classList.add("adv"));
 }
 /* Weiter-Button am Ende jedes Tabs: springt zum nächsten sichtbaren Tab */
@@ -2121,7 +2123,7 @@ function applyBasic(){
   $("basicBtn").setAttribute("aria-pressed",on);
   $("basicBtn").textContent=on?"WiFitBasic":"WiFitPro";   // zeigt die aktive Ansicht; Klick wechselt
   $("basicBtn").title=on?"Abgespeckte Ansicht aktiv – klicken für WiFitPro":"Volle Ansicht aktiv – klicken für WiFitBasic";
-  if(on&&["befund","setup","data"].includes(S.tab)) showTab("person");
+  if(on&&["befund","setup"].includes(S.tab)) showTab("person");
   /* Vorschlag vergleichen: Ist- und optimierte Position nur in WiFitPro */
   { const sc=$("sugCmp"); [...sc.options].forEach(o=>{ if(o.value==="ist"||o.value==="opt"){ o.hidden=on; o.disabled=on; } });
     if(on&&(S.sugCmp==="ist"||S.sugCmp==="opt")){ S.sugCmp="now"; sc.value="now"; sugCache.key=""; render(); } }
