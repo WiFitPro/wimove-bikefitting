@@ -2129,6 +2129,16 @@ $("basicBtn").onclick=()=>{
   if(S.basic&&!proAllowed()) return;
   if(S.basic&&proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); }); return; }   // WiFitPro nur mit Passwort
   S.basic=!S.basic; if(S.basic){ try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} } applyBasic(); save(); };
+/* Sicherheitsabfrage vor dem Neuladen oder Schließen, solange Daten eines Kunden eingegeben sind
+   (der Browser zeigt dabei seinen eigenen Standardtext, eigener Text ist nicht möglich) */
+function hasClientData(){
+  try{ const e=S.person&&S.person.entered, B=bf();
+    return !!((e&&Object.values(e).some(Boolean))||(B&&B.name)||!setupEmpty()||(CP&&CP.pages&&CP.pages.length)||(EV&&EV.pages&&EV.pages.length)); }catch(err){ return false; }
+}
+window.addEventListener("beforeunload",e=>{
+  if(window.WF_SKIP_UNLOAD||!hasClientData()) return;
+  e.preventDefault(); e.returnValue="";   // löst die Rückfrage des Browsers aus
+});
 /* Startbildschirm: bei jedem Start Auswahl, welches Fitting gemacht wird */
 { let fresh=false;   // beim Öffnen der App immer ohne Personendaten starten (einmal pro Aufruf)
   const startFresh=()=>{ if(fresh) return; fresh=true; try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
@@ -2453,7 +2463,7 @@ async function exportData(){
 function importData(file){
   const r=new FileReader();
   r.onload=()=>{ try{ const o=JSON.parse(r.result); if(!o||o.app!=="geometrie-werkbank"||!o.state) throw 0;
-      localStorage.setItem("bike-geo-v3",JSON.stringify(o.state)); if(o.cp) localStorage.setItem("bike-geo-cp",JSON.stringify(o.cp)); else localStorage.removeItem("bike-geo-cp"); if(o.ev) localStorage.setItem("bike-geo-ev",JSON.stringify(o.ev)); else localStorage.removeItem("bike-geo-ev"); location.reload(); }
+      localStorage.setItem("bike-geo-v3",JSON.stringify(o.state)); if(o.cp) localStorage.setItem("bike-geo-cp",JSON.stringify(o.cp)); else localStorage.removeItem("bike-geo-cp"); if(o.ev) localStorage.setItem("bike-geo-ev",JSON.stringify(o.ev)); else localStorage.removeItem("bike-geo-ev"); window.WF_SKIP_UNLOAD=true; location.reload(); }
     catch(e){ $("dataNote").textContent="Die Datei ist keine Datensicherung der Werkbank."; } };
   r.readAsText(file);
 }

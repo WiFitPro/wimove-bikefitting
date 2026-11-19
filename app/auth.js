@@ -158,6 +158,7 @@
   async function signOut() {
     await sb.auth.signOut();
     try { sessionStorage.removeItem("wimove-pro"); } catch (e) {}
+    window.WF_SKIP_UNLOAD = true;   // beim Abmelden keine Rückfrage
     location.reload();   // sauberer Neustart ohne Daten des vorherigen Kontos im Speicher
   }
   WF.signOut = signOut;
