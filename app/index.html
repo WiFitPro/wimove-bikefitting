@@ -172,6 +172,7 @@ textarea.bfi{resize:vertical}
 .startAcc{position:absolute;z-index:1;left:0;right:0;top:69%;text-align:center;color:#fff;font:400 2.7cqi/1.4 "Barlow",system-ui,sans-serif}
 .startAcc button{background:none;border:0;color:#fff;text-decoration:underline;font:inherit;cursor:pointer;padding:0 0 0 1cqi}
 body:not(.isAdmin) .adminOnly{display:none!important}
+.notReady{display:none!important}
 body.noPro #startPro,body.noPro #basicBtn{display:none!important}
 .ulist{display:grid;gap:6px;margin-top:8px}
 .uitem{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:6px;align-items:center;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--field)}
@@ -2434,6 +2435,11 @@ function markPending(){
     row.classList.toggle("pending",pend);
     if(pend){ if(document.activeElement!==n) n.value=""; n.placeholder="mm"; const sp=document.getElementById("ps_"+k); if(sp) sp.textContent=""; const tg=row.querySelector(".normtag"); if(tg) tg.remove(); }
     else n.placeholder=""; }
+  /* Armlängen erst nach Eingabe von Schulterdach und Handhöhe, Segmentlängen erst wenn alle Messwerte da sind */
+  { const ok=k=>!e||!!e[k], show=(el,on)=>{ if(el) el.classList.toggle("notReady",!on); };
+    show(document.getElementById("armTotR"),ok("acromion")&&ok("hand"));
+    show(document.getElementById("armTotL"),ok("acromionL")&&ok("handL"));
+    for(const k of ["thigh","shank","torso","upperArm","forearm"]){ const n=document.getElementById("pn_"+k); if(n) show(n.closest(".param"),!miss.length); } }
   { const h=document.getElementById("riderHint"); if(h) h.hidden=!miss.length; const sm=document.getElementById("summary"); if(sm) sm.style.display=miss.length?"none":""; }
   const note=document.getElementById("pReqNote");
   if(note) note.textContent=miss.length?`Noch einzugeben: ${miss.map(k=>({footL:"Fußlänge links",acromionL:"Höhe Schulterdach links",handL:"Handhöhe links"}[k]||(PERS.find(d=>d.key===k)||{label:k}).label+(["foot","acromion","hand"].includes(k)?" rechts":""))).join(", ")}. Danach wird die Person gezeichnet${setupEmpty()?" und der Vorschlag für die Sitzposition auf dem Standardrad in passender Größe übernommen":""}.`:"";
