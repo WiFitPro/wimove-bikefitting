@@ -20,6 +20,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
+[hidden]:not([hidden=until-found i]){display:none!important}   /* wie in der Claude-Ansicht: hidden blendet immer aus */
 :root{
   --paper:#EAF1F5; --panel:#F7FAFC; --ink:#18222B; --muted:#5B6873; --rule:#CBD8E0;   /* Hausfarben wimove/Wildrad */
   --dim:#A8325F; --parts:#2A3138; --rubber:#2B2F33; --spoke:#8B969D; --ghost:#6E7C86;
@@ -179,6 +180,10 @@ body.noPro #startPro,body.noPro #basicBtn{display:none!important}
 .uname{display:flex;flex-direction:column;min-width:0;font-size:13px;grid-column:1/-1}
 .uname span,.uname small{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .uname small{font-size:11px}
+.riderHint[hidden]{display:none!important}
+.riderHint{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:92%;padding:8px 12px;border-radius:10px;background:var(--field);border:1px solid var(--rule);font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.param.pending input[type=number]{border-color:var(--frame);box-shadow:0 0 0 2px color-mix(in srgb,var(--frame) 25%,transparent)}
+.param.pending input[type=range]{opacity:.35}
 #libToast{position:fixed;right:16px;bottom:84px;z-index:70;max-width:min(420px,calc(100vw - 32px));padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.2);color:#fff}
 #libToast.ok{background:#2e7d4f}#libToast.err{background:#b03a2e}#libToast[hidden]{display:none}
 .selpop{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--rule);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;gap:4px}
@@ -291,6 +296,7 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
       <div class="summary" id="summary"></div>
     </div>
     <div class="canvas">
+      <div id="riderHint" class="riderHint" hidden>Die Person wird gezeichnet, sobald alle Messwerte eingegeben sind.<button type="button" class="btn small" onclick="document.querySelector('[data-tab=person]').click()">Zu den Messwerten</button></div>
       <svg id="svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seitenansicht von Fahrrad und Person"></svg>
     </div>
     <div class="toolbar">
@@ -420,6 +426,7 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
       </section>
       <section>
         <h2>Messwerte</h2>
+        <p class="note" id="pReqNote" style="margin-top:0"></p>
         <div id="pCommon"></div>
         <div id="pFootL"></div>
         <div id="pFootR"></div>
@@ -669,6 +676,10 @@ const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
 const shoulderRange=()=>[styleShoulder()-10,styleShoulder()+10];
 
+/* Pflicht-Messwerte: die Person wird erst gezeichnet, wenn alle eingegeben sind (linke Seite optional, sonst wie rechts) */
+const P_REQ=["height","sternum","inseam","foot","acromion","hand","shoulderW"];
+const personReady=()=>{ const e=S.person&&S.person.entered; return !e||P_REQ.every(k=>e[k]); };   // ältere Personen ohne Merker gelten als vollständig
+const showRider=()=>S.show.rider&&personReady();
 /* ================= Zustand ================= */
 const S={src:"embedded",fileName:"",rows:null,fitData:null,sel:{b:"",m:"",s:""},cmp:{b:"",m:"",s:""},edits:{},
   comp:null,compSel:{},person:null,target:"",crank:90,show:{rider:true,angles:true,dims:false},bar:"drop",color:0,tab:"fit"};
@@ -1473,7 +1484,7 @@ function render(full=true){
   if(cb&&cb!==findBike(S.sel)) cg=compute(valuesFor(cb,true).v,c);
   const t=target();
   const pts=[{x:g.rAxle.x-g.R,y:g.ground},{x:g.fAxle.x+g.R,y:g.ground},g.steererTop,g.grip,g.seat];
-  if(S.show.rider) pts.push(add(R.head,{x:0,y:R.hr}),add(R.hip,{x:-B.height*0.06,y:0}));
+  if(showRider()) pts.push(add(R.head,{x:0,y:R.hr}),add(R.hip,{x:-B.height*0.06,y:0}));
   if(cg) pts.push({x:cg.rAxle.x-cg.R,y:0},{x:cg.fAxle.x+cg.R,y:0},cg.steererTop);
   if(t) pts.push({x:-t.sx,y:t.sy},{x:t.gx,y:t.gy});
   const minX=Math.min(...pts.map(p=>p.x))-50, maxX=Math.max(...pts.map(p=>p.x))+50;
@@ -1485,18 +1496,19 @@ function render(full=true){
   { const cn=document.getElementById("colorName"); if(cn) cn.textContent=COLOR_NAMES[S.color]||""; }
   let s=`<style>.dl,.al{font:600 30px "Barlow Condensed","Arial Narrow",sans-serif;fill:var(--dim);paint-order:stroke;stroke:var(--paper);stroke-width:9px;stroke-linejoin:round}.al{font-size:36px}.pl{font:600 30px "Barlow Condensed","Arial Narrow",sans-serif;fill:var(--plumb);paint-order:stroke;stroke:var(--paper);stroke-width:9px;stroke-linejoin:round}</style>`;
   s+=line({x:minX+10,y:g.ground},{x:maxX-10,y:g.ground},2,"var(--rule)");
-  if(S.show.rider) s+=riderBack(R,B,c,g);
+  if(showRider()) s+=riderBack(R,B,c,g);
   s+=crankArm(c,S.crank+180,"var(--parts)");
   if(cg) s+=ghostSVG(cg,.9);
   s+=bikeSVG(vals,g,c);
-  if(S.show.rider) s+=crankArm(c,S.crank,"var(--parts)")+circ({x:0,y:0},24,"var(--frame)",0,"var(--frame)")+riderFront(R,B,g);
+  if(showRider()) s+=crankArm(c,S.crank,"var(--parts)")+circ({x:0,y:0},24,"var(--frame)",0,"var(--frame)")+riderFront(R,B,g);
   else s+=crankArm(c,S.crank,"var(--parts)")+circ({x:0,y:0},24,"var(--frame)",0,"var(--frame)");
   if(cg) s+=ghostSVG(cg,.45);
   if(S.show.targets!==false) s+=targetSVG(t);
   if(S.show.dims) s+=dims(vals,g);
-  if(S.show.rider&&S.show.angles) s+=anglesSVG(R,J);
-  if(S.show.rider&&S.show.plumb!==false) s+=plumbSVG(cur.kops,g);
+  if(showRider()&&S.show.angles) s+=anglesSVG(R,J);
+  if(showRider()&&S.show.plumb!==false) s+=plumbSVG(cur.kops,g);
   svg.innerHTML=s;
+  { const h=document.getElementById("riderHint"); if(h) h.hidden=personReady(); document.getElementById("summary").style.visibility=personReady()?"":"hidden"; }
   document.getElementById("crankV").textContent=S.crank+"°"; updateDial();
   renderSummary();
   if(full){ renderFit(); }
@@ -1658,7 +1670,10 @@ function initControls(){
   syncCompCleat=makeControls("compCleatPct","cc",COMP.filter(p=>p.key==="cleat").map(p=>({...p,g:"",label:"Cleatposition (% Fußlänge ab Ferse)"})),cGet,cSet,cTag);
   syncFitSaddle=makeControls("fitSaddle","q",COMP.filter(p=>["saddleH","setback","saddleY"].includes(p.key)).map(p=>({...p,g:""})),cGet,cSet,cTag);
   syncFitGrip=makeControls("fitGrip","gr",COMP.filter(p=>["gripX","gripY"].includes(p.key)).map(p=>({...p,g:""})),cGet,cSet,cTag);
-  const pGet=p=>body()[p.key], pSet=(p,x)=>{ if(p.f) S.person.ov[p.key]=x; else S.person[p.key]=x; if(p.key==="backAngle"){S.person.autoBack=false; document.getElementById("autoBack").checked=false;} syncPerson(); render(); save(); };
+  const pGet=p=>body()[p.key], pSet=(p,x)=>{ const wasReady=personReady();
+    if(P_REQ.includes(p.key)&&S.person.entered) S.person.entered[p.key]=true;
+    if(p.f) S.person.ov[p.key]=x; else S.person[p.key]=x;
+    if(!wasReady&&personReady()) setTimeout(onPersonComplete,0); if(p.key==="backAngle"){S.person.autoBack=false; document.getElementById("autoBack").checked=false;} syncPerson(); render(); save(); };
   const pick=(keys)=>keys.map(k=>PERS.find(d=>d.key===k)).filter(Boolean).map(d=>({...d,g:""}));   // Reihenfolge wie angegeben
   const pTag=p=>personTag(p.key);
   const LPERS=[{key:"acromionL",label:"Höhe Schulterdach",min:1100,max:1800,step:1},{key:"handL",label:"Handhöhe",min:550,max:1000,step:1},{key:"footL",label:"Fußlänge",min:200,max:330,step:1}];
@@ -1675,7 +1690,7 @@ function initControls(){
   const s3b=makeControls("pBottom","p",pick(["shoulderW"]),pGet,pSet,pTag);
   const s4=makeControls("pSeg","p",PERS.filter(d=>d.g==="Segmente").map(d=>({...d,g:""})),pGet,pSet,pTag);
   const s5=makeControls("pHalt","p",PERS.filter(d=>d.g==="Haltung").map(d=>({...d,g:""})),pGet,pSet,pTag);
-  syncPerson=()=>{ s1();s1b();s1c();s2();s3();s3b();s4();s5(); try{ decorateNorms(); }catch(e){} };
+  syncPerson=()=>{ s1();s1b();s1c();s2();s3();s3b();s4();s5(); try{ decorateNorms(); }catch(e){} markPending(); };
   document.querySelectorAll(".subtab").forEach(b=>b.onclick=()=>{ const R=b.dataset.side==="R";
     document.querySelectorAll(".subtab").forEach(x=>x.setAttribute("aria-selected",x===b));
     document.getElementById("pRight").hidden=!R; document.getElementById("pLeft").hidden=R; });
@@ -2387,8 +2402,38 @@ function reloadData(){
 }
 
 /* ================= Daten: neue Person, Sicherung ================= */
+/* noch nicht eingegebene Pflichtfelder leer und markiert anzeigen */
+function markPending(){
+  const e=S.person&&S.person.entered, miss=e?P_REQ.filter(k=>!e[k]):[];
+  for(const k of P_REQ){ const n=document.getElementById("pn_"+k); if(!n) continue; const row=n.closest(".param"), pend=miss.includes(k);
+    row.classList.toggle("pending",pend);
+    if(pend){ if(document.activeElement!==n) n.value=""; n.placeholder="mm"; const sp=document.getElementById("ps_"+k); if(sp) sp.textContent=""; const tg=row.querySelector(".normtag"); if(tg) tg.remove(); }
+    else n.placeholder=""; }
+  { const h=document.getElementById("riderHint"); if(h) h.hidden=!miss.length; const sm=document.getElementById("summary"); if(sm) sm.style.visibility=miss.length?"hidden":""; }
+  const note=document.getElementById("pReqNote");
+  if(note) note.textContent=miss.length?`Noch einzugeben: ${miss.map(k=>(PERS.find(d=>d.key===k)||{label:k}).label+(["foot","acromion","hand"].includes(k)?" rechts":"")).join(", ")}. Danach wird die Person gezeichnet${setupEmpty()?" und der Vorschlag für die Sitzposition auf dem Standardrad in passender Größe übernommen":""}.`:"";
+}
+/* Bike Set Up leer? (Steuersatzkappe zählt nicht, sie hat immer einen Grundwert) */
+function setupEmpty(){
+  const U=FIT&&FIT.setup; if(!U) return true;
+  const filled=o=>o&&Object.entries(o).some(([k,v])=>k!=="cap"&&k!=="cleat"&&v!==""&&v!=null&&!(typeof v==="number"&&!isFinite(v)));
+  return !filled(U.ci)&&!filled(U.co)&&!(U.bike&&U.bike.b);
+}
+/* alle Messwerte da: ohne Bike Set Up direkt Standardrad in passender Größe und Vorschlag übernehmen */
+function onPersonComplete(){
+  render(); syncPerson();
+  if(!setupEmpty()) return;
+  const sizes=sizesOf(STD_BIKE.b,STD_BIKE.m).filter(x=>x.hasData); if(!sizes.length) return;
+  const hgt=body().height, guess=hgt<1650?"XS":hgt<1720?"S":hgt<1790?"M":hgt<1860?"L":"XL", order=["XS","S","M","L","XL","XXL"];
+  const res=sizes.map(x=>[x.s,sizeFitFor(x).score]), min=Math.min(...res.map(r=>r[1]));
+  const best=res.filter(r=>r[1]<=min+0.05).sort((a,b)=>Math.abs(order.indexOf(a[0])-order.indexOf(guess))-Math.abs(order.indexOf(b[0])-order.indexOf(guess)))[0][0];   // bei Gleichstand die Größe nach Körpergröße
+  selectMain(STD_BIKE.b,STD_BIKE.m,best);
+  sugCache.key=""; $("sugApply").click();
+  render(); save();
+  try{ libToast(`Alle Messwerte eingegeben: Vorschlag für die Sitzposition auf dem Standardrad in Größe ${best} übernommen.`,true); }catch(e){}
+}
 function newPerson(){
-  const p={style:S.person?S.person.style:"sportlich",sex:"männlich",ov:{},measured:{},autoBack:false};
+  const p={style:S.person?S.person.style:"sportlich",sex:"männlich",ov:{},measured:{},autoBack:false,entered:{}};
   for(const d of PERS) if(d.g==="Messwerte"&&!d.f&&isFinite(d.def)) p[d.key]=d.def;
   S.person=p; S.noExcelPerson=true; S.befund={date:new Date().toISOString().slice(0,10)}; FIT.person=null;
   sugCache.key=""; syncPerson(); renderBefund(); $("suClear").click(); render(); save();   // Standardrad und passende Position
