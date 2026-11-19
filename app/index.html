@@ -1480,7 +1480,7 @@ function render(full=true){
   const svg=document.getElementById("svg");
   svg.setAttribute("viewBox",`${r1(minX)} ${r1(-maxY)} ${r1(maxX-minX)} ${r1(maxY-minY)}`);
   svg.style.setProperty("--frame",COLORS[S.color]||COLORS[0]);   // nur das Rad, nicht die Bedienelemente
-  svg.style.setProperty("--jersey",isFem()?"#9A4C6C":"#2D4C88"); svg.style.setProperty("--jersey2",isFem()?"#7A3854":"#1F3868");   // Trikot: Herren blau, Damen beere
+  svg.style.setProperty("--jersey",isFem()?"#9A4C6C":"#03A3DA"); svg.style.setProperty("--jersey2",isFem()?"#7A3854":"#0279A6");   // Trikot: Herren wimove-Hellblau, Damen beere
   { const cn=document.getElementById("colorName"); if(cn) cn.textContent=COLOR_NAMES[S.color]||""; }
   let s=`<style>.dl,.al{font:600 30px "Barlow Condensed","Arial Narrow",sans-serif;fill:var(--dim);paint-order:stroke;stroke:var(--paper);stroke-width:9px;stroke-linejoin:round}.al{font-size:36px}.pl{font:600 30px "Barlow Condensed","Arial Narrow",sans-serif;fill:var(--plumb);paint-order:stroke;stroke:var(--paper);stroke-width:9px;stroke-linejoin:round}</style>`;
   s+=line({x:minX+10,y:g.ground},{x:maxX-10,y:g.ground},2,"var(--rule)");
