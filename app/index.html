@@ -676,8 +676,8 @@ const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
 const shoulderRange=()=>[styleShoulder()-10,styleShoulder()+10];
 
-/* Pflicht-Messwerte: die Person wird erst gezeichnet, wenn alle eingegeben sind (linke Seite optional, sonst wie rechts) */
-const P_REQ=["height","sternum","inseam","foot","acromion","hand","shoulderW"];
+/* Pflicht-Messwerte (rechts und links): die Person wird erst gezeichnet, wenn alle eingegeben sind */
+const P_REQ=["height","sternum","inseam","foot","footL","acromion","hand","acromionL","handL","shoulderW"];
 const personReady=()=>{ const e=S.person&&S.person.entered; return !e||P_REQ.every(k=>e[k]); };   // ältere Personen ohne Merker gelten als vollständig
 const showRider=()=>S.show.rider&&personReady();
 /* ================= Zustand ================= */
@@ -1681,7 +1681,8 @@ function initControls(){
   /* Reihenfolge wie im Messblatt: Größe, Brustbein, Schritt, Fuß links/rechts, Schulterdach und Hand rechts, dann links, Schulterbreite */
   const sideR=keys=>pick(keys).map(d=>({...d,label:d.label+" rechts"}));
   const sideL=keys=>keys.map(k=>LPERS.find(d=>d.key===k)).map(d=>({...d,label:d.label+" links"}));
-  const lGet=p=>body().L[p.key], lSet=(p,x)=>{ S.person[p.key]=x; syncPerson(); render(); save(); };
+  const lGet=p=>body().L[p.key], lSet=(p,x)=>{ const wasReady=personReady(); if(S.person.entered) S.person.entered[p.key]=true;
+    S.person[p.key]=x; syncPerson(); render(); save(); if(!wasReady&&personReady()) setTimeout(onPersonComplete,0); };
   const s1=makeControls("pCommon","p",pick(["height","sternum","inseam"]),pGet,pSet,pTag);
   const s1b=makeControls("pFootL","p",sideL(["footL"]),lGet,lSet,lTag);
   const s1c=makeControls("pFootR","p",sideR(["foot"]),pGet,pSet,pTag);
@@ -2129,7 +2130,9 @@ $("basicBtn").onclick=()=>{
   if(S.basic&&proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); }); return; }   // WiFitPro nur mit Passwort
   S.basic=!S.basic; if(S.basic){ try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} } applyBasic(); save(); };
 /* Startbildschirm: bei jedem Start Auswahl, welches Fitting gemacht wird */
-{ const scr=$("startScr"), done=()=>{ scr.hidden=true; try{ $("basicBtn").focus(); }catch(e){} };
+{ let fresh=false;   // beim Öffnen der App immer ohne Personendaten starten (einmal pro Aufruf)
+  const startFresh=()=>{ if(fresh) return; fresh=true; try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
+  const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; try{ $("basicBtn").focus(); }catch(e){} };
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); done(); };
   $("startPro").onclick=()=>{ if(!proAllowed()) return; if(proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); done(); }); return; } S.basic=false; applyBasic(); save(); done(); };
 }
@@ -2411,7 +2414,7 @@ function markPending(){
     else n.placeholder=""; }
   { const h=document.getElementById("riderHint"); if(h) h.hidden=!miss.length; const sm=document.getElementById("summary"); if(sm) sm.style.visibility=miss.length?"hidden":""; }
   const note=document.getElementById("pReqNote");
-  if(note) note.textContent=miss.length?`Noch einzugeben: ${miss.map(k=>(PERS.find(d=>d.key===k)||{label:k}).label+(["foot","acromion","hand"].includes(k)?" rechts":"")).join(", ")}. Danach wird die Person gezeichnet${setupEmpty()?" und der Vorschlag für die Sitzposition auf dem Standardrad in passender Größe übernommen":""}.`:"";
+  if(note) note.textContent=miss.length?`Noch einzugeben: ${miss.map(k=>({footL:"Fußlänge links",acromionL:"Höhe Schulterdach links",handL:"Handhöhe links"}[k]||(PERS.find(d=>d.key===k)||{label:k}).label+(["foot","acromion","hand"].includes(k)?" rechts":""))).join(", ")}. Danach wird die Person gezeichnet${setupEmpty()?" und der Vorschlag für die Sitzposition auf dem Standardrad in passender Größe übernommen":""}.`:"";
 }
 /* Bike Set Up leer? (Steuersatzkappe zählt nicht, sie hat immer einen Grundwert) */
 function setupEmpty(){
