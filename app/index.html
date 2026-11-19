@@ -2146,7 +2146,8 @@ window.addEventListener("beforeunload",e=>{
 });
 /* Startbildschirm: bei jedem Start Auswahl, welches Fitting gemacht wird */
 { let fresh=false;   // beim Öffnen der App immer ohne Personendaten starten (einmal pro Aufruf)
-  const startFresh=()=>{ if(fresh) return; fresh=true; try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
+  const startFresh=()=>{ if(fresh) return; fresh=true;
+    S.show.targets=false; $("tTargets").checked=false;   /* Fadenkreuze beim Öffnen aus */ try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
   const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; try{ $("basicBtn").focus(); }catch(e){} };
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); done(); };
   $("startPro").onclick=()=>{ if(!proAllowed()) return; if(proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); done(); }); return; } S.basic=false; applyBasic(); save(); done(); };
