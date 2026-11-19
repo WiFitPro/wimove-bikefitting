@@ -10,6 +10,7 @@ create table if not exists public.profiles (
   full_name   text default '',
   role        text not null default 'user' check (role in ('admin','user')),
   approved    boolean not null default false,
+  access      text not null default 'basic' check (access in ('pro','basic')),   -- 'pro' = WiFitPro + Basic, 'basic' = nur WiFitBasic
   created_at  timestamptz not null default now()
 );
 alter table public.profiles enable row level security;
@@ -35,9 +36,10 @@ language plpgsql security definer set search_path = public as $$
 declare first_admin boolean;
 begin
   select not exists (select 1 from public.profiles where role = 'admin') into first_admin;
-  insert into public.profiles (id, email, full_name, role, approved)
+  insert into public.profiles (id, email, full_name, role, approved, access)
   values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', ''),
-          case when first_admin then 'admin' else 'user' end, first_admin)
+          case when first_admin then 'admin' else 'user' end, first_admin,
+          case when first_admin then 'pro' else 'basic' end)
   on conflict (id) do nothing;
   return new;
 end $$;
@@ -70,7 +72,7 @@ drop policy if exists "profil ändern (admin)" on public.profiles;
 create policy "profil ändern (admin)" on public.profiles for update to authenticated
   using (public.is_admin()) with check (public.is_admin());
 revoke all on public.profiles from anon;
-grant select, update (full_name, role, approved) on public.profiles to authenticated;
+grant select, update (full_name, role, approved, access) on public.profiles to authenticated;
 
 -- 2) Gemeinsame App-Daten (eigene Teile, Räder, Standardwerte, WiFitPro-Passwort)
 create table if not exists public.app_docs (

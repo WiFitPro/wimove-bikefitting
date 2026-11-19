@@ -32,10 +32,15 @@ Inhalt dieses Pakets:
 und ist sofort freigeschaltet. Alle weiteren Konten sind Nutzer und warten auf deine Freischaltung
 (Tab **Daten → Benutzerverwaltung**).
 
+## Updates der Datenbank
+Neue Funktionen können ein Update-Skript brauchen (`supabase-update-*.sql`). Jedes einmal im SQL Editor ausführen.
+- `supabase-update-2-zugang.sql`: Zugang je Konto (WiFitPro + Basic oder nur WiFitBasic)
+
 ## Rollen
 | | Admin | Nutzer |
 |---|---|---|
-| WiFitPro und WiFitBasic, Fittings, PDF-Reports | ✓ | ✓ |
+| WiFitBasic, Fittings, PDF-Reports | ✓ | ✓ |
+| WiFitPro | ✓ | wenn unter „Zugang“ freigegeben |
 | Teile, Räder und Standardwerte der gemeinsamen Datenbank ändern | ✓ | – |
 | Benutzer freischalten, sperren, Rollen vergeben | ✓ | – |
 

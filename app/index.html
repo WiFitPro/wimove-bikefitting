@@ -171,11 +171,12 @@ textarea.bfi{resize:vertical}
 .startAcc{position:absolute;z-index:1;left:0;right:0;top:69%;text-align:center;color:#fff;font:400 2.7cqi/1.4 "Barlow",system-ui,sans-serif}
 .startAcc button{background:none;border:0;color:#fff;text-decoration:underline;font:inherit;cursor:pointer;padding:0 0 0 1cqi}
 body:not(.isAdmin) .adminOnly{display:none!important}
+body.noPro #startPro,body.noPro #basicBtn{display:none!important}
 .ulist{display:grid;gap:6px;margin-top:8px}
-.uitem{display:grid;grid-template-columns:1fr 92px auto;gap:6px;align-items:center;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--field)}
+.uitem{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:6px;align-items:center;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--field)}
 .uitem.wait{border-color:var(--dim)}
 .uitem select{font:inherit;font-size:13px;padding:4px 6px}
-.uname{display:flex;flex-direction:column;min-width:0;font-size:13px}
+.uname{display:flex;flex-direction:column;min-width:0;font-size:13px;grid-column:1/-1}
 .uname span,.uname small{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .uname small{font-size:11px}
 #libToast{position:fixed;right:16px;bottom:16px;z-index:70;max-width:min(420px,calc(100vw - 32px));padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.2);color:#fff}
@@ -507,7 +508,7 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
       </section>
       <section class="adminOnly">
         <h2>Benutzerverwaltung</h2>
-        <p class="note" style="margin-top:0">Neue Konten registrieren sich selbst und können erst arbeiten, wenn du sie freischaltest. Admins dürfen zusätzlich Teile, Räder und Standardwerte ändern und Benutzer verwalten. Gesperrte Konten kommen nicht mehr in die App; ganz löschen kannst du ein Konto in Supabase unter „Authentication → Users“.</p>
+        <p class="note" style="margin-top:0">Neue Konten registrieren sich selbst und können erst arbeiten, wenn du sie freischaltest. Unter „Zugang“ legst du fest, ob jemand WiFitPro und WiFitBasic oder nur WiFitBasic nutzen darf. Admins haben immer beides und dürfen zusätzlich Teile, Räder und Standardwerte ändern und Benutzer verwalten. Gesperrte Konten kommen nicht mehr in die App; ganz löschen kannst du ein Konto in Supabase unter „Authentication → Users“.</p>
         <div class="row"><button class="btn ghost small" id="userReload" type="button">Liste aktualisieren</button></div>
         <div id="userAdmin"></div>
       </section>
@@ -2107,13 +2108,15 @@ function applyBasic(){
     if(on&&(S.sugCmp==="ist"||S.sugCmp==="opt")){ S.sugCmp="now"; sc.value="now"; sugCache.key=""; render(); } }
   renderPdfTab(); renderNext();
 }
+const proAllowed=()=>!(window.WF&&WF.canPro===false);   /* Freigabe je Konto: WiFitPro oder nur WiFitBasic */
 $("basicBtn").onclick=()=>{
+  if(S.basic&&!proAllowed()) return;
   if(S.basic&&proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); }); return; }   // WiFitPro nur mit Passwort
   S.basic=!S.basic; if(S.basic){ try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} } applyBasic(); save(); };
 /* Startbildschirm: bei jedem Start Auswahl, welches Fitting gemacht wird */
 { const scr=$("startScr"), done=()=>{ scr.hidden=true; try{ $("basicBtn").focus(); }catch(e){} };
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); done(); };
-  $("startPro").onclick=()=>{ if(proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); done(); }); return; } S.basic=false; applyBasic(); save(); done(); };
+  $("startPro").onclick=()=>{ if(!proAllowed()) return; if(proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); done(); }); return; } S.basic=false; applyBasic(); save(); done(); };
 }
 $("pwSet").onclick=async()=>{
   const a=$("pwNew").value, b=$("pwNew2").value;

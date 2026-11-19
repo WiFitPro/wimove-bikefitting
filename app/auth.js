@@ -148,7 +148,10 @@
     WF.profile = prof || null;
     if (!prof || !prof.approved) { mode = "pending"; msg = manual ? { text: "Noch nicht freigeschaltet.", ok: false } : { text: "", ok: false }; draw(); return; }
     WF.isAdmin = prof.role === "admin";
+    WF.canPro = WF.isAdmin || prof.access === "pro";   // Admins dürfen immer beides
     document.body.classList.toggle("isAdmin", WF.isAdmin);
+    document.body.classList.toggle("noPro", !WF.canPro);
+    if (!WF.canPro) { try { S.basic = true; applyBasic(); save(); } catch (e) {} }   // nur WiFitBasic freigegeben
     hide(); renderAccount();
     if (!started) { started = true; resolveReady(); }
   }
@@ -161,7 +164,7 @@
 
   /* ---------- Konto-Bereich und Benutzerverwaltung (Tab „Daten“) ---------- */
   function renderAccount() {
-    const who = WF.profile ? `${WF.profile.full_name || ""} (${WF.profile.email || WF.user.email}) · ${WF.isAdmin ? "Admin" : "Nutzer"}` : "";
+    const who = WF.profile ? `${WF.profile.full_name || ""} (${WF.profile.email || WF.user.email}) · ${WF.isAdmin ? "Admin" : WF.canPro ? "Nutzer · WiFitPro + Basic" : "Nutzer · nur WiFitBasic"}` : "";
     document.querySelectorAll(".wfWho").forEach(el => (el.textContent = who));
     document.querySelectorAll(".wfOut").forEach(b => (b.onclick = signOut));
     const pw = document.getElementById("acPwBtn");
@@ -178,19 +181,24 @@
   async function renderUsers() {
     const box = document.getElementById("userAdmin"); if (!box) return;
     box.innerHTML = '<p class="note">Lädt …</p>';
-    const { data, error } = await sb.from("profiles").select("id,email,full_name,role,approved,created_at").order("created_at");
+    const { data, error } = await sb.from("profiles").select("id,email,full_name,role,approved,access,created_at").order("created_at");
     if (error) { box.innerHTML = `<p class="warn">Benutzer konnten nicht geladen werden: ${esc(error.message)}</p>`; return; }
     const waiting = data.filter(p => !p.approved).length;
     box.innerHTML = (waiting ? `<p class="note" style="color:var(--dim);font-weight:600">${waiting} ${waiting === 1 ? "Konto wartet" : "Konten warten"} auf Freischaltung.</p>` : "") +
       `<div class="ulist">${data.map(p => `<div class="uitem${p.approved ? "" : " wait"}">
         <div class="uname"><b>${esc(p.full_name || "–")}</b><span>${esc(p.email)}</span><small>registriert ${new Date(p.created_at).toLocaleDateString("de-DE")}${p.id === WF.user.id ? " · du" : ""}</small></div>
         <select data-role="${p.id}" aria-label="Rolle"><option value="user"${p.role === "user" ? " selected" : ""}>Nutzer</option><option value="admin"${p.role === "admin" ? " selected" : ""}>Admin</option></select>
+        <select data-acc="${p.id}" aria-label="Zugang"${p.role === "admin" ? ' disabled title="Admins haben immer beide Zugänge"' : ""}><option value="pro"${p.role === "admin" || p.access === "pro" ? " selected" : ""}>WiFitPro + Basic</option><option value="basic"${p.role !== "admin" && p.access !== "pro" ? " selected" : ""}>nur WiFitBasic</option></select>
         <button class="btn small${p.approved ? " ghost" : ""}" data-appr="${p.id}" data-v="${p.approved ? "0" : "1"}" type="button">${p.approved ? "Sperren" : "Freischalten"}</button>
       </div>`).join("")}</div><p class="note" id="uNote"></p>`;
     const note = t => { const n = document.getElementById("uNote"); if (n) n.textContent = t; };
     box.querySelectorAll("[data-appr]").forEach(b => (b.onclick = async () => {
       const { error } = await sb.from("profiles").update({ approved: b.dataset.v === "1" }).eq("id", b.dataset.appr);
       if (error) { await renderUsers(); note("Nicht möglich: " + error.message); } else renderUsers();
+    }));
+    box.querySelectorAll("[data-acc]").forEach(s => (s.onchange = async () => {
+      const { error } = await sb.from("profiles").update({ access: s.value }).eq("id", s.dataset.acc);
+      if (error) { await renderUsers(); note("Nicht möglich: " + error.message); } else { await renderUsers(); note("Zugang geändert – gilt beim nächsten Öffnen der App durch diese Person."); }
     }));
     box.querySelectorAll("[data-role]").forEach(s => (s.onchange = async () => {
       const { error } = await sb.from("profiles").update({ role: s.value }).eq("id", s.dataset.role);
