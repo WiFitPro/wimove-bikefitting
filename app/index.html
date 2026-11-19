@@ -179,7 +179,7 @@ body.noPro #startPro,body.noPro #basicBtn{display:none!important}
 .uname{display:flex;flex-direction:column;min-width:0;font-size:13px;grid-column:1/-1}
 .uname span,.uname small{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .uname small{font-size:11px}
-#libToast{position:fixed;right:16px;bottom:16px;z-index:70;max-width:min(420px,calc(100vw - 32px));padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.2);color:#fff}
+#libToast{position:fixed;right:16px;bottom:84px;z-index:70;max-width:min(420px,calc(100vw - 32px));padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.2);color:#fff}
 #libToast.ok{background:#2e7d4f}#libToast.err{background:#b03a2e}#libToast[hidden]{display:none}
 .selpop{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--rule);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;gap:4px}
 .selpop[hidden]{display:none}
@@ -194,7 +194,7 @@ body.noPro #startPro,body.noPro #basicBtn{display:none!important}
 .ptools{position:absolute;right:0;top:0;z-index:2;display:flex;flex-direction:column;align-items:flex-end;max-width:60%}
 .ptools .note{margin:4px 0 0;text-align:right}
 #tab-befund{padding-top:44px}
-.nextbar{display:flex;justify-content:flex-end;padding:18px 0 4px}
+.nextbar{display:flex;justify-content:flex-start;padding:18px 0 4px}   /* links, damit der Netlify-Hinweis unten rechts nichts verdeckt */
 .nextbar .btn{min-width:180px}
 section{padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--rule)}
 section:last-child{border-bottom:0}
