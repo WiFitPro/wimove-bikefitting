@@ -74,7 +74,7 @@
     ["aMail", "aName"].forEach(id => { const el = box.querySelector("#" + id); if (el) kept[id] = el.value; });
     setTimeout(() => Object.entries(kept).forEach(([id, v]) => { const el = box.querySelector("#" + id); if (el && !el.value) el.value = v; }), 0);
     const m = msg.text ? `<p class="authMsg${msg.ok ? " ok" : ""}" role="status">${esc(msg.text)}</p>` : "";
-    const head = `<h2>WiFitPro</h2>`;
+    const head = `<h2>WiFit</h2>`;
     if (mode === "loading") { box.innerHTML = head + '<p class="authSub">Lädt …</p>'; return; }
     if (mode === "pending") {
       box.innerHTML = head + `<p class="authSub">Hallo ${esc(WF.profile && WF.profile.full_name || WF.user && WF.user.email)},<br>dein Zugang ist angelegt und wartet auf die Freischaltung durch den Admin.</p>${m}
