@@ -181,7 +181,7 @@ body.noPro #startPro,body.noPro #basicBtn{display:none!important}
 .uname span,.uname small{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .uname small{font-size:11px}
 .riderHint[hidden]{display:none!important}
-.riderHint{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:92%;padding:8px 12px;border-radius:10px;background:var(--field);border:1px solid var(--rule);font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.riderHint{flex:1 1 0;align-self:center;margin-left:clamp(16px,5cqi,64px);display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:92%;padding:8px 12px;border-radius:10px;background:var(--field);border:1px solid var(--rule);font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
 .param.pending input[type=number]{border-color:var(--frame);box-shadow:0 0 0 2px color-mix(in srgb,var(--frame) 25%,transparent)}
 .param.pending input[type=range]{opacity:.35}
 #libToast{position:fixed;right:16px;bottom:84px;z-index:70;max-width:min(420px,calc(100vw - 32px));padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.2);color:#fff}
@@ -294,9 +294,9 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
     <div class="head">
       <div><button class="btn ghost" id="basicBtn" aria-pressed="false" title="Abgespeckte Ansicht ein- und ausschalten">WiFitBasic</button><p class="kicker" id="brandBig"></p><h1 id="modelBig"></h1><div class="size-big" id="sizeBig"></div></div>
       <div class="summary" id="summary"></div>
+      <div id="riderHint" class="riderHint" hidden>Die Person wird gezeichnet, sobald alle Messwerte eingegeben sind.<button type="button" class="btn small" onclick="document.querySelector('[data-tab=person]').click()">Zu den Messwerten</button></div>
     </div>
     <div class="canvas">
-      <div id="riderHint" class="riderHint" hidden>Die Person wird gezeichnet, sobald alle Messwerte eingegeben sind.<button type="button" class="btn small" onclick="document.querySelector('[data-tab=person]').click()">Zu den Messwerten</button></div>
       <svg id="svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seitenansicht von Fahrrad und Person"></svg>
     </div>
     <div class="toolbar">
@@ -1508,7 +1508,7 @@ function render(full=true){
   if(showRider()&&S.show.angles) s+=anglesSVG(R,J);
   if(showRider()&&S.show.plumb!==false) s+=plumbSVG(cur.kops,g);
   svg.innerHTML=s;
-  { const h=document.getElementById("riderHint"); if(h) h.hidden=personReady(); document.getElementById("summary").style.visibility=personReady()?"":"hidden"; }
+  { const h=document.getElementById("riderHint"); if(h) h.hidden=personReady(); document.getElementById("summary").style.display=personReady()?"":"none"; }
   document.getElementById("crankV").textContent=S.crank+"°"; updateDial();
   renderSummary();
   if(full){ renderFit(); }
@@ -2422,7 +2422,7 @@ function markPending(){
     row.classList.toggle("pending",pend);
     if(pend){ if(document.activeElement!==n) n.value=""; n.placeholder="mm"; const sp=document.getElementById("ps_"+k); if(sp) sp.textContent=""; const tg=row.querySelector(".normtag"); if(tg) tg.remove(); }
     else n.placeholder=""; }
-  { const h=document.getElementById("riderHint"); if(h) h.hidden=!miss.length; const sm=document.getElementById("summary"); if(sm) sm.style.visibility=miss.length?"hidden":""; }
+  { const h=document.getElementById("riderHint"); if(h) h.hidden=!miss.length; const sm=document.getElementById("summary"); if(sm) sm.style.display=miss.length?"none":""; }
   const note=document.getElementById("pReqNote");
   if(note) note.textContent=miss.length?`Noch einzugeben: ${miss.map(k=>({footL:"Fußlänge links",acromionL:"Höhe Schulterdach links",handL:"Handhöhe links"}[k]||(PERS.find(d=>d.key===k)||{label:k}).label+(["foot","acromion","hand"].includes(k)?" rechts":""))).join(", ")}. Danach wird die Person gezeichnet${setupEmpty()?" und der Vorschlag für die Sitzposition auf dem Standardrad in passender Größe übernommen":""}.`:"";
 }
