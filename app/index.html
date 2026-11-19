@@ -347,6 +347,7 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
         <div id="sugTable" style="margin-top:10px"></div>
         <p class="note" id="kopsNote"></p>
         <p class="note" id="sugParts"></p>
+        <label class="toggle" style="margin-top:10px;white-space:normal;align-items:flex-start"><input type="checkbox" id="autoBack" style="margin-top:3px"> Rückenwinkel aus Griffposition ermitteln (Ellbogen-Ziel)</label>
         <div class="row" style="margin-top:10px">
           <button class="btn small" id="sugApply">Vorschlag übernehmen</button>
           <button class="btn ghost small" id="loadOptFit">Optimierte Position laden</button>
@@ -422,7 +423,6 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
         <select id="styleSel"><option value="comfort">comfort</option><option value="endurance">endurance</option><option value="sportlich">sportlich</option><option value="ambitioniert">ambitioniert</option><option value="professional">professional</option></select>
         <label class="f" for="sexSel">Geschlecht</label>
         <select id="sexSel"><option value="männlich">männlich</option><option value="weiblich">weiblich</option></select>
-        <label class="toggle" style="margin-top:10px;white-space:normal;align-items:flex-start"><input type="checkbox" id="autoBack" style="margin-top:3px"> Rückenwinkel aus Griffposition ermitteln (Ellbogen-Ziel)</label>
       </section>
       <section>
         <h2>Messwerte</h2>
@@ -2013,9 +2013,12 @@ $("sugCmp").onchange=e=>{ S.sugCmp=e.target.value; $("fitNote").textContent=""; 
 $("sugApply").onclick=()=>{
   const r=suggest(), p=r.parts, c=S.comp;
   if(p.stemAngle!==c.stemAngle) S.compSel.stem="";
-  Object.assign(c,p); S.person.autoBack=false; $("autoBack").checked=false; S.person.ov.backAngle=Math.round(r.back);
+  const keepAuto=!!S.person.autoBack;   // Haken „Rückenwinkel aus Griffposition ermitteln“: Rücken folgt dem eingestellten Griff
+  Object.assign(c,p);
+  if(keepAuto) delete S.person.ov.backAngle; else { S.person.ov.backAngle=Math.round(r.back); }
   syncComp(); syncPerson(); render(); save();
-  $("sugNote").textContent=`Vorschlag übernommen: Sattel und Cockpit sind eingestellt, der Rückenwinkel der Person steht auf ${Math.round(r.back)}°.`;
+  $("sugNote").textContent=keepAuto?`Vorschlag übernommen: Sattel und Cockpit sind eingestellt, der Rückenwinkel ergibt sich aus der Griffposition (jetzt ${Math.round(cur.J.back)}°).`
+    :`Vorschlag übernommen: Sattel und Cockpit sind eingestellt, der Rückenwinkel der Person steht auf ${Math.round(r.back)}°.`;
 };
 $("loadIst").onclick=()=>loadComps("ist");
 $("loadOpt").onclick=()=>loadComps("opt");
