@@ -2006,7 +2006,10 @@ function tick(now){
 
 /* ================= Ereignisse ================= */
 const $=id=>document.getElementById(id);
-function showTab(t){ S.tab=t; document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t)); document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="tab-"+t); save(); }
+/* Aufteilung Darstellung / Eingabe je Tab (Anteil der Eingabe): Befund, Bike Set Up, Person 30/70 – ab Rad 60/40 – PDF, Daten 40/60 */
+const TAB_SPLIT={befund:0.7,setup:0.7,person:0.7,bike:0.4,comp:0.4,fit:0.4,pdf:0.6,data:0.6};
+function showTab(t){ S.tab=t; document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t)); document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="tab-"+t);
+  if(window.setPanelShare&&TAB_SPLIT[t]) window.setPanelShare(TAB_SPLIT[t]); save(); }
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 $("brandSel").onchange=e=>selectMain(e.target.value,"",S.sel.s);
 $("modelSel").onchange=e=>selectMain(S.sel.b,e.target.value,S.sel.s);
@@ -2167,7 +2170,7 @@ window.addEventListener("beforeunload",e=>{
 { let fresh=false;   // beim Öffnen der App immer ohne Personendaten starten (einmal pro Aufruf)
   const startFresh=()=>{ if(fresh) return; fresh=true;
     S.show.targets=false; $("tTargets").checked=false;   /* Fadenkreuze beim Öffnen aus */ try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
-  const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; try{ $("basicBtn").focus(); }catch(e){} };
+  const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; showTab(S.basic?"person":"befund"); try{ $("basicBtn").focus(); }catch(e){} };   /* WiFitPro startet bei Befund, Basic bei Person (je 30/70) */
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); done(); };
   $("startPro").onclick=()=>{ if(!proAllowed()) return; if(proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); done(); }); return; } S.basic=false; applyBasic(); save(); done(); };
 }
@@ -4182,8 +4185,9 @@ S.dataV=6; save();
 /* Seitenbereich in der Breite verstellbar (ziehen, Pfeiltasten, Doppelklick = Standard) */
 { const sp=$("splitter"), root=document.documentElement;
   const setW=w=>{ w=Math.round(Math.max(300,Math.min(window.innerWidth-380,w))); S.panelW=w; root.style.setProperty("--panelW",w+"px"); sp.setAttribute("aria-valuenow",w); };
-  const half=()=>(window.innerWidth-8)*0.4;   // Darstellung 60 %, Einstellungen 40 %
-  setW(half());   // beim Laden immer 60/40
+  const half=()=>(window.innerWidth-8)*(TAB_SPLIT[S.tab]||0.4);   // Aufteilung passend zum Tab
+  window.setPanelShare=f=>setW((window.innerWidth-8)*f);
+  setW(half());
   let drag=false;
   sp.addEventListener("pointerdown",e=>{ drag=true; sp.classList.add("drag"); sp.setPointerCapture(e.pointerId); e.preventDefault(); });
   sp.addEventListener("pointermove",e=>{ if(drag) setW(window.innerWidth-e.clientX-4); });
