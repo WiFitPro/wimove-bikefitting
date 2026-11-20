@@ -2673,7 +2673,7 @@ function ensureSetup(){
   if(!FIT.setup) FIT.setup={bike:{},bikeOpt:{},pos:{ist:null,opt:null},ci:{},co:{}};
   const U=FIT.setup; U.bike=U.bike||{}; U.bikeOpt=U.bikeOpt||{}; U.pos=U.pos||{}; U.ci=U.ci||{}; U.co=U.co||{};
   for(const w of ["ist","opt"]) if(!U.pos[w]) U.pos[w]={gx:NaN,gy:NaN,sx:NaN,sy:NaN};
-  if(U.ci.cap===undefined||U.ci.cap==="") U.ci.cap=CAP;   // Steuersatzkappe: Werkseinstellung 5 mm
+  /* Steuersatzkappe wird nicht vorausgewählt; ohne Eingabe rechnet das Modell mit 5 mm */
   return U;
 }
 function suSet(path,val){   // in FIT.setup schreiben und als Änderung merken
