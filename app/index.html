@@ -3183,9 +3183,14 @@ I.k_sor=()=>{ const hip=[190,BY-13];
 return I;
 })();
 const BF_IMG_CACHE={};
-const bfImgSrc=k=>k==="s_beinachse"?"brand/tests/beinachse.jpg":BF_IMGS[k]?(BF_IMG_CACHE[k]=BF_IMG_CACHE[k]||"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(BF_IMGS[k]())):"";
+/* Vorlagen (Bilddateien) haben Vorrang vor den gezeichneten Bildern; [Datei, Erklärung zu mehrteiligen Bildern] */
+const BF_IMG_FILE={s_fuss:["fussgewoelbe","oben physiologisch, Mitte Hohlfuß, unten Senk-/Plattfuß"],s_beinachse:["beinachse","links X-Bein (Valgus), Mitte physiologisch, rechts O-Bein (Varus)"],
+  s_becken:["becken_schulter","links physiologisch, rechts Becken- und Schulterschiefstand"],s_schulter:["becken_schulter","links physiologisch, rechts Becken- und Schulterschiefstand"],
+  m_ktw:["dorsalextension"],m_slr:["slr"],m_thomas:["thomas"],m_pkb:["pkb"],m_hext:["hueftextension"],
+  k_calf:["wadenheben"],k_squat:["kniebeuge"],k_bridge:["bridging"],k_abd:["beinheben"],k_clam:["clamshell"],k_hflexs:["knee_raise"],k_trend:["hip_hitches"]};
+const bfImgSrc=k=>BF_IMG_FILE[k]?`brand/tests/${BF_IMG_FILE[k][0]}.jpg`:BF_IMGS[k]?(BF_IMG_CACHE[k]=BF_IMG_CACHE[k]||"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(BF_IMGS[k]())):"";
 /* Bezeichnung mit Vorschaubild; Klick vergrößert */
-const bfLbl=(k,l)=>{ const src=bfImgSrc(k); return src?`<span class="bfl"><button type="button" class="bfThumb" data-bfimg="${k}" data-cap="${esc(k==="s_beinachse"?l+" – links X-Bein (Valgus), Mitte physiologisch, rechts O-Bein (Varus)":l)}" title="Bild vergrößern" aria-label="Bild zu ${esc(l)} vergrößern"><img src="${src}" alt=""></button><span>${l}</span></span>`:`<span>${l}</span>`; };
+const bfLbl=(k,l)=>{ const src=bfImgSrc(k); return src?`<span class="bfl"><button type="button" class="bfThumb" data-bfimg="${k}" data-cap="${esc(BF_IMG_FILE[k]&&BF_IMG_FILE[k][1]?l+" – "+BF_IMG_FILE[k][1]:l)}" title="Bild vergrößern" aria-label="Bild zu ${esc(l)} vergrößern"><img src="${src}" alt=""></button><span>${l}</span></span>`:`<span>${l}</span>`; };
 document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest(".bfThumb"); if(!b) return;
   const ov=$("bfImgOv"); ov.querySelector("img").src=bfImgSrc(b.dataset.bfimg); ov.querySelector("p").textContent=b.dataset.cap; ov.hidden=false; ov.querySelector("button").focus(); });
 { const ov=$("bfImgOv"), close=()=>{ ov.hidden=true; }; ov.onclick=e=>{ if(e.target===ov||e.target.closest("button")) close(); }; document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&!ov.hidden) close(); }); }
