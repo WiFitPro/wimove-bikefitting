@@ -3404,16 +3404,16 @@ const PDF_SECS=[["person","Personendaten & Abmessungen"],["seg","Segmentlängen 
 const PDF_TIERS=[["plus","Plus",["person","pain","anam","setup","bikedims","rw"]],
   ["advanced","Advanced",["person","pain","anam","setup","bikedims","rw","video"]],
   ["professional","Professional",["person","pain","anam","setup","bikedims","rw","video","statik","dyn","mob","kraft"]]];
-/* Plus, Advanced, Professional nur für das Konto von Patrick Mayer; alle Konten können eigene Pakete anlegen */
+/* Alle Pakete sind Pakete des Kontos; Plus, Advanced, Professional werden beim Konto von Patrick Mayer einmalig als eigene Pakete angelegt */
 const OWNER_MAIL="patrick.mayer@wildrad.eu";
 let BUILTIN_OK=false, PDFPREFS={pkgs:[],def:""}, PDFPREFS_DB=null;
-const allPkgs=()=>[...(BUILTIN_OK?PDF_TIERS.map(([id,name,secs])=>({id,name,secs,builtin:true})):[]),...(PDFPREFS.pkgs||[]).map(x=>({...x,builtin:false}))];
+const allPkgs=()=>(PDFPREFS.pkgs||[]).map(x=>({...x,builtin:false}));
 const findPkg=id=>id?allPkgs().find(x=>x.id===id):null;
 const pdfTier=()=>S.basic?"plus":(findPkg(S.pdfTier)?S.pdfTier:"");   /* "" = kein Paket gewählt (Standard) */
 /* Deckblatt: eingebautes Paket → eigenes Bild; eigenes Paket → Paketname; ohne Paket nach Inhalt (nur Patrick) bzw. „Report“ */
 const pdfCover=()=>{ const id=pdfTier(), pk=findPkg(id);
-  if(pk&&pk.builtin) return {file:`brand/cover_${id}.jpg`,name:pk.name};
-  if(pk) return {custom:pk.name,name:pk.name};
+  if(pk){ const std=PDF_TIERS.find(t=>t[1].toLowerCase()===String(pk.name).trim().toLowerCase());   // Plus/Advanced/Professional: gestaltetes Deckblatt
+    return std?{file:`brand/cover_${std[0]}.jpg`,name:std[1]}:{custom:pk.name,name:pk.name}; }
   if(BUILTIN_OK){ const t=["statik","dyn","mob","kraft"].some(k=>pdfOn(k))?"professional":pdfOn("video")?"advanced":"plus"; return {file:`brand/cover_${t}.jpg`,name:PDF_TIERS.find(x=>x[0]===t)[1]}; }
   return {custom:"Report",name:""}; };
 /* Vorauswahl beim Öffnen: kein Paket, alle Inhalte oder ein Paket */
@@ -3434,6 +3434,9 @@ async function pdfPrefsLoad(){
     if(db&&pth){ PDFPREFS_DB={db,p:pth}; const snap=await db.doc(pth).get();
       if(snap.exists){ const d=JSON.parse(JSON.stringify(snap.data()||null)); if(d&&!(PDFPREFS.at>d.at)) PDFPREFS=d; } } }catch(e){}
   PDFPREFS.pkgs=PDFPREFS.pkgs||[];
+  if(BUILTIN_OK&&!PDFPREFS.seeded){   // einmalig: bisherige feste Pakete als eigene Pakete übernehmen (danach frei änderbar und löschbar)
+    for(const [id,name,secs] of PDF_TIERS) if(!PDFPREFS.pkgs.some(x=>x.id===id||x.name.toLowerCase()===name.toLowerCase())) PDFPREFS.pkgs.push({id,name,secs:[...secs]});
+    PDFPREFS.seeded=true; await pdfPrefsSave(); }
   if(!S.pdfTouched) applyPdfDefault(); else if(S.pdfTier&&!findPkg(S.pdfTier)) S.pdfTier="";
   renderPdfTab(); save();
 }
