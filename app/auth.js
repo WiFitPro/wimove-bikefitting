@@ -41,6 +41,7 @@
   };
   const USER = {
     isOwner: () => WF.isAdmin, canEdit: () => WF.isAdmin,
+    id: async () => (WF.user ? WF.user.id : null),   // eigenes Konto (z. B. Logo und Kontaktdaten für den Bericht)
     can: async k => (k === "data.write" ? WF.isAdmin : null)
   };
   window.claude = {

@@ -125,6 +125,17 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .pwarn{margin:4px 0 10px;padding:8px 10px;border:1px solid #c0392b;border-radius:8px;font-size:13px;color:var(--ink);background:var(--field)}
 .bfg .bfu{font-size:12px;color:var(--muted);padding-left:12px}
 textarea.bfi{resize:vertical}
+.bfl{display:flex;align-items:center;gap:8px;min-width:0}
+.bfThumb{flex:none;width:62px;height:34px;padding:0;border:1px solid var(--rule);border-radius:6px;background:#fff;cursor:zoom-in;overflow:hidden}
+.bfThumb img{width:100%;height:100%;object-fit:contain;display:block}
+.bfThumb:hover{border-color:var(--frame)}
+#bfImgOv{position:fixed;inset:0;z-index:80;background:rgba(8,24,34,.6);display:flex;align-items:center;justify-content:center;padding:16px}
+#bfImgOv[hidden]{display:none}
+.bfImgBox{background:#fff;color:#18222B;border-radius:12px;padding:12px 14px;width:min(900px,96vw);max-height:94vh;display:flex;flex-direction:column;gap:8px}
+.bfImgBox img{width:100%;max-height:80vh;object-fit:contain}
+.bfImgBox .row{justify-content:space-between}
+.bfImgBox p{margin:0;font-weight:600;font-size:16px}
+select.bfi.ppRegion{font:600 19px/1.2 "Barlow",system-ui,sans-serif;padding:10px 12px;border:2px solid var(--frame);border-radius:8px}   /* Bereich gut sichtbar */
 .tab{font:inherit;font-weight:600;font-size:14px;background:none;border:0;border-bottom:3px solid transparent;padding:8px 10px;color:var(--muted);cursor:pointer;margin-bottom:-1px}
 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--frame)}
 .panel[hidden]{display:none}
@@ -172,6 +183,7 @@ textarea.bfi{resize:vertical}
 .startAcc{position:absolute;z-index:1;left:0;right:0;top:69%;text-align:center;color:#fff;font:400 2.7cqi/1.4 "Barlow",system-ui,sans-serif}
 .startAcc button{background:none;border:0;color:#fff;text-decoration:underline;font:inherit;cursor:pointer;padding:0 0 0 1cqi}
 body:not(.isAdmin) .adminOnly{display:none!important}
+.notReady{display:none!important}
 body.noPro #startPro,body.noPro #basicBtn{display:none!important}
 .ulist{display:grid;gap:6px;margin-top:8px}
 .uitem{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:6px;align-items:center;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--field)}
@@ -289,6 +301,7 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
     </div>
   </div><div class="startAcc">Angemeldet: <span class="wfWho"></span><button class="wfOut" type="button">Abmelden</button></div></div>
 </div>
+<div id="bfImgOv" hidden role="dialog" aria-modal="true" aria-label="Bild zum Test"><div class="bfImgBox"><div class="row"><p></p><button type="button" class="btn ghost small">Schließen</button></div><img alt=""></div></div>
 <div class="app">
   <main class="stage">
     <div class="head">
@@ -532,6 +545,11 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
         <div class="row" style="margin-top:8px"><button class="btn small" id="pwSet">Passwort festlegen</button><button class="btn ghost small" id="pwRemove">Sperre aufheben</button></div>
       </section>
       <section>
+        <h2>Bericht: Logo und Kontaktdaten</h2>
+        <p class="note" style="margin-top:0">Gilt für dein Konto: Die Kontaktdaten und dein Logo erscheinen im PDF in der Fußzeile jeder Seite und auf der letzten Seite. Leere Zeilen und kein Logo = Standard (wimove / Wildrad).</p>
+        <div id="brandBox"></div>
+      </section>
+      <section>
         <h2>Datensicherung</h2>
         <p class="note" style="margin-top:0">Alle Daten liegen in diesem Browser. Mit einer Sicherung kannst du sie archivieren oder auf einem anderen Gerät weiterarbeiten.</p>
         <div class="row"><button class="btn small" id="exportBtn">Daten sichern (.json)</button><button class="btn ghost small" id="importBtn">Sicherung laden</button><input type="file" id="importIn" accept=".json,application/json" hidden></div>
@@ -544,12 +562,10 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
         <h2>PDF erstellen</h2>
         <p class="src-line" id="pdfWho"></p>
         <div class="adv" id="pdfTierBox"><label class="f" style="margin-top:0">Paket</label><div class="chips" id="pdfTiers"></div><p class="note" id="pdfTierNote"></p></div>
-        <p class="note" style="margin-top:8px">Wähle aus, was im PDF enthalten sein soll. Die Auswahl bleibt gespeichert.</p>
+        <p class="note" style="margin-top:8px">Wähle ein Paket oder einzelne Inhalte für das PDF aus.</p>
+        <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
         <div id="pdfSecs"></div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn ghost small" id="pdfAll">Alle</button>
-          <button class="btn ghost small" id="pdfNone">Keine</button>
-        </div>
+        <details class="acc adv" id="pkgDetails" style="margin-top:12px"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
       </section>
       <section>
         <h2>Videoanalyse (Contemplas)</h2>
@@ -1691,6 +1707,12 @@ function initControls(){
   const s3b=makeControls("pBottom","p",pick(["shoulderW"]),pGet,pSet,pTag);
   const s4=makeControls("pSeg","p",PERS.filter(d=>d.g==="Segmente").map(d=>({...d,g:""})),pGet,pSet,pTag);
   const s5=makeControls("pHalt","p",PERS.filter(d=>d.g==="Haltung").map(d=>({...d,g:""})),pGet,pSet,pTag);
+  /* Modell-Feinwerte der Segmente nur für Admins sichtbar */
+  for(const k of ["hipStand","ankleH","sitBack","sink","hipFwd","hipSit","shoulderDrop","protr","kneeBack","armAdd"]){ const n=document.getElementById("pn_"+k); if(n) n.closest(".param").classList.add("adminOnly"); }
+  { const pc=document.getElementById("pCleat"); if(pc) pc.classList.add("adminOnly"); }
+  /* Haltung: Nutzer sehen nur den Rückenwinkel */
+  for(const k of ["elbowT","footAngle"]){ const n=document.getElementById("pn_"+k); if(n) n.closest(".param").classList.add("adminOnly"); }
+  { const sb=document.getElementById("styleStdBox"); if(sb) sb.classList.add("adminOnly"); }
   syncPerson=()=>{ s1();s1b();s1c();s2();s3();s3b();s4();s5(); try{ decorateNorms(); }catch(e){} markPending(); };
   document.querySelectorAll(".subtab").forEach(b=>b.onclick=()=>{ const R=b.dataset.side==="R";
     document.querySelectorAll(".subtab").forEach(x=>x.setAttribute("aria-selected",x===b));
@@ -1987,7 +2009,10 @@ function tick(now){
 
 /* ================= Ereignisse ================= */
 const $=id=>document.getElementById(id);
-function showTab(t){ S.tab=t; document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t)); document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="tab-"+t); save(); }
+/* Aufteilung Darstellung / Eingabe je Tab (Anteil der Eingabe): Befund, Bike Set Up, Person 30/70 – ab Rad 60/40 – PDF, Daten 40/60 */
+const TAB_SPLIT={befund:0.7,setup:0.7,person:0.7,bike:0.4,comp:0.4,fit:0.4,pdf:0.6,data:0.6};
+function showTab(t){ S.tab=t; document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t)); document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="tab-"+t);
+  if(window.setPanelShare&&TAB_SPLIT[t]) window.setPanelShare(TAB_SPLIT[t]); save(); }
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 $("brandSel").onchange=e=>selectMain(e.target.value,"",S.sel.s);
 $("modelSel").onchange=e=>selectMain(S.sel.b,e.target.value,S.sel.s);
@@ -2103,7 +2128,9 @@ function markBasic(){
   const adv=[$("stdBox"),$("pSeg").closest("details"),$("pHalt").closest("details"),$("pmDetails"),$("calibList").closest("details"),$("cpBtn").closest("section"),$("evBtn").closest("section"),...document.querySelectorAll("#tab-bike details")];
   adv.push($("cmpOptBike").closest(".row"));   // Rahmenvergleich bleibt, nur die Knöpfe zum Bike Set Up entfallen
   adv.push($("loadOptFit"),$("loadIstFit"),$("fitBtn"),$("loadIst").closest("section"),$("loadBtnT"));   // Laden aus Set-up / Excel und Bauteile anpassen
-  document.querySelectorAll('.tab[data-tab="befund"],.tab[data-tab="setup"],.tab[data-tab="data"]').forEach(t=>adv.push(t));
+  document.querySelectorAll('.tab[data-tab="befund"],.tab[data-tab="setup"]').forEach(t=>adv.push(t));
+  /* Tab „Daten“ in WiFitBasic nur mit Konto (Passwort, Abmelden) und – für Admins – Benutzerverwaltung */
+  $("newPersonBtn").closest("section").classList.add("adv"); $("exportBtn").closest("section").classList.add("adv");
   adv.forEach(e=>e&&e.classList.add("adv"));
 }
 /* Weiter-Button am Ende jedes Tabs: springt zum nächsten sichtbaren Tab */
@@ -2121,7 +2148,7 @@ function applyBasic(){
   $("basicBtn").setAttribute("aria-pressed",on);
   $("basicBtn").textContent=on?"WiFitBasic":"WiFitPro";   // zeigt die aktive Ansicht; Klick wechselt
   $("basicBtn").title=on?"Abgespeckte Ansicht aktiv – klicken für WiFitPro":"Volle Ansicht aktiv – klicken für WiFitBasic";
-  if(on&&["befund","setup","data"].includes(S.tab)) showTab("person");
+  if(on&&["befund","setup"].includes(S.tab)) showTab("person");
   /* Vorschlag vergleichen: Ist- und optimierte Position nur in WiFitPro */
   { const sc=$("sugCmp"); [...sc.options].forEach(o=>{ if(o.value==="ist"||o.value==="opt"){ o.hidden=on; o.disabled=on; } });
     if(on&&(S.sugCmp==="ist"||S.sugCmp==="opt")){ S.sugCmp="now"; sc.value="now"; sugCache.key=""; render(); } }
@@ -2144,8 +2171,10 @@ window.addEventListener("beforeunload",e=>{
 });
 /* Startbildschirm: bei jedem Start Auswahl, welches Fitting gemacht wird */
 { let fresh=false;   // beim Öffnen der App immer ohne Personendaten starten (einmal pro Aufruf)
-  const startFresh=()=>{ if(fresh) return; fresh=true; try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
-  const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; try{ $("basicBtn").focus(); }catch(e){} };
+  const startFresh=()=>{ if(fresh) return; fresh=true;
+    S.pdfTouched=false; if(!S.basic) applyPdfDefault(); else S.pdfSel={};   /* PDF: Voreinstellung des Kontos (Standard: nichts ausgewählt) */
+    S.show.targets=false; $("tTargets").checked=false;   /* Fadenkreuze beim Öffnen aus */ try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
+  const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; showTab(S.basic?"person":"befund"); try{ $("basicBtn").focus(); }catch(e){} };   /* WiFitPro startet bei Befund, Basic bei Person (je 30/70) */
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); done(); };
   $("startPro").onclick=()=>{ if(!proAllowed()) return; if(proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); done(); }); return; } S.basic=false; applyBasic(); save(); done(); };
 }
@@ -2425,6 +2454,11 @@ function markPending(){
     row.classList.toggle("pending",pend);
     if(pend){ if(document.activeElement!==n) n.value=""; n.placeholder="mm"; const sp=document.getElementById("ps_"+k); if(sp) sp.textContent=""; const tg=row.querySelector(".normtag"); if(tg) tg.remove(); }
     else n.placeholder=""; }
+  /* Armlängen erst nach Eingabe von Schulterdach und Handhöhe, Segmentlängen erst wenn alle Messwerte da sind */
+  { const ok=k=>!e||!!e[k], show=(el,on)=>{ if(el) el.classList.toggle("notReady",!on); };
+    show(document.getElementById("armTotR"),ok("acromion")&&ok("hand"));
+    show(document.getElementById("armTotL"),ok("acromionL")&&ok("handL"));
+    for(const k of ["thigh","shank","torso","upperArm","forearm"]){ const n=document.getElementById("pn_"+k); if(n) show(n.closest(".param"),!miss.length); } }
   { const h=document.getElementById("riderHint"); if(h) h.hidden=!miss.length; const sm=document.getElementById("summary"); if(sm) sm.style.display=miss.length?"none":""; }
   const note=document.getElementById("pReqNote");
   if(note) note.textContent=miss.length?`Noch einzugeben: ${miss.map(k=>({footL:"Fußlänge links",acromionL:"Höhe Schulterdach links",handL:"Handhöhe links"}[k]||(PERS.find(d=>d.key===k)||{label:k}).label+(["foot","acromion","hand"].includes(k)?" rechts":""))).join(", ")}. Danach wird die Person gezeichnet${setupEmpty()?" und der Vorschlag für die Sitzposition auf dem Standardrad in passender Größe übernommen":""}.`:"";
@@ -2535,7 +2569,7 @@ function renderPainPicker(){
   const chips=(arr,sel,attr)=>arr.map(x=>`<button type="button" class="chip pchip" ${attr}="${esc(x)}" aria-pressed="${sel.includes(x)}">${esc(x)}</button>`).join("");
   const list=(bf().painList||[]);
   box.innerHTML=`<h3 style="margin:14px 0 6px">Beschwerdebild</h3>
-    <label class="f" for="pp_region">Bereich</label><select class="bfi" id="pp_region">${painRegions().map(([k,l])=>`<option value="${k}"${k===D.region?" selected":""}>${l}</option>`).join("")}</select>
+    <label class="f" for="pp_region">Bereich</label><select class="bfi ppRegion" id="pp_region">${painRegions().map(([k,l])=>`<option value="${k}"${k===D.region?" selected":""}>${l}</option>`).join("")}</select>
     <label class="f">Beschwerden <span class="note">(Mehrfachauswahl)</span></label><div class="chips">${chips(cat,D.items,"data-pitem")}</div>
     <label class="f">Schmerzqualität <span class="note">(Mehrfachauswahl)</span></label><div class="chips">${chips(PAIN_QUAL,D.qual,"data-pqual")}</div>
     <div class="two"><div><label class="f" for="pp_vas">Stärke (0–10)</label><select class="bfi" id="pp_vas"><option value="">–</option>${Array.from({length:11},(_,i)=>`<option${String(i)===String(D.vas)?" selected":""}>${i}</option>`).join("")}</select></div>
@@ -2639,7 +2673,7 @@ function ensureSetup(){
   if(!FIT.setup) FIT.setup={bike:{},bikeOpt:{},pos:{ist:null,opt:null},ci:{},co:{}};
   const U=FIT.setup; U.bike=U.bike||{}; U.bikeOpt=U.bikeOpt||{}; U.pos=U.pos||{}; U.ci=U.ci||{}; U.co=U.co||{};
   for(const w of ["ist","opt"]) if(!U.pos[w]) U.pos[w]={gx:NaN,gy:NaN,sx:NaN,sy:NaN};
-  if(U.ci.cap===undefined||U.ci.cap==="") U.ci.cap=CAP;   // Steuersatzkappe: Werkseinstellung 5 mm
+  /* Steuersatzkappe wird nicht vorausgewählt; ohne Eingabe rechnet das Modell mit 5 mm */
   return U;
 }
 function suSet(path,val){   // in FIT.setup schreiben und als Änderung merken
@@ -2827,14 +2861,25 @@ const BF_DYN=[
 const BF_TEXT=[["verl","Verletzungshistorie"],["ziele","Saisonziele"],["sonst","Sonstige Anmerkungen"]];
 /* Anamnese: [Schlüssel, Bezeichnung, Typ, Optionen] – sel = Auswahl, num = Zahl, text = einzeilig, area = mehrzeilig */
 const YN=["–","nein","ja"], FREQ=["–","regelmäßig","gelegentlich","nein"], GOALS=["–","Komfort","Leistung","Aerodynamik","Beschwerdefreiheit"];
+const SUPPORT=["–","keine","Einlagen","Beinlängenausgleich links","Beinlängenausgleich rechts","Einlagen + Beinlängenausgleich links","Einlagen + Beinlängenausgleich rechts"];
+/* frühere Einzelfelder zusammenführen: Events → Saisonziele, Operationen → Verletzungshistorie, Einlagen + Ausgleich → ein Feld */
+function migrateAnam(){
+  const B=bf(); if(B.anamV2) return;
+  const join=(a,b)=>[String(a||"").trim(),String(b||"").trim()].filter(Boolean).join("\n");
+  if(B.a_events){ B.t_ziele=join("Events: "+B.a_events,B.t_ziele); }
+  if(B.a_ops){ B.t_verl=join(B.t_verl,"Operationen: "+B.a_ops); }
+  if(!B.a_support&&((B.a_insole&&B.a_insole!=="–")||(B.a_lift&&B.a_lift!=="–"))){
+    const ins=B.a_insole==="ja", side=B.a_lift==="ja, links"?"links":B.a_lift==="ja, rechts"?"rechts":"";
+    B.a_support=ins&&side?"Einlagen + Beinlängenausgleich "+side:ins?"Einlagen":side?"Beinlängenausgleich "+side:"keine"; }
+  delete B.a_events; delete B.a_ops; delete B.a_insole; delete B.a_lift; B.anamV2=true;
+}
 const ANAM=[
   ["Fahrprofil",[["a_disc","Disziplin","sel",["–","Rennrad","Gravel","MTB","Zeitfahren / Triathlon","Trekking / Fitness","E-Bike"]],
     ["a_km","Umfang (km pro Woche)","num"],["a_h","Umfang (Stunden pro Woche)","num"],["a_long","Längste Fahrt (km)","num"],["a_years","Fahrerfahrung (Jahre)","num"],
     ["a_race","Wettkampf","sel",YN],["a_indoor","Indoor-Anteil (Rolle)","sel",["–","kein","unter 25 %","25–50 %","über 50 %"]]]],
-  ["Ziele und Prioritäten",[["a_goal1","Hauptziel","sel",GOALS],["a_goal2","Zweites Ziel","sel",GOALS],["a_events","Geplante Events (mit Datum)","text"],["t_ziele","Saisonziele","area"]]],
-  ["Gesundheit",[["t_verl","Verletzungshistorie","area"],["a_ops","Operationen (mit Jahr)","text"],["a_diag","Bekannte Diagnosen","text"],
-    ["a_treat","Laufende Behandlung","sel",["–","keine","Physiotherapie","Orthopädie","Osteopathie","Sonstige"]],["a_insole","Einlagen im Alltag","sel",YN],
-    ["a_lift","Beinlängenausgleich im Alltag","sel",["–","nein","ja, links","ja, rechts"]],["a_leg","Standbein","sel",["–","links","rechts"]]]],
+  ["Ziele und Prioritäten",[["a_goal1","Hauptziel","sel",GOALS],["a_goal2","Zweites Ziel","sel",GOALS],["t_ziele","Geplante Events und Saisonziele","area",null,"z. B. Ötztaler Radmarathon 30.08., Saisonziel Alpencross"]]],
+  ["Gesundheit",[["t_verl","Verletzungshistorie und Operationen","area",null,"z. B. Schlüsselbeinbruch 2019, OP Meniskus rechts 2021"],["a_diag","Bekannte Diagnosen","text"],
+    ["a_treat","Laufende Behandlung","sel",["–","keine","Physiotherapie","Orthopädie","Osteopathie","Sonstige"]],["a_support","Einlagen / Beinlängenausgleich im Alltag","sel",SUPPORT],["a_leg","Standbein","sel",["–","links","rechts"]]]],
   ["Alltag und Training",[["a_job","Beruf","sel",["–","überwiegend sitzend","überwiegend stehend","körperlich","gemischt"]],["a_sport","Andere Sportarten","text"],
     ["a_stretch","Dehnen / Mobilität","sel",FREQ],["a_strength","Krafttraining","sel",FREQ],["t_sonst","Sonstige Anmerkungen","area"]]]
 ];
@@ -2876,21 +2921,304 @@ const BF_KRAFT=[
 ];
 const kraftVal=(Bf,k,side,unit)=>{ const r=Bf[`k_${k}_${side}`]||"-", x=bfAbn("k_"+k,KRAFT_OPTS)?String(Bf[`k_${k}_v${side}`]||"").trim():""; return x?`${r} (${x} ${unit||"Wdh."})`:r; };
 const KRAFT_OPTS=["–","unauffällig","leichtes Defizit","deutliches Defizit"];
+/* ================= Testbilder (Befund): Figuren im wimove-Stil, als SVG gezeichnet ================= */
+const BF_FIG=(()=>{
+const LN="#053342", CL="#77C6E8", HR="#9FD8F1", SK="#fff", OB="#E3EBF0", OB2="#C9D6DE", W=1.6;
+const f1=n=>Math.round(n*10)/10;
+const D=a=>[Math.cos(a*Math.PI/180),-Math.sin(a*Math.PI/180)];
+const add=(p,v,k=1)=>[p[0]+v[0]*k,p[1]+v[1]*k];
+const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+const pt=p=>f1(p[0])+" "+f1(p[1]);
+/* Kapsel (Gliedmaße) von A nach B mit Radien ra/rb */
+function caps(A,B,ra,rb){
+  const dx=B[0]-A[0], dy=B[1]-A[1], L=Math.hypot(dx,dy)||0.01, base=Math.atan2(dy,dx);
+  const ph=Math.asin(Math.max(-0.95,Math.min(0.95,(ra-rb)/L))), q=Math.PI/2-ph;
+  const P=(C,r,a)=>[C[0]+r*Math.cos(a),C[1]+r*Math.sin(a)];
+  const a1=P(A,ra,base+q), b1=P(B,rb,base+q), b2=P(B,rb,base-q), a2=P(A,ra,base-q);
+  return `M${pt(a1)}L${pt(b1)}A${f1(rb)} ${f1(rb)} 0 ${ph<0?1:0} 0 ${pt(b2)}L${pt(a2)}A${f1(ra)} ${f1(ra)} 0 ${ph>0?1:0} 0 ${pt(a1)}Z`;
+}
+const circ=(C,r)=>`M${f1(C[0]-r)} ${f1(C[1])}a${f1(r)} ${f1(r)} 0 1 0 ${f1(2*r)} 0a${f1(r)} ${f1(r)} 0 1 0 ${f1(-2*r)} 0Z`;
+/* geschlossener weicher Pfad durch Punkte (Catmull-Rom) */
+function smooth(P,closed=true,k=0.5){
+  const n=P.length, g=i=>closed?P[(i+n)%n]:P[Math.max(0,Math.min(n-1,i))];
+  let d=`M${pt(P[0])}`;
+  for(let i=0;i<(closed?n:n-1);i++){ const p0=g(i-1),p1=g(i),p2=g(i+1),p3=g(i+2);
+    const c1=[p1[0]+(p2[0]-p0[0])*k/3,p1[1]+(p2[1]-p0[1])*k/3], c2=[p2[0]-(p3[0]-p1[0])*k/3,p2[1]-(p3[1]-p1[1])*k/3];
+    d+=`C${pt(c1)} ${pt(c2)} ${pt(p2)}`; }
+  return d+(closed?"Z":"");
+}
+/* Ebene: Formen mit gemeinsamer Außenkontur (erst Kontur, dann Füllung) + Linien darüber */
+function layer(shapes,lines=[]){
+  return `<g fill="${LN}" stroke="${LN}" stroke-width="${2*W}" stroke-linejoin="round">`+shapes.map(s=>`<path d="${s[0]}"/>`).join("")+`</g>`
+    +shapes.map(s=>`<path d="${s[0]}" fill="${s[1]}"/>`).join("")
+    +(lines.length?`<g fill="none" stroke="${LN}" stroke-width="${W}" stroke-linecap="round">`+lines.map(l=>`<path d="${l}"/>`).join("")+`</g>`:"");
+}
+const seg=(A,B)=>`M${pt(A)}L${pt(B)}`;
+/* Saum quer über eine Gliedmaße bei Anteil t */
+const hem=(A,B,ra,rb,t)=>{ const C=lerp(A,B,t), r=ra+(rb-ra)*t-0.3, d=Math.atan2(B[1]-A[1],B[0]-A[0])+Math.PI/2; return seg([C[0]+r*Math.cos(d),C[1]+r*Math.sin(d)],[C[0]-r*Math.cos(d),C[1]-r*Math.sin(d)]); };
+const R={th:[10.5,7],sh:[6.8,4.2],ua:[5.6,4.4],fa:[4.4,3.3]};
+const L={th:41,sh:38,ua:29,fa:26,torso:52,foot:20};
+/* Stoff-Abschnitt einer Gliedmaße mit geradem Saum (von A bis Anteil t) */
+const cloth=(A,B,ra,rb,t)=>{ const C=lerp(A,B,t), rc=ra+(rb-ra)*t, d=Math.atan2(B[1]-A[1],B[0]-A[0])+Math.PI/2, n=[Math.cos(d),Math.sin(d)];
+  return `M${pt(add(A,n,ra))}L${pt(add(C,n,rc))}L${pt(add(C,n,-rc))}L${pt(add(A,n,-ra))}Z`; };
+
+/* ---------- Seitenansicht ----------
+   o.hip=[x,y]; Winkel in Grad (0 = nach rechts, 90 = nach oben):
+   o.torso (Becken → Schulter), o.neck (Kopfrichtung), o.near/o.far = {th,sh,ft}, o.armN/o.armF = {ua,fa},
+   o.curve: Rücken (+ = Rundrücken), o.lord: Hohlkreuz, o.headR = Kopfneigung */
+function side(o){
+  const face=o.face||1, hip=o.hip, td=D(o.torso), fwd=D(o.torso-90*face);   // fwd: Bauchseite
+  const sh=add(hip,td,L.torso), mid=add(add(hip,td,L.torso*0.55),fwd,-(o.curve||0)), low=add(add(hip,td,L.torso*0.22),fwd,(o.lord||0));
+  const pel=add(add(hip,fwd,-3.5),td,3), chest=add(add(sh,td,-10),fwd,1.5-(o.curve||0)*0.4);
+  const nd=D(o.neck??o.torso), neckTop=add(sh,nd,9), head=add(add(sh,nd,19),D((o.neck??o.torso)-90*face),1.5);
+  const leg=g=>{ const k=add(hip,D(g.th),L.th), a=add(k,D(g.sh),L.sh), fd=g.ft??(g.sh+90*face), t=add(a,D(fd),L.foot*0.78), he=add(a,D(fd),-3.2); return {k,a,t,he,fd}; };
+  const arm=g=>{ const e=add(sh,D(g.ua),L.ua), w=add(e,D(g.fa),L.fa), h=add(w,D(g.fa+(g.hd||0)),6); return {e,w,h}; };
+  const legShapes=(g,P)=>{ const lines=[hem(hip,P.k,R.th[0],R.th[1],0.6)];
+    const foot=[[caps(P.he,P.t,3.4,2.4),SK],[circ(P.a,3.9),SK]];
+    return {shapes:[[caps(hip,P.k,...R.th),SK],[caps(P.k,P.a,...R.sh),SK],...foot,[cloth(hip,P.k,R.th[0],R.th[1],0.6),CL],[circ(hip,R.th[0]),CL]],lines}; };
+  const armShapes=(P)=>({shapes:[[caps(sh,P.e,...R.ua),SK],[caps(P.e,P.w,...R.fa),SK],[circ(P.h,4.3),SK],[cloth(sh,P.e,R.ua[0],R.ua[1],0.42),CL],[circ(sh,R.ua[0]),CL]],lines:[hem(sh,P.e,R.ua[0],R.ua[1],0.42)]});
+  const LG={n:leg(o.near),f:leg(o.far||o.near)}, AR={n:o.armN?arm(o.armN):null,f:o.armF?arm(o.armF):null};
+  const hd=(o.neck??o.torso), hairPts=[];
+  for(let i=0;i<=8;i++){ const a=(hd+face*(-45+i*24))*Math.PI/180; hairPts.push([head[0]+11.3*Math.cos(a),head[1]-11.3*Math.sin(a)]); }
+  hairPts.push(add(head,D(hd+150*face),4),add(head,D(hd+40*face),3));
+  const torsoShapes=[[caps(pel,low,13,13),CL],[caps(low,mid,13,13.5),CL],[caps(mid,chest,13.5,14),CL],[caps(chest,add(sh,td,-2),14,11),CL],[caps(sh,neckTop,4.6,4.4),SK],[circ(head,11),SK],[smooth(hairPts),HR]];
+  const out=[];
+  const draw=(p)=>p&&out.push(layer(p.shapes,p.lines));
+  if(AR.f) draw(armShapes(AR.f));
+  draw(legShapes(o.far||o.near,LG.f));
+  { const nl=legShapes(o.near,LG.n); out.push(layer(torsoShapes.concat(nl.shapes),[hem(pel,mid,14,13.5,0.35)].concat(nl.lines))); }
+  if(o.spine) out.push(`<path d="${smooth([add(pel,fwd,-7),add(low,fwd,-7),add(mid,fwd,-7),add(chest,fwd,-7.5),add(sh,fwd,-3)],false)}" fill="none" stroke="${LN}" stroke-width="1.3" stroke-dasharray="3 2.5"/>`);
+  if(AR.n) draw(armShapes(AR.n));
+  return {svg:out.join(""),hip,sh,head,knee:LG.n.k,ankle:LG.n.a,toe:LG.n.t,kneeF:LG.f.k,ankleF:LG.f.a,elbow:AR.n&&AR.n.e,wrist:AR.n&&AR.n.w,hand:AR.n&&AR.n.h,pel,mid};
+}
+
+/* ---------- Vorder-/Rückansicht stehend, Hände in den Hüften ----------
+   o.x,o.y = Mitte Füße; o.tilt = Beckenschiefstand (mm-artig, + = rechts hoch im Bild), o.sTilt = Schulter,
+   o.legR/legL = Kürzung, o.lift = Bein im Bild rechts angehoben (Einbeinstand), o.back = Rückansicht, o.rot = Drehung um Fußmitte */
+function front(o){
+  const x=o.x, y=o.y, sTilt=o.sTilt||0, pTilt=o.tilt||0;
+  const shortA=o.short||[0,0], raise=o.raise||[0,0], sink=o.sink||0;
+  const ank=[[x-9,y-7-raise[0]],[x+9,y-7-raise[1]]];
+  const hipY=y-7-L.sh-L.th+4+sink;
+  const hips=[[x-10.5,hipY+shortA[0]-raise[0]],[x+10.5,hipY+shortA[1]-raise[1]]];
+  hips[0][1]+=pTilt/2; hips[1][1]-=pTilt/2;
+  const knees=[lerp(hips[0],ank[0],0.51),lerp(hips[1],ank[1],0.51)];
+  if(o.legJ) for(const i of [0,1]){ const j=o.legJ[i]; if(!j) continue; knees[i]=add(hips[i],j.k); if(j.a) ank[i]=add(hips[i],j.a); }
+  const pc=lerp(hips[0],hips[1],0.5), ang=Math.atan2(hips[1][1]-hips[0][1],hips[1][0]-hips[0][0])*180/Math.PI;
+  const up=[Math.sin(ang*Math.PI/180),-Math.cos(ang*Math.PI/180)];   // senkrecht zur Beckenlinie
+  const spineTop=[pc[0]+(o.scol||0)*0,pc[1]-L.torso];
+  const sh=[[spineTop[0]-19,spineTop[1]+sTilt/2+3],[spineTop[0]+19,spineTop[1]-sTilt/2+3]];
+  const waistY=pc[1]-16;
+  const cy=(hips[0][1]+hips[1][1])/2+9;   // Schritt
+  const torso=smooth([[sh[0][0]-1,sh[0][1]-2],[spineTop[0],spineTop[1]-4],[sh[1][0]+1,sh[1][1]-2],[sh[1][0]+3,sh[1][1]+8],[spineTop[0]+16,sh[1][1]+22],[pc[0]+14.5,waistY],[hips[1][0]+9.5,hips[1][1]-4],[hips[1][0]+8,hips[1][1]+4],[pc[0],cy],[hips[0][0]-8,hips[0][1]+4],[hips[0][0]-9.5,hips[0][1]-4],[pc[0]-14.5,waistY],[spineTop[0]-16,sh[0][1]+22],[sh[0][0]-3,sh[0][1]+8]]);
+  const head=[spineTop[0]+(o.headX||0),spineTop[1]-19];
+  const hands=[[pc[0]-17.5,waistY+1],[pc[0]+17.5,waistY+1]];
+  const elb=[[sh[0][0]-15,sh[0][1]+25],[sh[1][0]+15,sh[1][1]+25]];
+  if(o.armJ) for(const i of [0,1]){ const j=o.armJ[i]; if(!j) continue; elb[i]=add(sh[i],j.e); hands[i]=add(sh[i],j.h); }
+  const out=[], legs=[], arms=[];
+  for(const i of [0,1]){
+    const to=(o.toeOut||0)*(i?1:-1);
+    legs.push([caps(hips[i],knees[i],10.5,6.8),SK],[caps(knees[i],ank[i],6.8,4.2),SK],[smooth([[ank[i][0]-4.5,ank[i][1]-2],[ank[i][0]+4.5,ank[i][1]-2],[ank[i][0]+(i?6:5)+to,ank[i][1]+7],[ank[i][0]+(i?1:-1)+to,ank[i][1]+9],[ank[i][0]-(i?5:6)+to,ank[i][1]+7]]),SK]);
+    arms.push([caps(sh[i],elb[i],5.6,4.4),SK],[caps(elb[i],hands[i],4.4,3.4),SK],[cloth(sh[i],elb[i],5.8,4.6,0.42),CL],[circ(sh[i],5.8),CL]);
+  }
+  for(const i of [0,1]) legs.push([cloth(hips[i],knees[i],10.5,6.8,0.6),CL]);
+  const lines=[hem(hips[0],knees[0],10.5,6.8,0.6),hem(hips[1],knees[1],10.5,6.8,0.6),hem(sh[0],elb[0],5.8,4.6,0.42),hem(sh[1],elb[1],5.8,4.6,0.42)];
+  out.push(layer(arms,lines.slice(2)));
+  const hairPts=[];
+  if(o.back){ for(let i=0;i<=10;i++){ const a=(-205+i*23)*Math.PI/180; hairPts.push([head[0]+11.4*Math.cos(a),head[1]+11.4*Math.sin(a)]); } hairPts.push([head[0],head[1]+8]); }
+  else { for(let i=0;i<=8;i++){ const a=(-180+i*22.5)*Math.PI/180; hairPts.push([head[0]+11.4*Math.cos(a),head[1]+11.4*Math.sin(a)]); } hairPts.push([head[0]+8,head[1]-2],[head[0],head[1]-5.5],[head[0]-8,head[1]-2]); }
+  out.push(layer([...legs,[caps([spineTop[0],spineTop[1]+6],[head[0],head[1]+6],4.8,4.6),SK],[torso,CL],[circ(head,11),SK],[smooth(hairPts),HR]],
+    [o.back?"":`M${pt([spineTop[0],spineTop[1]+3])}L${pt([pc[0],waistY])}`,`M${pt([pc[0]-14.5,waistY])}Q${pt([pc[0],waistY+2])} ${pt([pc[0]+14.5,waistY])}`,
+     o.back?"":`M${pt([pc[0]-6,cy-7])}L${pt([pc[0],cy])}L${pt([pc[0]+6,cy-7])}`,...lines.slice(0,2)].filter(Boolean)));
+  out.push(layer(hands.map(h=>[circ(h,4.6),SK])));
+  if(o.spineLine) out.push(`<path d="${smooth(o.spineLine.map(([dx,t])=>[spineTop[0]+dx,spineTop[1]+t*(pc[1]-spineTop[1])]),false)}" fill="none" stroke="${LN}" stroke-width="1.4" stroke-dasharray="3 2.5"/>`);
+  let svg=out.join("");
+  if(o.rot) svg=`<g transform="rotate(${o.rot} ${x} ${y})">${svg}</g>`;
+  const c=Math.cos((o.rot||0)*Math.PI/180), si=Math.sin((o.rot||0)*Math.PI/180);
+  const rp=p=>[x+(p[0]-x)*c-(p[1]-y)*si, y+(p[0]-x)*si+(p[1]-y)*c];   // Punkt nach Drehung
+  const lv=v=>[v[0]*c+v[1]*si,-v[0]*si+v[1]*c];   // globaler Vektor → lokale Richtung
+  return {svg,hips,sh,pc,hands,head,knees,ank,waistY,elb,rp,lv};
+}
+
+/* ---------- Hilfsformen ---------- */
+const bench=(x,y,w,h=8,legs=true)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${OB}" stroke="${LN}" stroke-width="${W}"/>`+(legs?`<path d="M${x+8} ${y+h}v${30}M${x+w-8} ${y+h}v${30}" stroke="${LN}" stroke-width="${W*1.6}" stroke-linecap="round"/>`:"");
+const floor=(x1,x2,y)=>`<path d="M${x1} ${y}H${x2}" stroke="${OB2}" stroke-width="2"/>`;
+const dash=(A,B,c=LN)=>`<path d="M${pt(A)}L${pt(B)}" stroke="${c}" stroke-width="1.3" stroke-dasharray="4 3" fill="none"/>`;
+const ACC="#E0702E";
+/* Bewegungspfeil als Bogen um C von a1 nach a2 (Grad), Radius r */
+function arc(C,r,a1,a2,c=ACC){
+  const P=a=>[C[0]+r*Math.cos(a*Math.PI/180),C[1]-r*Math.sin(a*Math.PI/180)];
+  const A=P(a1),B=P(a2), large=Math.abs(a2-a1)>180?1:0, sweep=a2>a1?0:1;
+  const t=a2>a1?a2+90:a2-90, d=D(t), hb=add(B,d,-7), n=D(t+90);
+  return `<path d="M${pt(A)}A${r} ${r} 0 ${large} ${sweep} ${pt(B)}" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round"/><path d="M${pt(B)}L${pt(add(hb,n,3.8))}L${pt(add(hb,n,-3.8))}Z" fill="${c}"/>`;
+}
+function arrow(A,B,c=ACC){ const d=Math.atan2(-(B[1]-A[1]),B[0]-A[0])*180/Math.PI, hb=add(B,D(d),-7), n=D(d+90);
+  return `<path d="M${pt(A)}L${pt(add(B,D(d),-4))}" stroke="${c}" stroke-width="2.2" stroke-linecap="round"/><path d="M${pt(B)}L${pt(add(hb,n,3.8))}L${pt(add(hb,n,-3.8))}Z" fill="${c}"/>`; }
+const lab=(x,y,t,anchor="middle")=>`<text x="${x}" y="${y}" font-family="Barlow,Arial,sans-serif" font-size="11" font-weight="600" fill="${LN}" text-anchor="${anchor}">${t}</text>`;
+const wrap=(w,h,body)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w*2}" height="${h*2}"><rect width="${w}" height="${h}" fill="#fff"/>${body}</svg>`;
+return {LN,CL,HR,SK,OB,OB2,W,ACC,D,add,lerp,pt,caps,circ,smooth,layer,seg,hem,side,front,bench,floor,dash,arc,arrow,lab,wrap};
+})();
+/* Bild je Test: Schlüssel = Befund-Schlüssel (s_… Statik, m_… Mobilität, k_… Kraft) */
+const BF_IMGS=(()=>{
+const F=BF_FIG, {LN,CL,HR,SK,OB,OB2,W,ACC,D,add,lerp,pt,caps,circ,smooth,layer,side,front,bench,floor,dash,arc,arrow,lab,wrap}=F;
+const panel=(x,y,w,h,vb,body)=>`<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${vb}">${body}</svg>`;
+const legTo=(ank,th,sh)=>add(add(ank,D(sh),-38),D(th),-41);   // Hüfte so, dass der Knöchel an ank liegt
+const I={};
+
+/* ---------- Statikbefund ---------- */
+/* Fußlängsgewölbe: Innenansicht des Fußes */
+const footSide=(x,fl,arch,txt)=>{   // fl = Bodenhöhe
+  const A=[x,fl-26], b=fl;
+  const foot=smooth([[x-13,b-8],[x-9,b],[x-1,b-arch*0.35],[x+11,b-arch],[x+23,b-arch*0.3],[x+31,b],[x+42,b-0.5],[x+44,b-4],[x+36,b-8],[x+22,b-13],[x+9,b-22],[x+6,A[1]-6],[x-8,A[1]-6],[x-10,b-18]],true,0.55);
+  return layer([[caps([x-1,fl-70],[x-1,A[1]-2],7.5,6.5),SK],[foot,SK]],[`M${pt([x-2,b-17])}a3.2 3.2 0 1 0 0.1 0`])+floor(x-26,x+52,fl+1.2)
+    +(arch>2?`<path d="M${pt([x+1,b+0.2])}Q${pt([x+11,b-arch*1.9])} ${pt([x+24,b+0.2])}" fill="none" stroke="${ACC}" stroke-width="1.6" stroke-dasharray="2.5 2"/>`:"")+lab(x+12,fl+18,txt);
+};
+I.s_fuss=()=>wrap(360,190,footSide(50,150,5,"physiologisch")+footSide(165,150,12,"Hohlfuß")+footSide(280,150,0,"Senk-/Plattfuß"));
+
+/* Fußrotation: Fußabdrücke von oben */
+const print=(C,ang)=>{ const P=[[0,0],[5.5,-3],[7,-14],[6,-24],[8,-33],[3,-39],[-4,-38],[-7,-30],[-5,-20],[-5.5,-8],[-4.5,-1]];
+  const c=Math.cos(ang*Math.PI/180), s=Math.sin(ang*Math.PI/180);
+  return layer([[smooth(P.map(([px,py])=>[C[0]+px*c-py*s,C[1]+px*s+py*c])),SK]]); };
+const pair=(x,a,txt)=>dash([x-11,155],[x-11,60],OB2)+dash([x+11,155],[x+11,60],OB2)+print([x-11,140],-a)+print([x+11,140],a)+lab(x,178,txt);
+I.s_fussrot=()=>wrap(360,190,pair(60,-10,"Innenrotation")+pair(180,0,"neutral")+pair(300,18,"Außenrotation"));
+
+/* Beinlängendifferenz: kurzes Bein, Ausgleich mit Brettchen */
+I.s_beinlaenge=()=>{ const a=front({x:95,y:190,short:[0,11]}), b=front({x:265,y:190,short:[0,11],raise:[0,11]});
+  return wrap(360,215,floor(20,340,190)+a.svg+dash([40,a.hands[0][1]],[150,a.hands[0][1]],ACC)+b.svg+`<rect x="${265+1}" y="${179}" width="22" height="11" rx="1.5" fill="${OB2}" stroke="${LN}" stroke-width="${W}"/>`
+    +dash([210,b.hands[0][1]],[320,b.hands[0][1]],ACC)+lab(95,207,"Becken steht schief")+lab(265,207,"Ausgleich unter dem kurzen Bein")); };
+
+/* Beckenstellung */
+I.s_becken=()=>{ const a=front({x:95,y:190}), b=front({x:265,y:190,tilt:-10});
+  const ln=(f,c)=>dash(add(f.hands[0],[-14,(f.hands[0][1]-f.hands[1][1])*14/35]),add(f.hands[1],[14,-(f.hands[0][1]-f.hands[1][1])*14/35]),c);
+  return wrap(360,215,floor(20,340,190)+a.svg+ln(a,ACC)+b.svg+ln(b,ACC)+dash([210,b.hands[0][1]],[320,b.hands[0][1]],OB2)+lab(95,207,"physiologisch")+lab(265,207,"Schiefstand")); };
+
+/* Beckenrotation: Becken von oben */
+const pelvisTop=(C,ang,txt)=>{ const c=Math.cos(ang*Math.PI/180), s=Math.sin(ang*Math.PI/180), R=p=>[C[0]+p[0]*c-p[1]*s,C[1]+p[0]*s+p[1]*c];
+  const ring=smooth([[-44,-4],[-36,-14],[-14,-12],[0,-18],[14,-12],[36,-14],[44,-4],[34,10],[12,16],[0,14],[-12,16],[-34,10]].map(R));
+  return dash([C[0]-62,C[1]],[C[0]+62,C[1]],OB2)+layer([[ring,CL]],[`M${pt(R([0,-18]))}L${pt(R([0,14]))}`])
+    +layer([[circ(R([-38,-11]),4),SK],[circ(R([38,-11]),4),SK]])+dash(R([-56,-11]),R([56,-11]),ACC)+lab(C[0],C[1]+44,txt)
+    +`<text x="${C[0]-58}" y="${C[1]+30}" font-family="Barlow,Arial,sans-serif" font-size="9" fill="${LN}">links</text><text x="${C[0]+58}" y="${C[1]+30}" font-family="Barlow,Arial,sans-serif" font-size="9" fill="${LN}" text-anchor="end">rechts</text>`; };
+I.s_beckenrot=()=>wrap(360,170,lab(180,22,"Becken von oben (vorn = oben)")+pelvisTop([95,80],0,"keine Rotation")+pelvisTop([265,80],-12,"rechts vorn")+arc([265,80],56,-22,14));
+
+/* Schulterstellung */
+I.s_schulter=()=>{ const a=front({x:95,y:190}), b=front({x:265,y:190,sTilt:8});
+  const ln=f=>{ const d=[f.sh[1][0]-f.sh[0][0],f.sh[1][1]-f.sh[0][1]]; return dash(add(f.sh[0],d,-0.45),add(f.sh[1],d,0.45),ACC); };
+  return wrap(360,215,floor(20,340,190)+a.svg+ln(a)+b.svg+ln(b)+lab(95,207,"physiologisch")+lab(265,207,"Schiefstand")); };
+
+/* Wirbelsäule: Seitenansicht normal, Rundrücken, Hohlkreuz; Rückenansicht Skoliose */
+I.s_ws=()=>{ const leg={th:-90,sh:-90}, arm={ua:-92,fa:-88};
+  const y=176-3.5-38-41;
+  const a=side({hip:[50,y],torso:90,near:leg,armN:arm,spine:1});
+  const b=side({hip:[140,y],torso:96,curve:7,neck:62,near:leg,armN:{ua:-80,fa:-75},spine:1});
+  const c=side({hip:[228,y],torso:82,lord:11,near:leg,armN:arm,spine:1,neck:95});
+  const d=front({x:315,y:176,back:true,sTilt:5,spineLine:[[0,0],[5,0.3],[-3,0.7],[0,1]]});
+  return wrap(360,200,floor(10,350,176)+a.svg+b.svg+c.svg+d.svg+lab(52,192,"physiologisch")+lab(140,192,"Hyperkyphose")+lab(230,192,"Hyperlordose")+lab(315,192,"Skoliose")); };
+
+/* ---------- Mobilitätstests ---------- */
+const supine=(hip,legN,legF,arm,extra={})=>side(Object.assign({hip,torso:180,neck:180,near:legN,far:legF,armN:arm||{ua:-2,fa:0},armF:arm||{ua:-2,fa:0}},extra));
+const prone=(hip,legN,legF,extra={})=>side(Object.assign({hip,torso:180,neck:180,face:-1,near:legN,far:legF,armN:{ua:2,fa:0},armF:{ua:2,fa:0}},extra));
+const BY=128;   // Liegefläche
+I.m_slr=()=>{ const f=supine([170,BY-13],{th:68,sh:68},{th:0,sh:0});
+  return wrap(360,180,bench(60,BY,260)+f.svg+arc([170,BY-13],70,12,60)+dash([170,BY-13],[270,BY-13],OB2)); };
+I.m_thomas=()=>{ const hip=[215,BY-13];
+  const f=supine(hip,{th:-4,sh:-82},{th:126,sh:-25},{ua:52,fa:45});
+  return wrap(360,190,bench(60,BY,160)+f.svg+dash(hip,[300,BY-13],ACC)+arrow([258,BY-4],[258,BY-26])); };
+I.m_hflex=()=>{ const f=supine([170,BY-13],{th:118,sh:-12},{th:0,sh:0});
+  return wrap(360,180,bench(60,BY,260)+f.svg+arc([170,BY-13],52,40,108)); };
+I.m_hgrot=()=>{ const leg=[{k:[-3,9],a:[-3,46]},{k:[3,9],a:[22,42]}];
+  const f=front({x:180,y:170,sink:30,legJ:leg,armJ:[{e:[-6,27],h:[-9,50]},{e:[6,27],h:[9,50]}]});
+  const kn=f.knees[1];
+  return wrap(360,200,`<rect x="120" y="${f.hips[0][1]+6}" width="120" height="10" rx="2" fill="${OB}" stroke="${LN}" stroke-width="${W}"/>`+dash(kn,[kn[0],kn[1]+42],OB2)+dash(kn,[kn[0]-20,kn[1]+38],OB2)
+    +f.svg+arc(kn,46,-62,-100)+arc(kn,46,-118,-80)+lab(120,188,"Außenrotation","middle")+lab(240,188,"Innenrotation")); };
+I.m_hext=()=>{ const f=prone([170,BY-13],{th:16,sh:16},{th:0,sh:0});
+  return wrap(360,180,bench(60,BY,260)+f.svg+arc([170,BY-13],76,4,22)+dash([170,BY-13],[270,BY-13],OB2)); };
+I.m_pkb=()=>{ const f=prone([170,BY-13],{th:0,sh:118},{th:0,sh:0});
+  return wrap(360,180,bench(60,BY,260)+f.svg+arc(f.knee,40,10,100)); };
+I.m_ober=()=>{ const f=front({x:250,y:120,rot:-90,legJ:[null,{k:[-6,41],a:[-12,79]}],armJ:[{e:[-4,-27],h:[2,-50]},null]});
+  const k=f.rp(f.knees[1]);
+  return wrap(360,170,bench(30,142,300)+f.svg+arrow([k[0]+20,k[1]-8],[k[0]+20,k[1]+14])+dash(f.rp(f.hips[1]),[f.rp(f.hips[1])[0]+95,f.rp(f.hips[1])[1]],OB2)); };
+I.m_ktw=()=>{ const FL=180, wall=262, ank=[wall-26,FL-3.5];
+  const hip=legTo(ank,-55,-72);
+  const f=side({hip,torso:86,near:{th:-55,sh:-72,ft:0},far:{th:-122,sh:-112,ft:-40},armN:{ua:12,fa:8},armF:{ua:5,fa:10}});
+  return wrap(360,205,`<rect x="${wall}" y="20" width="14" height="${FL-20}" fill="${OB}" stroke="${LN}" stroke-width="${W}"/>`+floor(40,wall,FL)+f.svg
+    +`<path d="M${pt([f.toe[0]+3,FL+7])}H${wall}" stroke="${ACC}" stroke-width="1.6"/><path d="M${pt([f.toe[0]+3,FL+3])}v8M${wall} ${FL+3}v8" stroke="${ACC}" stroke-width="1.6"/>`+lab((f.toe[0]+wall)/2,FL+18,"Abstand Zehen – Wand")); };
+I.m_bws=()=>{ const FL=168, hip=[150,FL-3.5-41];
+  const f=side({hip,torso:2,neck:-10,near:{th:-90,sh:180,ft:180},far:{th:-90,sh:180,ft:180},armF:{ua:-90,fa:-90},armN:{ua:62,fa:150,hd:0}});
+  return wrap(360,185,floor(40,320,FL)+f.svg+arc(f.sh,48,40,110)); };
+I.m_hws=()=>{ const a=side({hip:[80,170],torso:90,neck:116,near:{th:-90,sh:-90},armN:{ua:-92,fa:-88}});
+  const b=front({x:250,y:170,headX:0});
+  const body=panel(5,0,170,160,"28 66 104 98",a.svg+arc(a.head,25,95,150))+panel(185,0,170,160,"198 -8 104 98",b.svg+arc(b.head,22,128,92)+arc(b.head,22,52,88));
+  return wrap(360,180,body+lab(90,174,"Extension")+lab(270,174,"Rotation")); };
+
+/* ---------- Krafttests ---------- */
+I.k_squat=()=>{ const f=front({x:180,y:190,sink:22,legJ:[{k:[-1,27],a:[1.5,53]},{k:[5,13],a:[10,44]}]});
+  return wrap(360,215,floor(80,280,190)+f.svg+dash(f.hips[0],[f.ank[0][0]+1,190],ACC)+arrow([128,70],[128,110])+lab(180,207,"Knie bleibt über dem Fuß")); };
+I.k_bridge=()=>{ const FL=168, hip=[180,FL-32];
+  const f=side({hip,torso:201,neck:190,near:{th:15,sh:15},far:{th:15,sh:-100,ft:-10},armN:{ua:-4,fa:0},armF:{ua:-4,fa:0}});
+  return wrap(360,185,floor(40,330,FL)+f.svg+arrow([180,FL+2],[180,FL-38+3])); };
+I.k_abd=()=>{ const f=front({x:250,y:118,rot:-90,legJ:[null,{k:[14,40],a:[28,76]}],armJ:[{e:[-4,-27],h:[2,-50]},null]});
+  const k=f.rp(f.ank[1]);
+  return wrap(360,170,bench(30,140,300)+f.svg+arc(f.rp(f.hips[1]),70,8,26)); };
+I.k_trend=()=>{ const lift={k:[2,14],a:[4,50]};
+  const a=front({x:95,y:190,legJ:[null,lift]}), b=front({x:265,y:190,tilt:-12,legJ:[null,lift]});
+  const ln=(f,c)=>{ const d=[f.hands[1][0]-f.hands[0][0],f.hands[1][1]-f.hands[0][1]]; return dash(add(f.hands[0],d,-0.4),add(f.hands[1],d,0.4),c); };
+  return wrap(360,215,floor(20,340,190)+a.svg+ln(a,ACC)+b.svg+ln(b,ACC)+dash([210,b.hands[0][1]],[320,b.hands[0][1]],OB2)+lab(95,207,"Becken bleibt waagerecht")+lab(265,207,"Becken sinkt ab (positiv)")); };
+I.k_clam=()=>{ const f=front({x:240,y:118,rot:-90,legJ:[{k:[-2,24],a:[-14,52]},{k:[16,22],a:[-6,50]}],armJ:[{e:[-4,-27],h:[2,-50]},null]});
+  return wrap(360,170,bench(30,140,300)+f.svg+(k=>arrow([k[0],k[1]-6],[k[0],k[1]-30]))(f.rp(f.knees[1]))); };
+I.k_hflexs=()=>{ const FL=180, seat=FL-48;
+  const f=side({hip:[170,seat-11],torso:92,near:{th:18,sh:-82},far:{th:0,sh:-90},armN:{ua:-84,fa:-70},armF:{ua:-90,fa:-80}});
+  return wrap(360,195,`<rect x="110" y="${seat}" width="95" height="9" rx="2" fill="${OB}" stroke="${LN}" stroke-width="${W}"/><path d="M118 ${seat+9}V${FL}M197 ${seat+9}V${FL}" stroke="${LN}" stroke-width="2.6" stroke-linecap="round"/>`+floor(60,300,FL)+f.svg
+    +arrow([f.knee[0],f.knee[1]-34],[f.knee[0],f.knee[1]-12],LN)+arrow([f.knee[0]+16,f.knee[1]+6],[f.knee[0]+16,f.knee[1]-20])+lab(f.knee[0]+8,f.knee[1]-40,"Widerstand","start")); };
+I.k_calf=()=>{ const FL=205, step=FL-14, toe=[200,step-3];
+  const ank=add(toe,D(-38),-15.6), hip=legTo(ank,-90,-92);
+  const f=side({hip,torso:90,near:{th:-90,sh:-92,ft:-38},far:{th:-104,sh:-150},armN:{ua:-88,fa:-80},armF:{ua:-92,fa:-84}});
+  return wrap(360,215,`<rect x="160" y="${step}" width="80" height="14" fill="${OB}" stroke="${LN}" stroke-width="${W}"/>`+floor(60,300,FL)+f.svg+arrow([f.ankle[0]-18,f.ankle[1]+16],[f.ankle[0]-18,f.ankle[1]-14])); };
+I.k_plank=()=>{ const FL=160, hip=[170,FL-30];
+  const f=side({hip,torso:6,neck:4,near:{th:187,sh:187,ft:-92},far:{th:187,sh:187,ft:-92},armN:{ua:-88,fa:2},armF:{ua:-88,fa:2}});
+  return wrap(360,175,floor(40,330,FL)+f.svg+dash(add(f.sh,D(6),20),add(hip,D(187),88),ACC)); };
+I.k_side=()=>{ const FL=165; let best=null;
+  for(let rot=55;rot<=88;rot++){
+    const f0=front({x:110,y:100,rot}), dn=f0.lv([0,1]), sd=f0.lv([9,0]);
+    const f=front({x:110,y:100,rot,armJ:[null,{e:[dn[0]*27,dn[1]*27],h:[dn[0]*27+sd[0],dn[1]*27+sd[1]]}]});
+    const e=f.rp(f.elb[1]), a=f.rp(f.ank[1]), d=Math.abs((e[1]+4.4)-(a[1]+7));
+    if(!best||d<best.d) best={d,f,dy:FL-(e[1]+4.4)}; }
+  const f=best.f, P=p=>[p[0],p[1]+best.dy];
+  return wrap(360,185,floor(30,330,FL)+`<g transform="translate(0 ${F.pt([0,best.dy]).split(" ")[1]})">${f.svg}</g>`+dash(P(f.rp([110,93])),P(f.rp(f.head)),ACC)); };
+I.k_sor=()=>{ const hip=[190,BY-13];
+  const f=prone(hip,{th:0,sh:0},{th:0,sh:0},{armN:{ua:-75,fa:170},armF:{ua:-75,fa:170}});
+  return wrap(360,180,bench(185,BY,150)+f.svg+`<rect x="268" y="${BY-27}" width="8" height="30" rx="2" fill="${LN}"/>`+dash([60,BY-13],[200,BY-13],ACC)); };
+return I;
+})();
+const BF_IMG_CACHE={};
+/* Vorlagen (Bilddateien) haben Vorrang vor den gezeichneten Bildern; [Datei, Erklärung zu mehrteiligen Bildern] */
+const BF_IMG_FILE={s_fuss:["fussgewoelbe","oben physiologisch, Mitte Hohlfuß, unten Senk-/Plattfuß"],s_beinachse:["beinachse","links X-Bein (Valgus), Mitte physiologisch, rechts O-Bein (Varus)"],
+  s_becken:["becken_schulter","links physiologisch, rechts Becken- und Schulterschiefstand"],s_schulter:["becken_schulter","links physiologisch, rechts Becken- und Schulterschiefstand"],
+  m_ktw:["dorsalextension"],m_slr:["slr"],m_thomas:["thomas"],m_pkb:["pkb"],m_hext:["hueftextension"],
+  k_calf:["wadenheben"],k_squat:["kniebeuge"],k_bridge:["bridging"],k_abd:["beinheben"],k_clam:["clamshell"],k_hflexs:["knee_raise"],k_trend:["hip_hitches"],
+  s_fussrot:["fussrotation"],s_beinlaenge:["beinlaenge","links Beinlängendifferenz, rechts mit Ausgleich unter dem kurzen Bein"],s_beckenrot:["beckenrotation","Rotation des Beckens nach links bzw. nach rechts"],
+  s_ws:["wirbelsaeule"],m_hflex:["hueftflexion"],m_hgrot:["hueftrotation"],m_ober:["ober"],m_bws:["bws","links Rotation, rechts Extension"],m_hws:["hws","links Extension, rechts Rotation"],
+  k_plank:["unterarmstuetz"],k_side:["seitstuetz"],k_sor:["sorensen"]};
+const bfImgSrc=k=>BF_IMG_FILE[k]?`brand/tests/${BF_IMG_FILE[k][0]}.jpg`:BF_IMGS[k]?(BF_IMG_CACHE[k]=BF_IMG_CACHE[k]||"data:image/svg+xml;charset=utf-8,"+encodeURIComponent(BF_IMGS[k]())):"";
+/* Bezeichnung mit Vorschaubild; Klick vergrößert */
+const bfLbl=(k,l)=>{ const src=bfImgSrc(k); return src?`<span class="bfl"><button type="button" class="bfThumb" data-bfimg="${k}" data-cap="${esc(BF_IMG_FILE[k]&&BF_IMG_FILE[k][1]?l+" – "+BF_IMG_FILE[k][1]:l)}" title="Bild vergrößern" aria-label="Bild zu ${esc(l)} vergrößern"><img src="${src}" alt=""></button><span>${l}</span></span>`:`<span>${l}</span>`; };
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest(".bfThumb"); if(!b) return;
+  const ov=$("bfImgOv"); ov.querySelector("img").src=bfImgSrc(b.dataset.bfimg); ov.querySelector("p").textContent=b.dataset.cap; ov.hidden=false; ov.querySelector("button").focus(); });
+{ const ov=$("bfImgOv"), close=()=>{ ov.hidden=true; }; ov.onclick=e=>{ if(e.target===ov||e.target.closest("button")) close(); }; document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&!ov.hidden) close(); }); }
 const bf=()=>S.befund=S.befund||{};
 /* Auffälligkeit = Auswahl ab dem dritten Eintrag („leicht eingeschränkt“, „leichtes Defizit“ …) */
 const bfAbn=(key,opts)=>["_l","_r"].some(s=>opts.indexOf(bf()[key+s])>=2);
 function renderBefund(){
   const B=bf(), v=k=>esc(B[k]||"");
   const sel=(k,opts)=>`<select data-bf="${k}">${opts.map(o=>`<option${(B[k]||opts[0])===o?" selected":""}>${esc(o)}</option>`).join("")}</select>`;
-  migratePain(); renderPainPicker();
+  migratePain(); migrateAnam(); renderPainPicker();
   $("bfPain").innerHTML=`<div class="bfg"><span></span><b>Links</b><b>Rechts</b>`+BF_PAIN.map(([k,l,lr])=>lr
     ? `<span>${l}</span><input class="bfi" data-bf="p_${k}_l" value="${v("p_"+k+"_l")}" placeholder="–" aria-label="${l} links"><input class="bfi" data-bf="p_${k}_r" value="${v("p_"+k+"_r")}" placeholder="–" aria-label="${l} rechts">`
     : `<span>${l}</span><input class="bfi" style="grid-column:2/4" data-bf="p_${k}" value="${v("p_"+k)}" placeholder="–" aria-label="${l}">`).join("")+`</div>`;
   /* gleiche kompakte Darstellung wie Statik- und Dynamikbefund: Bezeichnung links, Feld rechts */
-  $("bfText").innerHTML=`<div class="bfg">`+ANAM.map(([grp,rows])=>`<div class="suh">${grp}</div>`+rows.map(([k,l,t,o])=>{
+  $("bfText").innerHTML=`<div class="bfg">`+ANAM.map(([grp,rows])=>`<div class="suh">${grp}</div>`+rows.map(([k,l,t,o,ph])=>{
       const id="bf_"+k, lab=`<label for="${id}">${l}</label>`, sp=' style="grid-column:2/4"';
       if(t==="sel") return lab+`<select class="bfi" id="${id}" data-bf="${k}"${sp}>${o.map(x=>`<option${(B[k]||o[0])===x?" selected":""}>${esc(x)}</option>`).join("")}</select>`;
-      if(t==="area") return lab+`<textarea class="bfi" rows="2" id="${id}" data-bf="${k}"${sp}>${v(k)}</textarea>`;
+      if(t==="area") return lab+`<textarea class="bfi" rows="3" id="${id}" data-bf="${k}"${sp}${ph?` placeholder="${esc(ph)}"`:""}>${v(k)}</textarea>`;
       return lab+`<input class="bfi" id="${id}" data-bf="${k}" value="${v(k)}"${t==="num"?' inputmode="decimal"':""}${sp}>`;
     }).join("")).join("")+`</div>`;
   migrateStatik();
@@ -2900,15 +3228,15 @@ function renderBefund(){
     : t==="one"?`<span>${l}</span><div style="grid-column:2/4">${sel("s_"+k,o)}</div>`
     : `<span>${l}</span><input class="bfi" style="grid-column:2/4" inputmode="numeric" data-bf="s_${k}" value="${v("s_"+k)}" placeholder="U/min">`).join("")+`</div>`;
   $("bfStatik").innerHTML=`<div class="bfg"><span></span><b>Links</b><b>Rechts</b>`+BF_STATIK.map(([k,l,t,o])=>
-      t==="lr"?`<span>${l}</span>${sel("s_"+k+"_l",o)}${sel("s_"+k+"_r",o)}`
-    : t==="one"?`<span>${l}</span><div style="grid-column:2/4">${sel("s_"+k,o)}</div>`
+      t==="lr"?`${bfLbl("s_"+k,l)}${sel("s_"+k+"_l",o)}${sel("s_"+k+"_r",o)}`
+    : t==="one"?`${bfLbl("s_"+k,l)}<div style="grid-column:2/4">${sel("s_"+k,o)}</div>`
     : statikDepOn(o)?`<span>${l}</span><input class="bfi" style="grid-column:2/4" inputmode="decimal" data-bf="s_${k}" value="${v("s_"+k)}" placeholder="mm">`:"").join("")+`</div>`;
   /* Notizfeld nur, wenn links oder rechts eine Auffälligkeit gewählt ist (eingeschränkt / Defizit) */
-  const lr=(rows,opts,pre)=>`<div class="bfg"><span></span><b>Links</b><b>Rechts</b>`+rows.map(([k,l])=>`<span>${l}</span>${sel(pre+k+"_l",opts)}${sel(pre+k+"_r",opts)}`+(bfAbn(pre+k,opts)?`<input class="bfi bfn" data-bf="${pre}${k}_n" value="${v(pre+k+"_n")}" placeholder="Notiz zur Auffälligkeit">`:"")).join("")+`</div>`;
+  const lr=(rows,opts,pre)=>`<div class="bfg"><span></span><b>Links</b><b>Rechts</b>`+rows.map(([k,l])=>`${bfLbl(pre+k,l)}${sel(pre+k+"_l",opts)}${sel(pre+k+"_r",opts)}`+(bfAbn(pre+k,opts)?`<input class="bfi bfn" data-bf="${pre}${k}_n" value="${v(pre+k+"_n")}" placeholder="Notiz zur Auffälligkeit">`:"")).join("")+`</div>`;
   $("bfMob").innerHTML=lr(BF_MOB,MOB_OPTS,"m_");
   { const inp=(key,unit,span)=>`<input class="bfi" inputmode="numeric" data-bf="${key}" value="${v(key)}" placeholder="${unit}"${span?' style="grid-column:2/4"':""}>`;
     $("bfKraft").innerHTML=`<div class="bfg"><span></span><b>Links</b><b>Rechts</b>`+BF_KRAFT.map(([k,l,mode,unit])=>{
-      let s=`<span>${l}</span>`+(mode==="lr"?sel(`k_${k}_l`,KRAFT_OPTS)+sel(`k_${k}_r`,KRAFT_OPTS):`<div style="grid-column:2/4">${sel(`k_${k}_l`,KRAFT_OPTS)}</div>`);
+      let s=bfLbl("k_"+k,l)+(mode==="lr"?sel(`k_${k}_l`,KRAFT_OPTS)+sel(`k_${k}_r`,KRAFT_OPTS):`<div style="grid-column:2/4">${sel(`k_${k}_l`,KRAFT_OPTS)}</div>`);
       /* Zahl (Wiederholungen bzw. Haltezeit) und Notiz nur bei Auffälligkeit */
       if(bfAbn("k_"+k,KRAFT_OPTS)){ const u=unit||"Wdh.";
         s+=`<span class="bfu">${u==="s"?"Haltezeit (s)":"Wiederholungen"}</span>`+(mode==="lr"?inp(`k_${k}_vl`,u)+inp(`k_${k}_vr`,u):inp(`k_${k}_vl`,u,true));
@@ -3076,16 +3404,85 @@ const PDF_SECS=[["person","Personendaten & Abmessungen"],["seg","Segmentlängen 
 const PDF_TIERS=[["plus","Plus",["person","pain","anam","setup","bikedims","rw"]],
   ["advanced","Advanced",["person","pain","anam","setup","bikedims","rw","video"]],
   ["professional","Professional",["person","pain","anam","setup","bikedims","rw","video","statik","dyn","mob","kraft"]]];
-const pdfTier=()=>S.basic?"plus":(PDF_TIERS.some(t=>t[0]===S.pdfTier)?S.pdfTier:"plus");
-function setPdfTier(id){ const t=PDF_TIERS.find(x=>x[0]===id); if(!t) return; S.pdfTier=id; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,t[2].includes(k)])); renderPdfTab(); save(); }
+/* Alle Pakete sind Pakete des Kontos; Plus, Advanced, Professional werden beim Konto von Patrick Mayer einmalig als eigene Pakete angelegt */
+const OWNER_MAIL="patrick.mayer@wildrad.eu";
+let BUILTIN_OK=false, PDFPREFS={pkgs:[],def:""}, PDFPREFS_DB=null;
+const allPkgs=()=>(PDFPREFS.pkgs||[]).map(x=>({...x,builtin:false}));
+const findPkg=id=>id?allPkgs().find(x=>x.id===id):null;
+const pdfTier=()=>S.basic?"plus":(findPkg(S.pdfTier)?S.pdfTier:"");   /* "" = kein Paket gewählt (Standard) */
+/* Deckblatt: eingebautes Paket → eigenes Bild; eigenes Paket → Paketname; ohne Paket nach Inhalt (nur Patrick) bzw. „Report“ */
+const pdfCover=()=>{ const id=pdfTier(), pk=findPkg(id);
+  if(pk){ const std=PDF_TIERS.find(t=>t[1].toLowerCase()===String(pk.name).trim().toLowerCase());   // Plus/Advanced/Professional: gestaltetes Deckblatt
+    return std?{file:`brand/cover_${std[0]}.jpg`,name:std[1]}:{custom:pk.name,name:pk.name}; }
+  if(BUILTIN_OK){ const t=["statik","dyn","mob","kraft"].some(k=>pdfOn(k))?"professional":pdfOn("video")?"advanced":"plus"; return {file:`brand/cover_${t}.jpg`,name:PDF_TIERS.find(x=>x[0]===t)[1]}; }
+  return {custom:"Report",name:""}; };
+/* Vorauswahl beim Öffnen: kein Paket, alle Inhalte oder ein Paket */
+function applyPdfDefault(){
+  if(S.basic) return; const d=PDFPREFS.def||"";
+  if(d==="all"){ S.pdfTier=""; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,true])); }
+  else if(findPkg(d)){ const pk=findPkg(d); S.pdfTier=d; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,pk.secs.includes(k)])); }
+  else { S.pdfTier=""; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,false])); }
+}
+async function userDocPath(name){ try{ const u=window.claude&&window.claude.use?await window.claude.use("user"):null; const id=u&&u.id?await u.id():null; return id?`data/users/${id}/${name}`:null; }catch(e){ return null; } }
+async function pdfPrefsLoad(){
+  try{ const u=window.claude&&window.claude.use?await window.claude.use("user"):null;
+    if(window.WF&&WF.user) BUILTIN_OK=String(WF.user.email||"").trim().toLowerCase()===OWNER_MAIL;   // Web-App: nach E-Mail
+    else BUILTIN_OK=!!(u&&u.isOwner&&await u.isOwner());   // Claude-Artefakt: Inhaber
+  }catch(e){}
+  try{ const l=JSON.parse(localStorage.getItem("wifit-pdfprefs")||"null"); if(l) PDFPREFS=l; }catch(e){}
+  try{ const db=window.claude&&window.claude.use?await window.claude.use("db"):null, pth=await userDocPath("pdfprefs");
+    if(db&&pth){ PDFPREFS_DB={db,p:pth}; const snap=await db.doc(pth).get();
+      if(snap.exists){ const d=JSON.parse(JSON.stringify(snap.data()||null)); if(d&&!(PDFPREFS.at>d.at)) PDFPREFS=d; } } }catch(e){}
+  PDFPREFS.pkgs=PDFPREFS.pkgs||[];
+  if(BUILTIN_OK&&!PDFPREFS.seeded){   // einmalig: bisherige feste Pakete als eigene Pakete übernehmen (danach frei änderbar und löschbar)
+    for(const [id,name,secs] of PDF_TIERS) if(!PDFPREFS.pkgs.some(x=>x.id===id||x.name.toLowerCase()===name.toLowerCase())) PDFPREFS.pkgs.push({id,name,secs:[...secs]});
+    PDFPREFS.seeded=true; await pdfPrefsSave(); }
+  if(!S.pdfTouched) applyPdfDefault(); else if(S.pdfTier&&!findPkg(S.pdfTier)) S.pdfTier="";
+  renderPdfTab(); save();
+}
+async function pdfPrefsSave(){
+  PDFPREFS.at=Date.now(); const d=JSON.parse(JSON.stringify(PDFPREFS)); let where="in diesem Browser";
+  try{ localStorage.setItem("wifit-pdfprefs",JSON.stringify(d)); }catch(e){}
+  if(PDFPREFS_DB){ try{ await PDFPREFS_DB.db.doc(PDFPREFS_DB.p).set(d); where="für dein Konto"; }catch(e){ where="nur in diesem Browser (Kontospeicher nicht erreichbar)"; } }
+  return where;
+}
+const pdfCurSecs=()=>PDF_SECS.map(([k])=>k).filter(k=>pdfOn(k));
+const secNames=secs=>secs.map(k=>(PDF_SECS.find(z=>z[0]===k)||[0,k])[1]).join(", ");
+function renderPkgMgr(){
+  const box=$("pkgMgr"); if(!box) return; const own=PDFPREFS.pkgs||[];
+  box.innerHTML=`<p class="note" style="margin-top:0">Eigene Pakete gelten nur für dein Konto. Ein Paket übernimmt die gerade angehakten Inhalte.</p>
+    ${own.length?`<div class="plist">${own.map((x,i)=>`<div class="pentry"><div><b>${esc(x.name)}</b><br><span class="note">${esc(secNames(x.secs)||"–")}</span></div>
+      <div class="row" style="flex:none;gap:4px"><button type="button" class="btn ghost small" data-pkgupd="${i}" title="Paket mit der aktuellen Auswahl überschreiben">Aktualisieren</button><button type="button" class="btn ghost small" data-pkgdel="${i}">Löschen</button></div></div>`).join("")}</div>`:`<p class="note">Noch keine eigenen Pakete.</p>`}
+    <div class="two" style="margin-top:10px;align-items:end"><div><label class="f" for="pkgName">Neues Paket aus der aktuellen Auswahl</label><input class="bfi" id="pkgName" placeholder="z. B. Komfort-Fitting" maxlength="40"></div>
+      <div><button type="button" class="btn small" id="pkgAdd">Als Paket speichern</button></div></div>
+    <label class="f" for="pkgDef">Voreinstellung beim Öffnen der App</label>
+    <select class="bfi" id="pkgDef"><option value="">Kein Paket (nichts ausgewählt)</option><option value="all">Alle Inhalte</option>${allPkgs().map(x=>`<option value="${esc(x.id)}">${esc(x.builtin?"Bikefitting "+x.name:x.name)}</option>`).join("")}</select>
+    <p class="note" id="pkgNote"></p>`;
+  $("pkgDef").value=findPkg(PDFPREFS.def)||PDFPREFS.def==="all"?PDFPREFS.def:"";
+  const done=async t=>{ const w=await pdfPrefsSave(); renderPdfTab(); $("pkgNote").textContent=`${t} – gespeichert ${w}.`; };
+  $("pkgAdd").onclick=()=>{ const n=$("pkgName").value.trim(), cur=pdfCurSecs(); if(!n){ $("pkgNote").textContent="Bitte einen Namen eingeben."; return; }
+    if(!cur.length){ $("pkgNote").textContent="Bitte zuerst Inhalte anhaken."; return; }
+    if(allPkgs().some(x=>x.name.toLowerCase()===n.toLowerCase())){ $("pkgNote").textContent="Ein Paket mit diesem Namen gibt es schon."; return; }
+    const id="u_"+Date.now().toString(36); PDFPREFS.pkgs.push({id,name:n,secs:cur}); S.pdfTier=id; S.pdfTouched=true; done(`Paket „${n}“ angelegt`); };
+  box.querySelectorAll("[data-pkgupd]").forEach(b=>b.onclick=()=>{ const x=PDFPREFS.pkgs[+b.dataset.pkgupd], cur=pdfCurSecs(); if(!cur.length){ $("pkgNote").textContent="Bitte zuerst Inhalte anhaken."; return; } x.secs=cur; S.pdfTier=x.id; done(`Paket „${x.name}“ aktualisiert`); });
+  box.querySelectorAll("[data-pkgdel]").forEach(b=>b.onclick=()=>{ const x=PDFPREFS.pkgs[+b.dataset.pkgdel];
+    if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Wirklich löschen?"; b.classList.remove("ghost"); return; }   /* zweiter Klick löscht */
+    PDFPREFS.pkgs.splice(+b.dataset.pkgdel,1); if(PDFPREFS.def===x.id) PDFPREFS.def=""; if(S.pdfTier===x.id) S.pdfTier=""; done(`Paket „${x.name}“ gelöscht`); });
+  $("pkgDef").onchange=e=>{ PDFPREFS.def=e.target.value; done("Voreinstellung geändert"); };
+}
+const pdfVisSecs=()=>PDF_SECS.filter(([k])=>!S.basic||BASIC_PDF.includes(k)).map(([k])=>k);
+const pdfAllOn=()=>pdfVisSecs().every(k=>pdfOn(k));
+function pdfToggleLabel(){ const b=$("pdfToggle"); if(!b) return; const on=pdfAllOn(); b.textContent=on?"Alle abwählen":"Alle auswählen"; b.setAttribute("aria-pressed",on); }
+function setPdfTier(id){ const t=findPkg(id); if(!t) return; S.pdfTier=id; S.pdfTouched=true; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,t.secs.includes(k)])); renderPdfTab(); save(); }
 const pdfOn=k=>!(S.pdfSel&&S.pdfSel[k]===false)&&!(S.basic&&!BASIC_PDF.includes(k));
 function renderPdfTab(){
   const box=$("pdfSecs"); if(!box) return;
-  { const tb=$("pdfTiers"), cur=pdfTier(); if(tb){ tb.innerHTML=PDF_TIERS.map(([id,l])=>`<button type="button" class="chip pchip" data-tier="${id}" aria-pressed="${id===cur}">${l}</button>`).join("");
+  { const tb=$("pdfTiers"), cur=pdfTier(); if(tb){ tb.innerHTML=allPkgs().map(x=>`<button type="button" class="chip pchip" data-tier="${esc(x.id)}" aria-pressed="${x.id===cur}">${esc(x.name)}</button>`).join("")||`<span class="note">Noch keine Pakete – unter „Eigene Pakete und Voreinstellung“ anlegen.</span>`;
       tb.querySelectorAll("[data-tier]").forEach(b=>b.onclick=()=>setPdfTier(b.dataset.tier));
-      const t=PDF_TIERS.find(x=>x[0]===cur); $("pdfTierNote").textContent=`Bikefitting ${t[1]}: `+t[2].map(k=>(PDF_SECS.find(z=>z[0]===k)||[0,k])[1]).join(", ")+". Deckblatt passend zum Paket."; } }
+      const t=findPkg(cur); $("pdfTierNote").textContent=t?`${t.builtin?"Bikefitting ":""}${t.name}: ${secNames(t.secs)}. ${t.builtin?"Deckblatt passend zum Paket.":"Deckblatt mit dem Paketnamen."}`:"Kein Paket gewählt – Inhalte einzeln auswählen oder ein Paket antippen."; } }
   box.innerHTML=PDF_SECS.filter(([k])=>!S.basic||BASIC_PDF.includes(k)).map(([k,l])=>`<label class="toggle" style="display:flex;margin:6px 0"><input type="checkbox" data-pdf="${k}"${pdfOn(k)?" checked":""}> ${l}</label>`).join("");
-  box.querySelectorAll("[data-pdf]").forEach(el=>el.onchange=()=>{ S.pdfSel=S.pdfSel||{}; S.pdfSel[el.dataset.pdf]=el.checked; save(); });
+  box.querySelectorAll("[data-pdf]").forEach(el=>el.onchange=()=>{ S.pdfSel=S.pdfSel||{}; S.pdfSel[el.dataset.pdf]=el.checked; S.pdfTouched=true; pdfToggleLabel(); save(); });
+  pdfToggleLabel(); renderPkgMgr();
   const Bf=bf(); $("pdfWho").textContent=`${Bf.name||"Kein Name eingetragen (Tab „Befund“)"} · ${Bf.date?new Date(Bf.date).toLocaleDateString("de-DE"):""}`;
 }
 /* Firmen-Gestaltung: Deckblatt je Paket, Fußzeile auf den Report-Seiten, Rückseite (Bilder liegen neben der App) */
@@ -3096,13 +3493,117 @@ async function brandImg(path){
   const b=await r.blob(); const url=await new Promise((ok,no)=>{ const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.onerror=no; fr.readAsDataURL(b); });
   return BRAND_CACHE[path]=url;
 }
+/* ================= Bericht: Logo und Kontaktdaten je Konto ================= */
+/* Gespeichert unter data/users/<Konto>/branding (nur das eigene Konto liest und schreibt); ohne Speicher im Browser */
+let MYBRAND=null, MYBRAND_DB=null;
+const BRAND_LS="wifit-branding";
+async function brandPath(){ try{ const u=window.claude&&window.claude.use?await window.claude.use("user"):null; const id=u&&u.id?await u.id():null; return id?`data/users/${id}/branding`:null; }catch(e){ return null; } }
+async function brandLoad(){
+  try{ MYBRAND=JSON.parse(localStorage.getItem(BRAND_LS)||"null"); }catch(e){}
+  try{ const db=window.claude&&window.claude.use?await window.claude.use("db"):null, p=await brandPath();
+    if(db&&p){ MYBRAND_DB={db,p}; const snap=await db.doc(p).get();
+      if(snap.exists){ const d=JSON.parse(JSON.stringify(snap.data()||null)); if(d&&(!MYBRAND||!(MYBRAND.at>d.at))) MYBRAND=d; } } }catch(e){}
+  brandDraft=null; renderBrandForm();
+}
+async function brandSave(d){
+  d.at=Date.now(); MYBRAND=d; let where="in diesem Browser";
+  try{ localStorage.setItem(BRAND_LS,JSON.stringify(d)); }catch(e){}
+  if(MYBRAND_DB){ try{ await MYBRAND_DB.db.doc(MYBRAND_DB.p).set(d); where="für dein Konto"; }catch(e){ where="nur in diesem Browser (Kontospeicher nicht erreichbar)"; } }
+  return where;
+}
+const brandActive=()=>!!(MYBRAND&&(MYBRAND.logo||(MYBRAND.lines||[]).some(x=>String(x||"").trim())));
+const loadImgEl=src=>new Promise((ok,no)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=no; i.src=src; });
+/* Logo vorbereiten: verkleinern, weißen Hintergrund durchsichtig machen */
+async function prepLogo(file){
+  const src=await new Promise((ok,no)=>{ const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.onerror=no; fr.readAsDataURL(file); });
+  const im=await loadImgEl(src), w0=im.naturalWidth||600, h0=im.naturalHeight||240, s=Math.min(1,700/w0,280/h0);
+  const c=document.createElement("canvas"); c.width=Math.max(1,Math.round(w0*s)); c.height=Math.max(1,Math.round(h0*s));
+  const x=c.getContext("2d"); x.drawImage(im,0,0,c.width,c.height);
+  const d=x.getImageData(0,0,c.width,c.height), p=d.data; let transp=false;
+  for(let i=3;i<p.length;i+=4) if(p[i]<250){ transp=true; break; }
+  if(!transp) for(let i=0;i<p.length;i+=4){ const m=Math.min(p[i],p[i+1],p[i+2]); if(m>235) p[i+3]=0; else if(m>205) p[i+3]=Math.round(255*(235-m)/30); }
+  x.putImageData(d,0,0); return c.toDataURL("image/png");
+}
+/* Logo zeichnen (optional weiß eingefärbt) in die Box x,y,w,h, zentriert */
+async function drawLogo(ctx,logo,white,bx,by,bw,bh){
+  const im=await loadImgEl(logo), s=Math.min(bw/im.naturalWidth,bh/im.naturalHeight), w=im.naturalWidth*s, h=im.naturalHeight*s;
+  const c=document.createElement("canvas"); c.width=Math.ceil(w); c.height=Math.ceil(h); const x=c.getContext("2d"); x.drawImage(im,0,0,w,h);
+  if(white){ x.globalCompositeOperation="source-in"; x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); }
+  ctx.drawImage(c,bx+(bw-w)/2,by+(bh-h)/2);
+}
+async function brandFont(px){ try{ await document.fonts.load(`400 ${px}px Barlow`); }catch(e){} return `400 ${px}px Barlow, Arial, sans-serif`; }
+/* Fußzeile: wimove-Logo links bleibt, Kontaktdaten Mitte und Logo rechts aus dem Konto */
+async function brandFooter(base,B){
+  const im=await loadImgEl(base), c=document.createElement("canvas"); c.width=im.naturalWidth; c.height=im.naturalHeight;
+  const x=c.getContext("2d"); x.drawImage(im,0,0); const W=c.width, H=c.height, k=W/1654;
+  const bg=x.getImageData(5,5,1,1).data, BG=`rgb(${bg[0]},${bg[1]},${bg[2]})`;
+  const lines=(B.lines||[]).map(s=>String(s||"").trim());
+  if(lines.some(Boolean)){ x.fillStyle=BG; x.fillRect(520*k,0,640*k,H); x.font=await brandFont(Math.round(28*k)); x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="middle";
+    const L=lines.filter(Boolean), ys=L.length===1?[92]:L.length===2?[70,114]:[48,92,137];
+    L.slice(0,3).forEach((t,i)=>{ let f=Math.round(28*k); while(x.measureText(t).width>620*k&&f>14){ f--; x.font=`400 ${f}px Barlow, Arial, sans-serif`; } x.fillText(t,827*k,ys[i]*k); x.font=`400 ${Math.round(28*k)}px Barlow, Arial, sans-serif`; }); }
+  if(B.logo){ x.fillStyle=BG; x.fillRect(1320*k,0,W-1320*k,H); await drawLogo(x,B.logo,B.logoWhite!==false,1350*k,24*k,250*k,H-48*k); }
+  return c.toDataURL("image/png");
+}
+/* Letzte Seite: Kontaktdaten unter dem wimove-Logo, Logo darunter */
+async function brandBack(base,B){
+  const im=await loadImgEl(base), c=document.createElement("canvas"); c.width=im.naturalWidth; c.height=im.naturalHeight;
+  const x=c.getContext("2d"); x.drawImage(im,0,0); const k=c.width/1240;
+  const lines=(B.lines||[]).map(s=>String(s||"").trim()).filter(Boolean);
+  const X0=Math.round(438*k), X1=Math.round(802*k), Y0=Math.round(758*k), Y1=Math.round(898*k), w=X1-X0, h=Y1-Y0;
+  if(lines.length||B.logo){ /* alten Text übermalen: Fläche aus den vier Rändern weich ergänzen */
+    const T=x.getImageData(X0,Y0-1,w,1).data, Bo=x.getImageData(X0,Y1,w,1).data, L=x.getImageData(X0-1,Y0,1,h).data, R=x.getImageData(X1,Y0,1,h).data;
+    const c00=x.getImageData(X0-1,Y0-1,1,1).data, c10=x.getImageData(X1,Y0-1,1,1).data, c01=x.getImageData(X0-1,Y1,1,1).data, c11=x.getImageData(X1,Y1,1,1).data;
+    const img=x.getImageData(X0,Y0,w,h), p=img.data;
+    for(let r=0;r<h;r++){ const v=(r+1)/(h+1); for(let q=0;q<w;q++){ const u=(q+1)/(w+1), i=(r*w+q)*4;
+      for(let ch=0;ch<3;ch++) p[i+ch]=Math.round((1-u)*L[r*4+ch]+u*R[r*4+ch]+(1-v)*T[q*4+ch]+v*Bo[q*4+ch]-((1-u)*(1-v)*c00[ch]+u*(1-v)*c10[ch]+(1-u)*v*c01[ch]+u*v*c11[ch]));
+      p[i+3]=255; } }
+    x.putImageData(img,X0,Y0); }
+  x.font=await brandFont(Math.round(24*k)); x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="middle";
+  lines.slice(0,3).forEach((t,i)=>x.fillText(t,620*k,(785+i*42)*k));
+  if(B.logo) await drawLogo(x,B.logo,B.logoWhite!==false,470*k,(lines.length?925:790)*k,300*k,120*k);
+  return c.toDataURL("image/jpeg",0.9);
+}
+/* Formular im Tab „Daten“ */
+let brandDraft=null;
+function renderBrandForm(){
+  const box=$("brandBox"); if(!box) return;
+  const B=brandDraft||(brandDraft=JSON.parse(JSON.stringify(MYBRAND||{lines:["","",""],logo:null,logoWhite:true})));
+  B.lines=[0,1,2].map(i=>(B.lines||[])[i]||"");
+  box.innerHTML=`<div class="bfg" style="grid-template-columns:1fr 2fr">
+      ${["Zeile 1 (Name / Firma)","Zeile 2 (E-Mail / Telefon)","Zeile 3 (Web / Adresse)"].map((l,i)=>`<label for="brL${i}">${l}</label><input class="bfi" id="brL${i}" value="${esc(B.lines[i])}" placeholder="${["Patrick Mayer","patrick.mayer@wildrad.eu","www.wildrad.eu"][i]}">`).join("")}
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn ghost small" type="button" id="brLogoBtn">${B.logo?"Logo ersetzen":"Logo hochladen"}</button>${B.logo?`<button class="btn ghost small" type="button" id="brLogoDel">Logo entfernen</button>`:""}
+      <input type="file" id="brLogoIn" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden>
+      <label class="toggle"><input type="checkbox" id="brWhite"${B.logoWhite!==false?" checked":""}> Logo weiß darstellen</label></div>
+    <p class="note">Vorschau Fußzeile${S.basic?" (WiFitBasic)":""}:</p><img id="brPrev" alt="Vorschau der Fußzeile" style="width:100%;border-radius:6px;display:block;margin-top:4px">
+    <div class="row" style="margin-top:10px"><button class="btn small" type="button" id="brSave">Speichern</button><button class="btn ghost small" type="button" id="brReset">Standard (wimove / Wildrad)</button></div>
+    <p class="note" id="brNote"></p>`;
+  const prev=async()=>{ const base=S.basic?"brand/footer_basic.png":"brand/footer.png"; try{ $("brPrev").src=(B.logo||B.lines.some(s=>s.trim()))?await brandFooter(base,B):base; }catch(e){ $("brPrev").src=base; } };
+  [0,1,2].forEach(i=>{ $("brL"+i).oninput=e=>{ B.lines[i]=e.target.value; clearTimeout(renderBrandForm.t); renderBrandForm.t=setTimeout(prev,250); $("brNote").textContent="Noch nicht gespeichert."; }; });
+  $("brWhite").onchange=e=>{ B.logoWhite=e.target.checked; prev(); $("brNote").textContent="Noch nicht gespeichert."; };
+  $("brLogoBtn").onclick=()=>$("brLogoIn").click();
+  $("brLogoIn").onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ B.logo=await prepLogo(f); renderBrandForm(); $("brNote").textContent="Logo geladen – noch nicht gespeichert."; }catch(err){ $("brNote").textContent="Das Bild konnte nicht gelesen werden."; } };
+  if($("brLogoDel")) $("brLogoDel").onclick=()=>{ B.logo=null; renderBrandForm(); $("brNote").textContent="Logo entfernt – noch nicht gespeichert."; };
+  $("brSave").onclick=async()=>{ $("brNote").textContent="Speichere …"; const where=await brandSave(JSON.parse(JSON.stringify(B))); $("brNote").textContent=`Gespeichert ${where}. Gilt für Fußzeile und letzte Seite im PDF.`; };
+  $("brReset").onclick=async()=>{ brandDraft={lines:["","",""],logo:null,logoWhite:true}; const where=await brandSave(JSON.parse(JSON.stringify(brandDraft))); renderBrandForm(); $("brNote").textContent=`Standard wiederhergestellt (${where}).`; };
+  prev();
+}
+async function customCover(base,name){
+  const im=await loadImgEl(base), c=document.createElement("canvas"); c.width=im.naturalWidth; c.height=im.naturalHeight;
+  const x=c.getContext("2d"), k=c.width/1240; x.drawImage(im,0,0);
+  try{ await document.fonts.load(`italic 700 ${Math.round(106*k)}px Barlow`); }catch(e){}
+  let f=Math.round(106*k); const fam=" Barlow, Arial, sans-serif"; x.font=`italic 700 ${f}px${fam}`;
+  while(x.measureText(name).width>c.width*0.86&&f>30){ f-=2; x.font=`italic 700 ${f}px${fam}`; }
+  x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillText(name,c.width/2,830*k);
+  return c.toDataURL("image/jpeg",0.9);
+}
 async function makePdf(){
   const note=$("pdfNote"); const say=t=>{ if(note) note.textContent=t; const n2=$("loadNoteT"); if(n2) n2.textContent=t; };
   if(!window.jspdf||!window.jspdf.jsPDF){ say("Die PDF-Bibliothek konnte nicht geladen werden. Prüfe die Internetverbindung und lade die Seite neu."); return; }
   if(!PDF_SECS.some(([k])=>pdfOn(k))){ say("Bitte mindestens einen Inhalt auswählen."); return; }
   say("PDF wird erstellt …");
-  const tier=PDF_TIERS.find(t=>t[0]===pdfTier());
-  let BR=null; try{ BR={cover:await brandImg(S.basic?"brand/cover_basic.jpg":`brand/cover_${tier[0]}.jpg`),back:await brandImg(S.basic?"brand/back_basic.jpg":"brand/back.jpg"),foot:await brandImg(S.basic?"brand/footer_basic.png":"brand/footer.png")}; /* WiFitBasic: eigenes Deckblatt, Fußzeile mit Ladenadresse */ }catch(e){ BR=null; }
+  const PC=pdfCover(), tier=[0,PC.name];   // Paketname für Titel und Dateiname
+  let BR=null; try{ BR={cover:S.basic?await brandImg("brand/cover_basic.jpg"):PC.file?await brandImg(PC.file):await customCover(await brandImg("brand/cover_custom.jpg"),PC.custom),back:await brandImg(S.basic?"brand/back_basic.jpg":"brand/back.jpg"),foot:await brandImg(S.basic?"brand/footer_basic.png":"brand/footer.png")}; if(brandActive()){ try{ const f=await brandFooter(BR.foot,MYBRAND), b=await brandBack(BR.back,MYBRAND); BR.foot=f; BR.back=b; }catch(e){} }   /* Logo und Kontaktdaten des Kontos */ /* WiFitBasic: eigenes Deckblatt, Fußzeile mit Ladenadresse */ }catch(e){ BR=null; }
   const {jsPDF}=window.jspdf, doc=new jsPDF({unit:"mm",format:"a4"}), Bf=bf(), Bd=body(), P=S.person;
   const FOOT_H=23.3;   // Höhe der Fußzeile bei voller Seitenbreite
   const M=16, PW=210-2*M, BOT=BR?297-FOOT_H-8:282; let y=M;
@@ -3190,7 +3691,7 @@ async function makePdf(){
 
   /* Titelkopf */
   col(C.pri,"Fill"); doc.rect(0,0,210,34,"F");
-  const RT=S.basic?"WiFitBasic Report":`Bikefitting ${tier[1]} · Report`;
+  const RT=S.basic?"WiFitBasic Report":`${tier[1]?"Bikefitting "+tier[1]:"Bikefitting"} · Report`;
   font(20,true); col([255,255,255]); doc.text(RT,M,16);
   font(10.5); doc.text(pdfTxt(`${Bf.name||"Name nicht angegeben"}${Bf.date?" · "+new Date(Bf.date).toLocaleDateString("de-DE"):""}`),M,24);
   const cb=findBike(S.sel); font(8.5); doc.text(pdfTxt(`Rad: ${cb?`${cb.b} ${cb.m} ${cb.s}`:"-"} · Fahrstil: ${P.style}`),M,29.5);
@@ -3346,7 +3847,7 @@ async function makePdf(){
     else doc.text(pdfTxt(`${Bf.name||""} · Seite ${i}/${n}`),210-M,292,{align:"right"});
     doc.setTextColor(0); }
   if(BR){ doc.addPage(); doc.addImage(BR.back,"JPEG",0,0,210,297); }
-  const fname=`${S.basic?"WiFitBasic":"Bikefitting_"+tier[1]}_Report_${(Bf.name||"Auswertung").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_${Bf.date||""}.pdf`;
+  const fname=`${S.basic?"WiFitBasic":"Bikefitting"+(tier[1]?"_"+tier[1].replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_"):"")}_Report_${(Bf.name||"Auswertung").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_${Bf.date||""}.pdf`;
   const blob=doc.output("blob");
   let dl=null; try{ dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null; }catch(e){}
   if(dl){
@@ -3405,8 +3906,8 @@ $("exportBtn").onclick=exportData;
 $("importBtn").onclick=()=>$("importIn").click();
 $("importIn").onchange=e=>{ const f=e.target.files[0]; if(f) importData(f); e.target.value=""; };
 $("pmDetails").addEventListener("toggle",()=>{ if($("pmDetails").open) renderPartsManager(); });
-$("pdfAll").onclick=()=>{ S.pdfSel={}; renderPdfTab(); save(); };
-$("pdfNone").onclick=()=>{ S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,false])); renderPdfTab(); save(); };
+/* ein Knopf: alle Inhalte an bzw. aus; ein gewähltes Paket wird dabei aufgehoben */
+$("pdfToggle").onclick=()=>{ const on=!pdfAllOn(); S.pdfTier=""; S.pdfTouched=true; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,on])); renderPdfTab(); save(); };
 $("bfName").oninput=e=>{ bf().name=e.target.value; $("pName").value=e.target.value; save(); };
 /* Name und Datum auch im Tab „Person“ (gleiche Daten wie im Befund) */
 $("pName").oninput=e=>{ bf().name=e.target.value; $("bfName").value=e.target.value; save(); };
@@ -3864,8 +4365,9 @@ S.dataV=6; save();
 /* Seitenbereich in der Breite verstellbar (ziehen, Pfeiltasten, Doppelklick = Standard) */
 { const sp=$("splitter"), root=document.documentElement;
   const setW=w=>{ w=Math.round(Math.max(300,Math.min(window.innerWidth-380,w))); S.panelW=w; root.style.setProperty("--panelW",w+"px"); sp.setAttribute("aria-valuenow",w); };
-  const half=()=>(window.innerWidth-8)*0.4;   // Darstellung 60 %, Einstellungen 40 %
-  setW(half());   // beim Laden immer 60/40
+  const half=()=>(window.innerWidth-8)*(TAB_SPLIT[S.tab]||0.4);   // Aufteilung passend zum Tab
+  window.setPanelShare=f=>setW((window.innerWidth-8)*f);
+  setW(half());
   let drag=false;
   sp.addEventListener("pointerdown",e=>{ drag=true; sp.classList.add("drag"); sp.setPointerCapture(e.pointerId); e.preventDefault(); });
   sp.addEventListener("pointermove",e=>{ if(drag) setW(window.innerWidth-e.clientX-4); });
@@ -3883,7 +4385,7 @@ if(!S.stdStart1){ S.stdStart1=true; setTimeout(()=>{ $("suClear").click(); },0);
 syncPerson(); render(true);
 if(S.proAt===undefined) S.basic=true;   // Gerät kennt den Passwortstand noch nicht: sicherheitshalber in WiFitBasic starten
 markBasic(); applyBasic(); enforceLock(); showTab("person"); renderPwBox(); applyStyleStd(); renderStyleStd(); syncPerson(); render(true);   // App startet immer im Tab „Person“
-factoryLoad(); renderBefund(); renderOwnBikes(); applyPendingCalib(); renderCalib(); if(S.tab==="setup") renderSetup(); if(S.tab==="pdf"){ renderPdfTab(); renderCP(); renderEV(); }
+factoryLoad(); brandLoad(); pdfPrefsLoad(); renderBefund(); renderOwnBikes(); applyPendingCalib(); renderCalib(); if(S.tab==="setup") renderSetup(); if(S.tab==="pdf"){ renderPdfTab(); renderCP(); renderEV(); }
 </script>
 <script>if("serviceWorker" in navigator&&location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>
