@@ -562,12 +562,9 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
         <h2>PDF erstellen</h2>
         <p class="src-line" id="pdfWho"></p>
         <div class="adv" id="pdfTierBox"><label class="f" style="margin-top:0">Paket</label><div class="chips" id="pdfTiers"></div><p class="note" id="pdfTierNote"></p></div>
-        <p class="note" style="margin-top:8px">Wähle aus, was im PDF enthalten sein soll. Die Auswahl bleibt gespeichert.</p>
+        <p class="note" style="margin-top:8px">Wähle ein Paket oder einzelne Inhalte für das PDF aus.</p>
+        <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
         <div id="pdfSecs"></div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn ghost small" id="pdfAll">Alle</button>
-          <button class="btn ghost small" id="pdfNone">Keine</button>
-        </div>
       </section>
       <section>
         <h2>Videoanalyse (Contemplas)</h2>
@@ -2174,6 +2171,7 @@ window.addEventListener("beforeunload",e=>{
 /* Startbildschirm: bei jedem Start Auswahl, welches Fitting gemacht wird */
 { let fresh=false;   // beim Öffnen der App immer ohne Personendaten starten (einmal pro Aufruf)
   const startFresh=()=>{ if(fresh) return; fresh=true;
+    if(!S.basic){ S.pdfTier=""; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,false])); } else S.pdfSel={};   /* PDF: kein Paket vorausgewählt */
     S.show.targets=false; $("tTargets").checked=false;   /* Fadenkreuze beim Öffnen aus */ try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
   const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; showTab(S.basic?"person":"befund"); try{ $("basicBtn").focus(); }catch(e){} };   /* WiFitPro startet bei Befund, Basic bei Person (je 30/70) */
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); done(); };
@@ -3405,16 +3403,22 @@ const PDF_SECS=[["person","Personendaten & Abmessungen"],["seg","Segmentlängen 
 const PDF_TIERS=[["plus","Plus",["person","pain","anam","setup","bikedims","rw"]],
   ["advanced","Advanced",["person","pain","anam","setup","bikedims","rw","video"]],
   ["professional","Professional",["person","pain","anam","setup","bikedims","rw","video","statik","dyn","mob","kraft"]]];
-const pdfTier=()=>S.basic?"plus":(PDF_TIERS.some(t=>t[0]===S.pdfTier)?S.pdfTier:"plus");
+const pdfTier=()=>S.basic?"plus":(PDF_TIERS.some(t=>t[0]===S.pdfTier)?S.pdfTier:"");   /* "" = kein Paket gewählt (Standard) */
+/* Deckblatt ohne gewähltes Paket: nach Inhalt (Befunde → Professional, Video → Advanced, sonst Plus) */
+const pdfCoverTier=()=>pdfTier()||(["statik","dyn","mob","kraft"].some(k=>pdfOn(k))?"professional":pdfOn("video")?"advanced":"plus");
+const pdfVisSecs=()=>PDF_SECS.filter(([k])=>!S.basic||BASIC_PDF.includes(k)).map(([k])=>k);
+const pdfAllOn=()=>pdfVisSecs().every(k=>pdfOn(k));
+function pdfToggleLabel(){ const b=$("pdfToggle"); if(!b) return; const on=pdfAllOn(); b.textContent=on?"Alle abwählen":"Alle auswählen"; b.setAttribute("aria-pressed",on); }
 function setPdfTier(id){ const t=PDF_TIERS.find(x=>x[0]===id); if(!t) return; S.pdfTier=id; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,t[2].includes(k)])); renderPdfTab(); save(); }
 const pdfOn=k=>!(S.pdfSel&&S.pdfSel[k]===false)&&!(S.basic&&!BASIC_PDF.includes(k));
 function renderPdfTab(){
   const box=$("pdfSecs"); if(!box) return;
   { const tb=$("pdfTiers"), cur=pdfTier(); if(tb){ tb.innerHTML=PDF_TIERS.map(([id,l])=>`<button type="button" class="chip pchip" data-tier="${id}" aria-pressed="${id===cur}">${l}</button>`).join("");
       tb.querySelectorAll("[data-tier]").forEach(b=>b.onclick=()=>setPdfTier(b.dataset.tier));
-      const t=PDF_TIERS.find(x=>x[0]===cur); $("pdfTierNote").textContent=`Bikefitting ${t[1]}: `+t[2].map(k=>(PDF_SECS.find(z=>z[0]===k)||[0,k])[1]).join(", ")+". Deckblatt passend zum Paket."; } }
+      const t=PDF_TIERS.find(x=>x[0]===cur); $("pdfTierNote").textContent=t?`Bikefitting ${t[1]}: `+t[2].map(k=>(PDF_SECS.find(z=>z[0]===k)||[0,k])[1]).join(", ")+". Deckblatt passend zum Paket.":"Kein Paket gewählt – Inhalte einzeln auswählen oder ein Paket antippen."; } }
   box.innerHTML=PDF_SECS.filter(([k])=>!S.basic||BASIC_PDF.includes(k)).map(([k,l])=>`<label class="toggle" style="display:flex;margin:6px 0"><input type="checkbox" data-pdf="${k}"${pdfOn(k)?" checked":""}> ${l}</label>`).join("");
-  box.querySelectorAll("[data-pdf]").forEach(el=>el.onchange=()=>{ S.pdfSel=S.pdfSel||{}; S.pdfSel[el.dataset.pdf]=el.checked; save(); });
+  box.querySelectorAll("[data-pdf]").forEach(el=>el.onchange=()=>{ S.pdfSel=S.pdfSel||{}; S.pdfSel[el.dataset.pdf]=el.checked; pdfToggleLabel(); save(); });
+  pdfToggleLabel();
   const Bf=bf(); $("pdfWho").textContent=`${Bf.name||"Kein Name eingetragen (Tab „Befund“)"} · ${Bf.date?new Date(Bf.date).toLocaleDateString("de-DE"):""}`;
 }
 /* Firmen-Gestaltung: Deckblatt je Paket, Fußzeile auf den Report-Seiten, Rückseite (Bilder liegen neben der App) */
@@ -3525,8 +3529,8 @@ async function makePdf(){
   if(!window.jspdf||!window.jspdf.jsPDF){ say("Die PDF-Bibliothek konnte nicht geladen werden. Prüfe die Internetverbindung und lade die Seite neu."); return; }
   if(!PDF_SECS.some(([k])=>pdfOn(k))){ say("Bitte mindestens einen Inhalt auswählen."); return; }
   say("PDF wird erstellt …");
-  const tier=PDF_TIERS.find(t=>t[0]===pdfTier());
-  let BR=null; try{ BR={cover:await brandImg(S.basic?"brand/cover_basic.jpg":`brand/cover_${tier[0]}.jpg`),back:await brandImg(S.basic?"brand/back_basic.jpg":"brand/back.jpg"),foot:await brandImg(S.basic?"brand/footer_basic.png":"brand/footer.png")}; if(brandActive()){ try{ const f=await brandFooter(BR.foot,MYBRAND), b=await brandBack(BR.back,MYBRAND); BR.foot=f; BR.back=b; }catch(e){} }   /* Logo und Kontaktdaten des Kontos */ /* WiFitBasic: eigenes Deckblatt, Fußzeile mit Ladenadresse */ }catch(e){ BR=null; }
+  const tier=PDF_TIERS.find(t=>t[0]===pdfCoverTier());   // ohne Paket: nach Inhalt
+  let BR=null; try{ BR={cover:await brandImg(S.basic?"brand/cover_basic.jpg":`brand/cover_${pdfCoverTier()}.jpg`),back:await brandImg(S.basic?"brand/back_basic.jpg":"brand/back.jpg"),foot:await brandImg(S.basic?"brand/footer_basic.png":"brand/footer.png")}; if(brandActive()){ try{ const f=await brandFooter(BR.foot,MYBRAND), b=await brandBack(BR.back,MYBRAND); BR.foot=f; BR.back=b; }catch(e){} }   /* Logo und Kontaktdaten des Kontos */ /* WiFitBasic: eigenes Deckblatt, Fußzeile mit Ladenadresse */ }catch(e){ BR=null; }
   const {jsPDF}=window.jspdf, doc=new jsPDF({unit:"mm",format:"a4"}), Bf=bf(), Bd=body(), P=S.person;
   const FOOT_H=23.3;   // Höhe der Fußzeile bei voller Seitenbreite
   const M=16, PW=210-2*M, BOT=BR?297-FOOT_H-8:282; let y=M;
@@ -3829,8 +3833,8 @@ $("exportBtn").onclick=exportData;
 $("importBtn").onclick=()=>$("importIn").click();
 $("importIn").onchange=e=>{ const f=e.target.files[0]; if(f) importData(f); e.target.value=""; };
 $("pmDetails").addEventListener("toggle",()=>{ if($("pmDetails").open) renderPartsManager(); });
-$("pdfAll").onclick=()=>{ S.pdfSel={}; renderPdfTab(); save(); };
-$("pdfNone").onclick=()=>{ S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,false])); renderPdfTab(); save(); };
+/* ein Knopf: alle Inhalte an bzw. aus; ein gewähltes Paket wird dabei aufgehoben */
+$("pdfToggle").onclick=()=>{ const on=!pdfAllOn(); S.pdfTier=""; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,on])); renderPdfTab(); save(); };
 $("bfName").oninput=e=>{ bf().name=e.target.value; $("pName").value=e.target.value; save(); };
 /* Name und Datum auch im Tab „Person“ (gleiche Daten wie im Befund) */
 $("pName").oninput=e=>{ bf().name=e.target.value; $("bfName").value=e.target.value; save(); };
