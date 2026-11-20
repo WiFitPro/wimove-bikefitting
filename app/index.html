@@ -565,6 +565,7 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
         <p class="note" style="margin-top:8px">Wähle ein Paket oder einzelne Inhalte für das PDF aus.</p>
         <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
         <div id="pdfSecs"></div>
+        <details class="acc adv" id="pkgDetails" style="margin-top:12px"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
       </section>
       <section>
         <h2>Videoanalyse (Contemplas)</h2>
@@ -2171,7 +2172,7 @@ window.addEventListener("beforeunload",e=>{
 /* Startbildschirm: bei jedem Start Auswahl, welches Fitting gemacht wird */
 { let fresh=false;   // beim Öffnen der App immer ohne Personendaten starten (einmal pro Aufruf)
   const startFresh=()=>{ if(fresh) return; fresh=true;
-    if(!S.basic){ S.pdfTier=""; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,false])); } else S.pdfSel={};   /* PDF: kein Paket vorausgewählt */
+    S.pdfTouched=false; if(!S.basic) applyPdfDefault(); else S.pdfSel={};   /* PDF: Voreinstellung des Kontos (Standard: nichts ausgewählt) */
     S.show.targets=false; $("tTargets").checked=false;   /* Fadenkreuze beim Öffnen aus */ try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
   const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; showTab(S.basic?"person":"befund"); try{ $("basicBtn").focus(); }catch(e){} };   /* WiFitPro startet bei Befund, Basic bei Person (je 30/70) */
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); done(); };
@@ -3403,22 +3404,82 @@ const PDF_SECS=[["person","Personendaten & Abmessungen"],["seg","Segmentlängen 
 const PDF_TIERS=[["plus","Plus",["person","pain","anam","setup","bikedims","rw"]],
   ["advanced","Advanced",["person","pain","anam","setup","bikedims","rw","video"]],
   ["professional","Professional",["person","pain","anam","setup","bikedims","rw","video","statik","dyn","mob","kraft"]]];
-const pdfTier=()=>S.basic?"plus":(PDF_TIERS.some(t=>t[0]===S.pdfTier)?S.pdfTier:"");   /* "" = kein Paket gewählt (Standard) */
-/* Deckblatt ohne gewähltes Paket: nach Inhalt (Befunde → Professional, Video → Advanced, sonst Plus) */
-const pdfCoverTier=()=>pdfTier()||(["statik","dyn","mob","kraft"].some(k=>pdfOn(k))?"professional":pdfOn("video")?"advanced":"plus");
+/* Plus, Advanced, Professional nur für das Konto von Patrick Mayer; alle Konten können eigene Pakete anlegen */
+const OWNER_MAIL="patrick.mayer@wildrad.eu";
+let BUILTIN_OK=false, PDFPREFS={pkgs:[],def:""}, PDFPREFS_DB=null;
+const allPkgs=()=>[...(BUILTIN_OK?PDF_TIERS.map(([id,name,secs])=>({id,name,secs,builtin:true})):[]),...(PDFPREFS.pkgs||[]).map(x=>({...x,builtin:false}))];
+const findPkg=id=>id?allPkgs().find(x=>x.id===id):null;
+const pdfTier=()=>S.basic?"plus":(findPkg(S.pdfTier)?S.pdfTier:"");   /* "" = kein Paket gewählt (Standard) */
+/* Deckblatt: eingebautes Paket → eigenes Bild; eigenes Paket → Paketname; ohne Paket nach Inhalt (nur Patrick) bzw. „Report“ */
+const pdfCover=()=>{ const id=pdfTier(), pk=findPkg(id);
+  if(pk&&pk.builtin) return {file:`brand/cover_${id}.jpg`,name:pk.name};
+  if(pk) return {custom:pk.name,name:pk.name};
+  if(BUILTIN_OK){ const t=["statik","dyn","mob","kraft"].some(k=>pdfOn(k))?"professional":pdfOn("video")?"advanced":"plus"; return {file:`brand/cover_${t}.jpg`,name:PDF_TIERS.find(x=>x[0]===t)[1]}; }
+  return {custom:"Report",name:""}; };
+/* Vorauswahl beim Öffnen: kein Paket, alle Inhalte oder ein Paket */
+function applyPdfDefault(){
+  if(S.basic) return; const d=PDFPREFS.def||"";
+  if(d==="all"){ S.pdfTier=""; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,true])); }
+  else if(findPkg(d)){ const pk=findPkg(d); S.pdfTier=d; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,pk.secs.includes(k)])); }
+  else { S.pdfTier=""; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,false])); }
+}
+async function userDocPath(name){ try{ const u=window.claude&&window.claude.use?await window.claude.use("user"):null; const id=u&&u.id?await u.id():null; return id?`data/users/${id}/${name}`:null; }catch(e){ return null; } }
+async function pdfPrefsLoad(){
+  try{ const u=window.claude&&window.claude.use?await window.claude.use("user"):null;
+    if(window.WF&&WF.user) BUILTIN_OK=String(WF.user.email||"").trim().toLowerCase()===OWNER_MAIL;   // Web-App: nach E-Mail
+    else BUILTIN_OK=!!(u&&u.isOwner&&await u.isOwner());   // Claude-Artefakt: Inhaber
+  }catch(e){}
+  try{ const l=JSON.parse(localStorage.getItem("wifit-pdfprefs")||"null"); if(l) PDFPREFS=l; }catch(e){}
+  try{ const db=window.claude&&window.claude.use?await window.claude.use("db"):null, pth=await userDocPath("pdfprefs");
+    if(db&&pth){ PDFPREFS_DB={db,p:pth}; const snap=await db.doc(pth).get();
+      if(snap.exists){ const d=JSON.parse(JSON.stringify(snap.data()||null)); if(d&&!(PDFPREFS.at>d.at)) PDFPREFS=d; } } }catch(e){}
+  PDFPREFS.pkgs=PDFPREFS.pkgs||[];
+  if(!S.pdfTouched) applyPdfDefault(); else if(S.pdfTier&&!findPkg(S.pdfTier)) S.pdfTier="";
+  renderPdfTab(); save();
+}
+async function pdfPrefsSave(){
+  PDFPREFS.at=Date.now(); const d=JSON.parse(JSON.stringify(PDFPREFS)); let where="in diesem Browser";
+  try{ localStorage.setItem("wifit-pdfprefs",JSON.stringify(d)); }catch(e){}
+  if(PDFPREFS_DB){ try{ await PDFPREFS_DB.db.doc(PDFPREFS_DB.p).set(d); where="für dein Konto"; }catch(e){ where="nur in diesem Browser (Kontospeicher nicht erreichbar)"; } }
+  return where;
+}
+const pdfCurSecs=()=>PDF_SECS.map(([k])=>k).filter(k=>pdfOn(k));
+const secNames=secs=>secs.map(k=>(PDF_SECS.find(z=>z[0]===k)||[0,k])[1]).join(", ");
+function renderPkgMgr(){
+  const box=$("pkgMgr"); if(!box) return; const own=PDFPREFS.pkgs||[];
+  box.innerHTML=`<p class="note" style="margin-top:0">Eigene Pakete gelten nur für dein Konto. Ein Paket übernimmt die gerade angehakten Inhalte.</p>
+    ${own.length?`<div class="plist">${own.map((x,i)=>`<div class="pentry"><div><b>${esc(x.name)}</b><br><span class="note">${esc(secNames(x.secs)||"–")}</span></div>
+      <div class="row" style="flex:none;gap:4px"><button type="button" class="btn ghost small" data-pkgupd="${i}" title="Paket mit der aktuellen Auswahl überschreiben">Aktualisieren</button><button type="button" class="btn ghost small" data-pkgdel="${i}">Löschen</button></div></div>`).join("")}</div>`:`<p class="note">Noch keine eigenen Pakete.</p>`}
+    <div class="two" style="margin-top:10px;align-items:end"><div><label class="f" for="pkgName">Neues Paket aus der aktuellen Auswahl</label><input class="bfi" id="pkgName" placeholder="z. B. Komfort-Fitting" maxlength="40"></div>
+      <div><button type="button" class="btn small" id="pkgAdd">Als Paket speichern</button></div></div>
+    <label class="f" for="pkgDef">Voreinstellung beim Öffnen der App</label>
+    <select class="bfi" id="pkgDef"><option value="">Kein Paket (nichts ausgewählt)</option><option value="all">Alle Inhalte</option>${allPkgs().map(x=>`<option value="${esc(x.id)}">${esc(x.builtin?"Bikefitting "+x.name:x.name)}</option>`).join("")}</select>
+    <p class="note" id="pkgNote"></p>`;
+  $("pkgDef").value=findPkg(PDFPREFS.def)||PDFPREFS.def==="all"?PDFPREFS.def:"";
+  const done=async t=>{ const w=await pdfPrefsSave(); renderPdfTab(); $("pkgNote").textContent=`${t} – gespeichert ${w}.`; };
+  $("pkgAdd").onclick=()=>{ const n=$("pkgName").value.trim(), cur=pdfCurSecs(); if(!n){ $("pkgNote").textContent="Bitte einen Namen eingeben."; return; }
+    if(!cur.length){ $("pkgNote").textContent="Bitte zuerst Inhalte anhaken."; return; }
+    if(allPkgs().some(x=>x.name.toLowerCase()===n.toLowerCase())){ $("pkgNote").textContent="Ein Paket mit diesem Namen gibt es schon."; return; }
+    const id="u_"+Date.now().toString(36); PDFPREFS.pkgs.push({id,name:n,secs:cur}); S.pdfTier=id; S.pdfTouched=true; done(`Paket „${n}“ angelegt`); };
+  box.querySelectorAll("[data-pkgupd]").forEach(b=>b.onclick=()=>{ const x=PDFPREFS.pkgs[+b.dataset.pkgupd], cur=pdfCurSecs(); if(!cur.length){ $("pkgNote").textContent="Bitte zuerst Inhalte anhaken."; return; } x.secs=cur; S.pdfTier=x.id; done(`Paket „${x.name}“ aktualisiert`); });
+  box.querySelectorAll("[data-pkgdel]").forEach(b=>b.onclick=()=>{ const x=PDFPREFS.pkgs[+b.dataset.pkgdel];
+    if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Wirklich löschen?"; b.classList.remove("ghost"); return; }   /* zweiter Klick löscht */
+    PDFPREFS.pkgs.splice(+b.dataset.pkgdel,1); if(PDFPREFS.def===x.id) PDFPREFS.def=""; if(S.pdfTier===x.id) S.pdfTier=""; done(`Paket „${x.name}“ gelöscht`); });
+  $("pkgDef").onchange=e=>{ PDFPREFS.def=e.target.value; done("Voreinstellung geändert"); };
+}
 const pdfVisSecs=()=>PDF_SECS.filter(([k])=>!S.basic||BASIC_PDF.includes(k)).map(([k])=>k);
 const pdfAllOn=()=>pdfVisSecs().every(k=>pdfOn(k));
 function pdfToggleLabel(){ const b=$("pdfToggle"); if(!b) return; const on=pdfAllOn(); b.textContent=on?"Alle abwählen":"Alle auswählen"; b.setAttribute("aria-pressed",on); }
-function setPdfTier(id){ const t=PDF_TIERS.find(x=>x[0]===id); if(!t) return; S.pdfTier=id; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,t[2].includes(k)])); renderPdfTab(); save(); }
+function setPdfTier(id){ const t=findPkg(id); if(!t) return; S.pdfTier=id; S.pdfTouched=true; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,t.secs.includes(k)])); renderPdfTab(); save(); }
 const pdfOn=k=>!(S.pdfSel&&S.pdfSel[k]===false)&&!(S.basic&&!BASIC_PDF.includes(k));
 function renderPdfTab(){
   const box=$("pdfSecs"); if(!box) return;
-  { const tb=$("pdfTiers"), cur=pdfTier(); if(tb){ tb.innerHTML=PDF_TIERS.map(([id,l])=>`<button type="button" class="chip pchip" data-tier="${id}" aria-pressed="${id===cur}">${l}</button>`).join("");
+  { const tb=$("pdfTiers"), cur=pdfTier(); if(tb){ tb.innerHTML=allPkgs().map(x=>`<button type="button" class="chip pchip" data-tier="${esc(x.id)}" aria-pressed="${x.id===cur}">${esc(x.name)}</button>`).join("")||`<span class="note">Noch keine Pakete – unter „Eigene Pakete und Voreinstellung“ anlegen.</span>`;
       tb.querySelectorAll("[data-tier]").forEach(b=>b.onclick=()=>setPdfTier(b.dataset.tier));
-      const t=PDF_TIERS.find(x=>x[0]===cur); $("pdfTierNote").textContent=t?`Bikefitting ${t[1]}: `+t[2].map(k=>(PDF_SECS.find(z=>z[0]===k)||[0,k])[1]).join(", ")+". Deckblatt passend zum Paket.":"Kein Paket gewählt – Inhalte einzeln auswählen oder ein Paket antippen."; } }
+      const t=findPkg(cur); $("pdfTierNote").textContent=t?`${t.builtin?"Bikefitting ":""}${t.name}: ${secNames(t.secs)}. ${t.builtin?"Deckblatt passend zum Paket.":"Deckblatt mit dem Paketnamen."}`:"Kein Paket gewählt – Inhalte einzeln auswählen oder ein Paket antippen."; } }
   box.innerHTML=PDF_SECS.filter(([k])=>!S.basic||BASIC_PDF.includes(k)).map(([k,l])=>`<label class="toggle" style="display:flex;margin:6px 0"><input type="checkbox" data-pdf="${k}"${pdfOn(k)?" checked":""}> ${l}</label>`).join("");
-  box.querySelectorAll("[data-pdf]").forEach(el=>el.onchange=()=>{ S.pdfSel=S.pdfSel||{}; S.pdfSel[el.dataset.pdf]=el.checked; pdfToggleLabel(); save(); });
-  pdfToggleLabel();
+  box.querySelectorAll("[data-pdf]").forEach(el=>el.onchange=()=>{ S.pdfSel=S.pdfSel||{}; S.pdfSel[el.dataset.pdf]=el.checked; S.pdfTouched=true; pdfToggleLabel(); save(); });
+  pdfToggleLabel(); renderPkgMgr();
   const Bf=bf(); $("pdfWho").textContent=`${Bf.name||"Kein Name eingetragen (Tab „Befund“)"} · ${Bf.date?new Date(Bf.date).toLocaleDateString("de-DE"):""}`;
 }
 /* Firmen-Gestaltung: Deckblatt je Paket, Fußzeile auf den Report-Seiten, Rückseite (Bilder liegen neben der App) */
@@ -3524,13 +3585,22 @@ function renderBrandForm(){
   $("brReset").onclick=async()=>{ brandDraft={lines:["","",""],logo:null,logoWhite:true}; const where=await brandSave(JSON.parse(JSON.stringify(brandDraft))); renderBrandForm(); $("brNote").textContent=`Standard wiederhergestellt (${where}).`; };
   prev();
 }
+async function customCover(base,name){
+  const im=await loadImgEl(base), c=document.createElement("canvas"); c.width=im.naturalWidth; c.height=im.naturalHeight;
+  const x=c.getContext("2d"), k=c.width/1240; x.drawImage(im,0,0);
+  try{ await document.fonts.load(`italic 700 ${Math.round(106*k)}px Barlow`); }catch(e){}
+  let f=Math.round(106*k); const fam=" Barlow, Arial, sans-serif"; x.font=`italic 700 ${f}px${fam}`;
+  while(x.measureText(name).width>c.width*0.86&&f>30){ f-=2; x.font=`italic 700 ${f}px${fam}`; }
+  x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillText(name,c.width/2,830*k);
+  return c.toDataURL("image/jpeg",0.9);
+}
 async function makePdf(){
   const note=$("pdfNote"); const say=t=>{ if(note) note.textContent=t; const n2=$("loadNoteT"); if(n2) n2.textContent=t; };
   if(!window.jspdf||!window.jspdf.jsPDF){ say("Die PDF-Bibliothek konnte nicht geladen werden. Prüfe die Internetverbindung und lade die Seite neu."); return; }
   if(!PDF_SECS.some(([k])=>pdfOn(k))){ say("Bitte mindestens einen Inhalt auswählen."); return; }
   say("PDF wird erstellt …");
-  const tier=PDF_TIERS.find(t=>t[0]===pdfCoverTier());   // ohne Paket: nach Inhalt
-  let BR=null; try{ BR={cover:await brandImg(S.basic?"brand/cover_basic.jpg":`brand/cover_${pdfCoverTier()}.jpg`),back:await brandImg(S.basic?"brand/back_basic.jpg":"brand/back.jpg"),foot:await brandImg(S.basic?"brand/footer_basic.png":"brand/footer.png")}; if(brandActive()){ try{ const f=await brandFooter(BR.foot,MYBRAND), b=await brandBack(BR.back,MYBRAND); BR.foot=f; BR.back=b; }catch(e){} }   /* Logo und Kontaktdaten des Kontos */ /* WiFitBasic: eigenes Deckblatt, Fußzeile mit Ladenadresse */ }catch(e){ BR=null; }
+  const PC=pdfCover(), tier=[0,PC.name];   // Paketname für Titel und Dateiname
+  let BR=null; try{ BR={cover:S.basic?await brandImg("brand/cover_basic.jpg"):PC.file?await brandImg(PC.file):await customCover(await brandImg("brand/cover_custom.jpg"),PC.custom),back:await brandImg(S.basic?"brand/back_basic.jpg":"brand/back.jpg"),foot:await brandImg(S.basic?"brand/footer_basic.png":"brand/footer.png")}; if(brandActive()){ try{ const f=await brandFooter(BR.foot,MYBRAND), b=await brandBack(BR.back,MYBRAND); BR.foot=f; BR.back=b; }catch(e){} }   /* Logo und Kontaktdaten des Kontos */ /* WiFitBasic: eigenes Deckblatt, Fußzeile mit Ladenadresse */ }catch(e){ BR=null; }
   const {jsPDF}=window.jspdf, doc=new jsPDF({unit:"mm",format:"a4"}), Bf=bf(), Bd=body(), P=S.person;
   const FOOT_H=23.3;   // Höhe der Fußzeile bei voller Seitenbreite
   const M=16, PW=210-2*M, BOT=BR?297-FOOT_H-8:282; let y=M;
@@ -3618,7 +3688,7 @@ async function makePdf(){
 
   /* Titelkopf */
   col(C.pri,"Fill"); doc.rect(0,0,210,34,"F");
-  const RT=S.basic?"WiFitBasic Report":`Bikefitting ${tier[1]} · Report`;
+  const RT=S.basic?"WiFitBasic Report":`${tier[1]?"Bikefitting "+tier[1]:"Bikefitting"} · Report`;
   font(20,true); col([255,255,255]); doc.text(RT,M,16);
   font(10.5); doc.text(pdfTxt(`${Bf.name||"Name nicht angegeben"}${Bf.date?" · "+new Date(Bf.date).toLocaleDateString("de-DE"):""}`),M,24);
   const cb=findBike(S.sel); font(8.5); doc.text(pdfTxt(`Rad: ${cb?`${cb.b} ${cb.m} ${cb.s}`:"-"} · Fahrstil: ${P.style}`),M,29.5);
@@ -3774,7 +3844,7 @@ async function makePdf(){
     else doc.text(pdfTxt(`${Bf.name||""} · Seite ${i}/${n}`),210-M,292,{align:"right"});
     doc.setTextColor(0); }
   if(BR){ doc.addPage(); doc.addImage(BR.back,"JPEG",0,0,210,297); }
-  const fname=`${S.basic?"WiFitBasic":"Bikefitting_"+tier[1]}_Report_${(Bf.name||"Auswertung").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_${Bf.date||""}.pdf`;
+  const fname=`${S.basic?"WiFitBasic":"Bikefitting"+(tier[1]?"_"+tier[1].replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_"):"")}_Report_${(Bf.name||"Auswertung").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_${Bf.date||""}.pdf`;
   const blob=doc.output("blob");
   let dl=null; try{ dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null; }catch(e){}
   if(dl){
@@ -3834,7 +3904,7 @@ $("importBtn").onclick=()=>$("importIn").click();
 $("importIn").onchange=e=>{ const f=e.target.files[0]; if(f) importData(f); e.target.value=""; };
 $("pmDetails").addEventListener("toggle",()=>{ if($("pmDetails").open) renderPartsManager(); });
 /* ein Knopf: alle Inhalte an bzw. aus; ein gewähltes Paket wird dabei aufgehoben */
-$("pdfToggle").onclick=()=>{ const on=!pdfAllOn(); S.pdfTier=""; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,on])); renderPdfTab(); save(); };
+$("pdfToggle").onclick=()=>{ const on=!pdfAllOn(); S.pdfTier=""; S.pdfTouched=true; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,on])); renderPdfTab(); save(); };
 $("bfName").oninput=e=>{ bf().name=e.target.value; $("pName").value=e.target.value; save(); };
 /* Name und Datum auch im Tab „Person“ (gleiche Daten wie im Befund) */
 $("pName").oninput=e=>{ bf().name=e.target.value; $("bfName").value=e.target.value; save(); };
@@ -4312,7 +4382,7 @@ if(!S.stdStart1){ S.stdStart1=true; setTimeout(()=>{ $("suClear").click(); },0);
 syncPerson(); render(true);
 if(S.proAt===undefined) S.basic=true;   // Gerät kennt den Passwortstand noch nicht: sicherheitshalber in WiFitBasic starten
 markBasic(); applyBasic(); enforceLock(); showTab("person"); renderPwBox(); applyStyleStd(); renderStyleStd(); syncPerson(); render(true);   // App startet immer im Tab „Person“
-factoryLoad(); brandLoad(); renderBefund(); renderOwnBikes(); applyPendingCalib(); renderCalib(); if(S.tab==="setup") renderSetup(); if(S.tab==="pdf"){ renderPdfTab(); renderCP(); renderEV(); }
+factoryLoad(); brandLoad(); pdfPrefsLoad(); renderBefund(); renderOwnBikes(); applyPendingCalib(); renderCalib(); if(S.tab==="setup") renderSetup(); if(S.tab==="pdf"){ renderPdfTab(); renderCP(); renderEV(); }
 </script>
 <script>if("serviceWorker" in navigator&&location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
 </body>
