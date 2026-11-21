@@ -3414,8 +3414,7 @@ const pdfTier=()=>S.basic?"plus":(findPkg(S.pdfTier)?S.pdfTier:"");   /* "" = ke
 const pdfCover=()=>{ const id=pdfTier(), pk=findPkg(id);
   if(pk){ const std=PDF_TIERS.find(t=>t[1].toLowerCase()===String(pk.name).trim().toLowerCase());   // Plus/Advanced/Professional: gestaltetes Deckblatt
     return std?{file:`brand/cover_${std[0]}.jpg`,name:std[1]}:{custom:pk.name,name:pk.name}; }
-  if(BUILTIN_OK){ const t=["statik","dyn","mob","kraft"].some(k=>pdfOn(k))?"professional":pdfOn("video")?"advanced":"plus"; return {file:`brand/cover_${t}.jpg`,name:PDF_TIERS.find(x=>x[0]===t)[1]}; }
-  return {custom:"Report",name:""}; };
+  return {custom:"",name:""}; };   /* ohne Paket: Deckblatt nur mit „Bikefitting“, Titel „WiMove Bikefitting“ */
 /* Vorauswahl beim Öffnen: kein Paket, alle Inhalte oder ein Paket */
 function applyPdfDefault(){
   if(S.basic) return; const d=PDFPREFS.def||"";
@@ -3594,7 +3593,7 @@ async function customCover(base,name){
   try{ await document.fonts.load(`italic 700 ${Math.round(106*k)}px Barlow`); }catch(e){}
   let f=Math.round(106*k); const fam=" Barlow, Arial, sans-serif"; x.font=`italic 700 ${f}px${fam}`;
   while(x.measureText(name).width>c.width*0.86&&f>30){ f-=2; x.font=`italic 700 ${f}px${fam}`; }
-  x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillText(name,c.width/2,830*k);
+  x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="alphabetic"; if(name) x.fillText(name,c.width/2,830*k);
   return c.toDataURL("image/jpeg",0.9);
 }
 async function makePdf(){
@@ -3691,7 +3690,7 @@ async function makePdf(){
 
   /* Titelkopf */
   col(C.pri,"Fill"); doc.rect(0,0,210,34,"F");
-  const RT=S.basic?"WiFitBasic Report":`${tier[1]?"Bikefitting "+tier[1]:"Bikefitting"} · Report`;
+  const RT=S.basic?"WiFitBasic Report":(tier[1]||"WiMove Bikefitting");   /* Paketname, sonst WiMove Bikefitting */
   font(20,true); col([255,255,255]); doc.text(RT,M,16);
   font(10.5); doc.text(pdfTxt(`${Bf.name||"Name nicht angegeben"}${Bf.date?" · "+new Date(Bf.date).toLocaleDateString("de-DE"):""}`),M,24);
   const cb=findBike(S.sel); font(8.5); doc.text(pdfTxt(`Rad: ${cb?`${cb.b} ${cb.m} ${cb.s}`:"-"} · Fahrstil: ${P.style}`),M,29.5);
@@ -3777,7 +3776,7 @@ async function makePdf(){
     cmp("Sattelhöhe",mm(ca.sh),mm(cOpt.sh)); cmp("Sattelüberhöhung",mm(ca.drop),mm(cOpt.drop)); cmp("Abstand Sattel - Griff",mm(ca.dist),mm(cOpt.dist));
     cmp("Reach / Stack (Rahmen)",`${mm(ca.reach)} / ${mm(ca.stack)}`,`${mm(cOpt.reach)} / ${mm(cOpt.stack)}`);
     H2("Komponenten");
-    const PDF_SKIP=["barReach","stemHeight","sole","leverReach"];   // gekoppelte Maße der Teile nicht im Bericht
+    const PDF_SKIP=["barReach","stemHeight","sole","leverReach","pedalStack"];   // gekoppelte Maße der Teile nicht im Bericht
     for(const r of SU_ROWS) if(r[0]==="c"&&!PDF_SKIP.includes(r[1])){ const a=fmtSu(ci[r[1]]), b=(co[r[1]]===0||co[r[1]]==="0")?"wie Ist":(fmtSu(co[r[1]])||"wie Ist"); if(!a&&b==="wie Ist") continue; cmp(r[2],a||"-",b); }
   }
 
@@ -3847,7 +3846,7 @@ async function makePdf(){
     else doc.text(pdfTxt(`${Bf.name||""} · Seite ${i}/${n}`),210-M,292,{align:"right"});
     doc.setTextColor(0); }
   if(BR){ doc.addPage(); doc.addImage(BR.back,"JPEG",0,0,210,297); }
-  const fname=`${S.basic?"WiFitBasic":"Bikefitting"+(tier[1]?"_"+tier[1].replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_"):"")}_Report_${(Bf.name||"Auswertung").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_${Bf.date||""}.pdf`;
+  const fname=`${S.basic?"WiFitBasic":(tier[1]||"WiMove Bikefitting").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_Report_${(Bf.name||"Auswertung").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_${Bf.date||""}.pdf`;
   const blob=doc.output("blob");
   let dl=null; try{ dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null; }catch(e){}
   if(dl){
