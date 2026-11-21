@@ -561,11 +561,12 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
       <section>
         <h2>PDF erstellen</h2>
         <p class="src-line" id="pdfWho"></p>
+        <details class="acc adv" id="pkgDetails"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
         <div class="adv" id="pdfTierBox"><label class="f" style="margin-top:0">Paket</label><div class="chips" id="pdfTiers"></div><p class="note" id="pdfTierNote"></p></div>
-        <p class="note" style="margin-top:8px">Wähle ein Paket oder einzelne Inhalte für das PDF aus.</p>
-        <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
-        <div id="pdfSecs"></div>
-        <details class="acc adv" id="pkgDetails" style="margin-top:12px"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
+        <details class="acc" id="pdfSecsBox" style="margin-top:12px"><summary>Inhalte auswählen <span class="note" id="pdfSecsCount" style="margin:0 auto 0 10px;font-weight:400"></span></summary>
+          <div class="row" style="margin-top:4px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
+          <div id="pdfSecs"></div>
+        </details>
       </section>
       <section>
         <h2>Videoanalyse (Contemplas)</h2>
@@ -3478,7 +3479,8 @@ function renderPkgMgr(){
 }
 const pdfVisSecs=()=>PDF_SECS.filter(([k])=>!S.basic||BASIC_PDF.includes(k)).map(([k])=>k);
 const pdfAllOn=()=>pdfVisSecs().every(k=>pdfOn(k));
-function pdfToggleLabel(){ const b=$("pdfToggle"); if(!b) return; const on=pdfAllOn(); b.textContent=on?"Alle abwählen":"Alle auswählen"; b.setAttribute("aria-pressed",on); }
+function pdfToggleLabel(){ const b=$("pdfToggle"); if(!b) return; const on=pdfAllOn();
+  const vis=pdfVisSecs(), n=vis.filter(k=>pdfOn(k)).length; if($("pdfSecsCount")) $("pdfSecsCount").textContent=`${n} von ${vis.length} ausgewählt`; b.textContent=on?"Alle abwählen":"Alle auswählen"; b.setAttribute("aria-pressed",on); }
 function setPdfTier(id){ const t=findPkg(id); if(!t) return; S.pdfTier=id; S.pdfTouched=true; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,t.secs.includes(k)])); renderPdfTab(); save(); }
 const pdfOn=k=>!(S.pdfSel&&S.pdfSel[k]===false)&&!(S.basic&&!BASIC_PDF.includes(k));
 function renderPdfTab(){
