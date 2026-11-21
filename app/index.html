@@ -3412,9 +3412,8 @@ const findPkg=id=>id?allPkgs().find(x=>x.id===id):null;
 const pdfTier=()=>S.basic?"plus":(findPkg(S.pdfTier)?S.pdfTier:"");   /* "" = kein Paket gewählt (Standard) */
 /* Deckblatt: eingebautes Paket → eigenes Bild; eigenes Paket → Paketname; ohne Paket nach Inhalt (nur Patrick) bzw. „Report“ */
 const pdfCover=()=>{ const id=pdfTier(), pk=findPkg(id);
-  if(pk){ const std=PDF_TIERS.find(t=>t[1].toLowerCase()===String(pk.name).trim().toLowerCase());   // Plus/Advanced/Professional: gestaltetes Deckblatt
-    return std?{file:`brand/cover_${std[0]}.jpg`,name:std[1]}:{custom:pk.name,name:pk.name}; }
-  return {custom:"",name:""}; };   /* ohne Paket: Deckblatt nur mit „Bikefitting“, Titel „WiMove Bikefitting“ */
+  if(pk) return {custom:String(pk.name).trim(),name:String(pk.name).trim()};   /* Deckblatt zeigt nur den Paketnamen */
+  return {custom:"WiFitPro",name:""}; };   /* ohne Paket: Deckblatt „WiFitPro“, Titel „WiFitPro Report“ */
 /* Vorauswahl beim Öffnen: kein Paket, alle Inhalte oder ein Paket */
 function applyPdfDefault(){
   if(S.basic) return; const d=PDFPREFS.def||"";
@@ -3587,13 +3586,19 @@ function renderBrandForm(){
   $("brReset").onclick=async()=>{ brandDraft={lines:["","",""],logo:null,logoWhite:true}; const where=await brandSave(JSON.parse(JSON.stringify(brandDraft))); renderBrandForm(); $("brNote").textContent=`Standard wiederhergestellt (${where}).`; };
   prev();
 }
-async function customCover(base,name){
+async function customCover(base,name){   /* Deckblatt ohne Titel, Paketname groß in ein oder zwei Zeilen */
   const im=await loadImgEl(base), c=document.createElement("canvas"); c.width=im.naturalWidth; c.height=im.naturalHeight;
   const x=c.getContext("2d"), k=c.width/1240; x.drawImage(im,0,0);
   try{ await document.fonts.load(`italic 700 ${Math.round(106*k)}px Barlow`); }catch(e){}
-  let f=Math.round(106*k); const fam=" Barlow, Arial, sans-serif"; x.font=`italic 700 ${f}px${fam}`;
-  while(x.measureText(name).width>c.width*0.86&&f>30){ f-=2; x.font=`italic 700 ${f}px${fam}`; }
-  x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="alphabetic"; if(name) x.fillText(name,c.width/2,830*k);
+  const fam=" Barlow, Arial, sans-serif", maxW=c.width*0.86; let f=Math.round(106*k); x.font=`italic 700 ${f}px${fam}`;
+  x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="alphabetic";
+  let lines=[name];
+  if(name&&x.measureText(name).width>maxW*0.55&&name.includes(" ")){   // längere Namen wie „Bikefitting Plus“ zweizeilig wie im Original: an der Lücke nahe der Mitte umbrechen
+    const sp=[...name.matchAll(/ /g)].map(m=>m.index); const cut=sp.reduce((b,i)=>Math.abs(i-name.length/2)<Math.abs(b-name.length/2)?i:b,sp[0]);
+    lines=[name.slice(0,cut),name.slice(cut+1)]; }
+  while(lines.some(l=>x.measureText(l).width>maxW)&&f>30){ f-=2; x.font=`italic 700 ${f}px${fam}`; }
+  const ys=lines.length>1?[715,830]:[775];
+  if(name) lines.forEach((l,i)=>x.fillText(l,c.width/2,ys[i]*k));
   return c.toDataURL("image/jpeg",0.9);
 }
 async function makePdf(){
@@ -3690,7 +3695,7 @@ async function makePdf(){
 
   /* Titelkopf */
   col(C.pri,"Fill"); doc.rect(0,0,210,34,"F");
-  const RT=S.basic?"WiFitBasic Report":(tier[1]||"WiMove Bikefitting");   /* Paketname, sonst WiMove Bikefitting */
+  const RT=S.basic?"WiFitBasic Report":`${tier[1]||"WiFitPro"} Report`;   /* Paketname + Report, sonst WiFitPro Report */
   font(20,true); col([255,255,255]); doc.text(RT,M,16);
   font(10.5); doc.text(pdfTxt(`${Bf.name||"Name nicht angegeben"}${Bf.date?" · "+new Date(Bf.date).toLocaleDateString("de-DE"):""}`),M,24);
   const cb=findBike(S.sel); font(8.5); doc.text(pdfTxt(`Rad: ${cb?`${cb.b} ${cb.m} ${cb.s}`:"-"} · Fahrstil: ${P.style}`),M,29.5);
@@ -3846,7 +3851,7 @@ async function makePdf(){
     else doc.text(pdfTxt(`${Bf.name||""} · Seite ${i}/${n}`),210-M,292,{align:"right"});
     doc.setTextColor(0); }
   if(BR){ doc.addPage(); doc.addImage(BR.back,"JPEG",0,0,210,297); }
-  const fname=`${S.basic?"WiFitBasic":(tier[1]||"WiMove Bikefitting").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_Report_${(Bf.name||"Auswertung").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_${Bf.date||""}.pdf`;
+  const fname=`${S.basic?"WiFitBasic":(tier[1]||"WiFitPro").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_Report_${(Bf.name||"Auswertung").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_${Bf.date||""}.pdf`;
   const blob=doc.output("blob");
   let dl=null; try{ dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null; }catch(e){}
   if(dl){
