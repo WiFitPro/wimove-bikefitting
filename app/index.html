@@ -3449,8 +3449,8 @@ const secNames=secs=>secs.map(k=>(PDF_SECS.find(z=>z[0]===k)||[0,k])[1]).join(",
 function renderPkgMgr(){
   const box=$("pkgMgr"); if(!box) return; const own=PDFPREFS.pkgs||[];
   box.innerHTML=`<p class="note" style="margin-top:0">Eigene Pakete gelten nur für dein Konto. Ein Paket übernimmt die gerade angehakten Inhalte.</p>
-    ${own.length?`<div class="plist">${own.map((x,i)=>`<div class="pentry"><div><b>${esc(x.name)}</b><br><span class="note">${esc(secNames(x.secs)||"–")}</span></div>
-      <div class="row" style="flex:none;gap:4px"><button type="button" class="btn ghost small" data-pkgupd="${i}" title="Paket mit der aktuellen Auswahl überschreiben">Aktualisieren</button><button type="button" class="btn ghost small" data-pkgdel="${i}">Löschen</button></div></div>`).join("")}</div>`:`<p class="note">Noch keine eigenen Pakete.</p>`}
+    ${own.length?`<div class="plist">${own.map((x,i)=>`<div class="pentry"><div style="flex:1;min-width:0"><b data-pkgname="${i}">${esc(x.name)}</b><br><span class="note">${esc(secNames(x.secs)||"–")}</span></div>
+      <div class="row" style="flex:none;gap:4px"><button type="button" class="btn ghost small" data-pkgren="${i}">Umbenennen</button><button type="button" class="btn ghost small" data-pkgupd="${i}" title="Paket mit der aktuellen Auswahl überschreiben">Aktualisieren</button><button type="button" class="btn ghost small" data-pkgdel="${i}">Löschen</button></div></div>`).join("")}</div>`:`<p class="note">Noch keine eigenen Pakete.</p>`}
     <div class="two" style="margin-top:10px;align-items:end"><div><label class="f" for="pkgName">Neues Paket aus der aktuellen Auswahl</label><input class="bfi" id="pkgName" placeholder="z. B. Komfort-Fitting" maxlength="40"></div>
       <div><button type="button" class="btn small" id="pkgAdd">Als Paket speichern</button></div></div>
     <label class="f" for="pkgDef">Voreinstellung beim Öffnen der App</label>
@@ -3463,6 +3463,14 @@ function renderPkgMgr(){
     if(allPkgs().some(x=>x.name.toLowerCase()===n.toLowerCase())){ $("pkgNote").textContent="Ein Paket mit diesem Namen gibt es schon."; return; }
     const id="u_"+Date.now().toString(36); PDFPREFS.pkgs.push({id,name:n,secs:cur}); S.pdfTier=id; S.pdfTouched=true; done(`Paket „${n}“ angelegt`); };
   box.querySelectorAll("[data-pkgupd]").forEach(b=>b.onclick=()=>{ const x=PDFPREFS.pkgs[+b.dataset.pkgupd], cur=pdfCurSecs(); if(!cur.length){ $("pkgNote").textContent="Bitte zuerst Inhalte anhaken."; return; } x.secs=cur; S.pdfTier=x.id; done(`Paket „${x.name}“ aktualisiert`); });
+  /* Umbenennen: Name wird zum Eingabefeld, Enter oder OK speichert, Esc bricht ab */
+  box.querySelectorAll("[data-pkgren]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.pkgren, x=PDFPREFS.pkgs[i], nb=box.querySelector(`[data-pkgname="${i}"]`); if(!nb||nb.querySelector("input")) return;
+    nb.innerHTML=`<span class="row" style="gap:4px;flex-wrap:nowrap"><input class="bfi" maxlength="40" style="min-width:0;flex:1"><button type="button" class="btn small">OK</button><button type="button" class="btn ghost small">Abbrechen</button></span>`;
+    const inp=nb.querySelector("input"), [ok,cancel]=nb.querySelectorAll("button"); inp.value=x.name; inp.focus(); inp.select();
+    const commit=()=>{ const n=inp.value.trim(); if(!n){ $("pkgNote").textContent="Bitte einen Namen eingeben."; return; }
+      if(n!==x.name&&allPkgs().some(y=>y.id!==x.id&&y.name.toLowerCase()===n.toLowerCase())){ $("pkgNote").textContent="Ein Paket mit diesem Namen gibt es schon."; return; }
+      const old=x.name; x.name=n; done(n===old?"Name unverändert":`„${old}“ umbenannt in „${n}“`); };
+    ok.onclick=commit; cancel.onclick=()=>renderPdfTab(); inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); commit(); } if(e.key==="Escape") renderPdfTab(); }; });
   box.querySelectorAll("[data-pkgdel]").forEach(b=>b.onclick=()=>{ const x=PDFPREFS.pkgs[+b.dataset.pkgdel];
     if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Wirklich löschen?"; b.classList.remove("ghost"); return; }   /* zweiter Klick löscht */
     PDFPREFS.pkgs.splice(+b.dataset.pkgdel,1); if(PDFPREFS.def===x.id) PDFPREFS.def=""; if(S.pdfTier===x.id) S.pdfTier=""; done(`Paket „${x.name}“ gelöscht`); });
