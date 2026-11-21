@@ -3447,23 +3447,40 @@ async function pdfPrefsSave(){
 }
 const pdfCurSecs=()=>PDF_SECS.map(([k])=>k).filter(k=>pdfOn(k));
 const secNames=secs=>secs.map(k=>(PDF_SECS.find(z=>z[0]===k)||[0,k])[1]).join(", ");
+let pkgEdit=null;   /* offener Paket-Editor: {i: Index oder null für neu, name, secs} */
 function renderPkgMgr(){
   const box=$("pkgMgr"); if(!box) return; const own=PDFPREFS.pkgs||[];
-  box.innerHTML=`<p class="note" style="margin-top:0">Eigene Pakete gelten nur für dein Konto. Ein Paket übernimmt die gerade angehakten Inhalte.</p>
+  const E=pkgEdit, edAll=E&&PDF_SECS.every(([k])=>E.secs.includes(k));
+  const ed=E?`<div class="suadd" id="pkgEditor"><b>${E.i===null?"Neues Paket anlegen":`Paket „${esc(own[E.i].name)}“ aktualisieren`}</b>
+      <label class="f" for="pkgEdName">Name des Pakets</label><input class="bfi" id="pkgEdName" maxlength="40" placeholder="z. B. Bikefitting Plus" value="${esc(E.name)}">
+      <div class="row" style="margin-top:10px;justify-content:space-between"><span class="note" style="margin:0">Inhalte (${E.secs.length} von ${PDF_SECS.length})</span><button type="button" class="btn ghost small" id="pkgEdAll">${edAll?"Alle abwählen":"Alle auswählen"}</button></div>
+      ${PDF_SECS.map(([k,l])=>`<label class="toggle" style="display:flex;margin:6px 0"><input type="checkbox" data-pkged="${k}"${E.secs.includes(k)?" checked":""}> ${l}</label>`).join("")}
+      <div class="row" style="margin-top:10px"><button type="button" class="btn small" id="pkgEdSave">Speichern</button><button type="button" class="btn ghost small" id="pkgEdCancel">Abbrechen</button></div></div>`:"";
+  box.innerHTML=`<p class="note" style="margin-top:0">Eigene Pakete gelten nur für dein Konto.</p>
     ${own.length?`<div class="plist">${own.map((x,i)=>`<div class="pentry"><div style="flex:1;min-width:0"><b data-pkgname="${i}">${esc(x.name)}</b><br><span class="note">${esc(secNames(x.secs)||"–")}</span></div>
-      <div class="row" style="flex:none;gap:4px"><button type="button" class="btn ghost small" data-pkgren="${i}">Umbenennen</button><button type="button" class="btn ghost small" data-pkgupd="${i}" title="Paket mit der aktuellen Auswahl überschreiben">Aktualisieren</button><button type="button" class="btn ghost small" data-pkgdel="${i}">Löschen</button></div></div>`).join("")}</div>`:`<p class="note">Noch keine eigenen Pakete.</p>`}
-    <div class="two" style="margin-top:10px;align-items:end"><div><label class="f" for="pkgName">Neues Paket aus der aktuellen Auswahl</label><input class="bfi" id="pkgName" placeholder="z. B. Komfort-Fitting" maxlength="40"></div>
-      <div><button type="button" class="btn small" id="pkgAdd">Als Paket speichern</button></div></div>
+      <div class="row" style="flex:none;gap:4px"><button type="button" class="btn ghost small" data-pkgren="${i}">Umbenennen</button><button type="button" class="btn ghost small" data-pkgupd="${i}" title="Inhalte des Pakets ändern">Aktualisieren</button><button type="button" class="btn ghost small" data-pkgdel="${i}">Löschen</button></div></div>${E&&E.i===i?ed:""}`).join("")}</div>`:`<p class="note">Noch keine eigenen Pakete.</p>`}
+    ${E&&E.i===null?ed:`<div class="row" style="margin-top:10px"><button type="button" class="btn small" id="pkgNew">+ Neues Paket anlegen</button></div>`}
     <label class="f" for="pkgDef">Voreinstellung beim Öffnen der App</label>
     <select class="bfi" id="pkgDef"><option value="">Kein Paket (nichts ausgewählt)</option><option value="all">Alle Inhalte</option>${allPkgs().map(x=>`<option value="${esc(x.id)}">${esc(x.builtin?"Bikefitting "+x.name:x.name)}</option>`).join("")}</select>
     <p class="note" id="pkgNote"></p>`;
   $("pkgDef").value=findPkg(PDFPREFS.def)||PDFPREFS.def==="all"?PDFPREFS.def:"";
   const done=async t=>{ const w=await pdfPrefsSave(); renderPdfTab(); $("pkgNote").textContent=`${t} – gespeichert ${w}.`; };
-  $("pkgAdd").onclick=()=>{ const n=$("pkgName").value.trim(), cur=pdfCurSecs(); if(!n){ $("pkgNote").textContent="Bitte einen Namen eingeben."; return; }
-    if(!cur.length){ $("pkgNote").textContent="Bitte zuerst Inhalte anhaken."; return; }
-    if(allPkgs().some(x=>x.name.toLowerCase()===n.toLowerCase())){ $("pkgNote").textContent="Ein Paket mit diesem Namen gibt es schon."; return; }
-    const id="u_"+Date.now().toString(36); PDFPREFS.pkgs.push({id,name:n,secs:cur}); S.pdfTier=id; S.pdfTouched=true; done(`Paket „${n}“ angelegt`); };
-  box.querySelectorAll("[data-pkgupd]").forEach(b=>b.onclick=()=>{ const x=PDFPREFS.pkgs[+b.dataset.pkgupd], cur=pdfCurSecs(); if(!cur.length){ $("pkgNote").textContent="Bitte zuerst Inhalte anhaken."; return; } x.secs=cur; S.pdfTier=x.id; done(`Paket „${x.name}“ aktualisiert`); });
+  const openEd=v=>{ pkgEdit=v; renderPkgMgr(); const ed=$("pkgEditor"); if(ed){ try{ ed.scrollIntoView({block:"nearest",behavior:"smooth"}); }catch(e){} if(v.i===null) $("pkgEdName").focus(); } };
+  if($("pkgNew")) $("pkgNew").onclick=()=>openEd({i:null,name:"",secs:[]});
+  box.querySelectorAll("[data-pkgupd]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.pkgupd, x=PDFPREFS.pkgs[i]; openEd({i,name:x.name,secs:[...x.secs]}); });
+  if(E){
+    $("pkgEdName").oninput=e=>{ E.name=e.target.value; };
+    box.querySelectorAll("[data-pkged]").forEach(c=>c.onchange=()=>{ const k=c.dataset.pkged; E.secs=c.checked?[...new Set([...E.secs,k])]:E.secs.filter(z=>z!==k); renderPkgMgr(); });
+    $("pkgEdAll").onclick=()=>{ E.secs=edAll?[]:PDF_SECS.map(([k])=>k); renderPkgMgr(); };
+    $("pkgEdCancel").onclick=()=>{ pkgEdit=null; renderPkgMgr(); };
+    $("pkgEdSave").onclick=()=>{ const n=E.name.trim(), secs=PDF_SECS.map(([k])=>k).filter(k=>E.secs.includes(k)), cur=E.i===null?null:own[E.i];
+      if(!n){ $("pkgNote").textContent="Bitte einen Namen eingeben."; return; }
+      if(!secs.length){ $("pkgNote").textContent="Bitte mindestens einen Inhalt anhaken."; return; }
+      if(allPkgs().some(y=>(!cur||y.id!==cur.id)&&y.name.toLowerCase()===n.toLowerCase())){ $("pkgNote").textContent="Ein Paket mit diesem Namen gibt es schon."; return; }
+      let id; if(cur){ cur.name=n; cur.secs=secs; id=cur.id; } else { id="u_"+Date.now().toString(36); PDFPREFS.pkgs.push({id,name:n,secs}); }
+      pkgEdit=null; S.pdfTier=id; S.pdfTouched=true; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,secs.includes(k)]));   /* gespeichertes Paket gleich auswählen */
+      done(cur?`Paket „${n}“ aktualisiert`:`Paket „${n}“ angelegt`); };
+  }
   /* Umbenennen: Name wird zum Eingabefeld, Enter oder OK speichert, Esc bricht ab */
   box.querySelectorAll("[data-pkgren]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.pkgren, x=PDFPREFS.pkgs[i], nb=box.querySelector(`[data-pkgname="${i}"]`); if(!nb||nb.querySelector("input")) return;
     nb.innerHTML=`<span class="row" style="gap:4px;flex-wrap:nowrap"><input class="bfi" maxlength="40" style="min-width:0;flex:1"><button type="button" class="btn small">OK</button><button type="button" class="btn ghost small">Abbrechen</button></span>`;
