@@ -2567,16 +2567,17 @@ const painRegions=()=>BF_PAIN.flatMap(([k,l,lr])=>lr?[[k+"_l",l+" links"],[k+"_r
 const noPainOn=()=>{ const B=bf(); return !(B.painList||[]).length&&B.noPain!==false; };
 function renderPainPicker(){
   const box=$("bfPainPick"); if(!box) return;
-  const hasList=(bf().painList||[]).length>0;
-  const npBox=`<label class="toggle" style="margin:10px 0 2px;font-weight:600"><input type="checkbox" id="pp_none"${noPainOn()?" checked":""}${hasList?" disabled":""}> Keine Beschwerden</label>${hasList?`<span class="note" style="margin-left:8px">(Beschwerden eingetragen)</span>`:""}`;
-  if(noPainOn()){ box.innerHTML=npBox+`<p class="note">Häkchen entfernen, um Beschwerden einzutragen.</p>`;
-    $("pp_none").onchange=e=>{ bf().noPain=e.target.checked; save(); renderPainPicker(); }; return; }
+  const hasList=(bf().painList||[]).length>0, none=noPainOn();
+  /* „Keine Beschwerden“ als erster Eintrag der Bereichsauswahl */
+  const regionSel=`<h3 style="margin:14px 0 6px">Beschwerdebild</h3>
+    <label class="f" for="pp_region">Bereich</label><select class="bfi ppRegion" id="pp_region"><option value="__none"${none?" selected":""}${hasList?" disabled":""}>Keine Beschwerden${hasList?" (erst Einträge löschen)":""}</option>${painRegions().map(([k,l])=>`<option value="${k}"${!none&&k===painDraft.region?" selected":""}>${l}</option>`).join("")}</select>`;
+  const onRegion=e=>{ const v=e.target.value; if(v==="__none"){ bf().noPain=true; } else { bf().noPain=false; painDraft.region=v; painDraft.items=[]; } save(); renderPainPicker(); };
+  if(none){ box.innerHTML=regionSel+`<p class="note">Zum Eintragen einen Bereich wählen.</p>`; $("pp_region").onchange=onRegion; return; }
   const D=painDraft, base=D.region.replace(/_[lr]$/,""), cat=PAIN_CAT[base]||[];
   D.items=D.items.filter(x=>cat.includes(x)||!Object.values(PAIN_CAT).flat().includes(x));
   const chips=(arr,sel,attr)=>arr.map(x=>`<button type="button" class="chip pchip" ${attr}="${esc(x)}" aria-pressed="${sel.includes(x)}">${esc(x)}</button>`).join("");
   const list=(bf().painList||[]);
-  box.innerHTML=npBox+`<h3 style="margin:14px 0 6px">Beschwerdebild</h3>
-    <label class="f" for="pp_region">Bereich</label><select class="bfi ppRegion" id="pp_region">${painRegions().map(([k,l])=>`<option value="${k}"${k===D.region?" selected":""}>${l}</option>`).join("")}</select>
+  box.innerHTML=regionSel+`
     <label class="f">Beschwerden <span class="note">(Mehrfachauswahl)</span></label><div class="chips">${chips(cat,D.items,"data-pitem")}</div>
     <label class="f">Schmerzqualität <span class="note">(Mehrfachauswahl)</span></label><div class="chips">${chips(PAIN_QUAL,D.qual,"data-pqual")}</div>
     <div class="two"><div><label class="f" for="pp_vas">Stärke (0–10)</label><select class="bfi" id="pp_vas"><option value="">–</option>${Array.from({length:11},(_,i)=>`<option${String(i)===String(D.vas)?" selected":""}>${i}</option>`).join("")}</select></div>
@@ -2584,8 +2585,7 @@ function renderPainPicker(){
     <label class="f" for="pp_text">Freitext zu ${esc(painRegions().find(r=>r[0]===D.region)[1])}</label><input class="bfi" id="pp_text" value="${esc(bf()["p_"+D.region]||"")}" placeholder="z. B. seit wann, Auslöser, Besserung">
     <div class="row" style="margin-top:10px"><button type="button" class="btn small" id="pp_add">Hinzufügen</button></div><p class="note warn" id="pp_err"></p>
     ${list.length?`<div class="plist">${list.map((e,i)=>`<div class="pentry"><div><b>${esc(e.regionLabel)}</b>: ${esc(e.items.join(", ")||"–")}<br><span class="note">${esc([e.qual.join(", "),e.vas!==""?`Stärke ${e.vas}/10`:"",e.when&&e.when!=="–"?e.when:""].filter(Boolean).join(" · "))}</span>${bf()["p_"+e.region]?`<br><span class="note"><i>${esc(bf()["p_"+e.region])}</i></span>`:""}</div><button type="button" class="suback" data-pdel="${i}" aria-label="Eintrag entfernen" title="Entfernen">✕</button></div>`).join("")}</div>`:""}`;
-  $("pp_none").onchange=e=>{ bf().noPain=e.target.checked; save(); renderPainPicker(); };
-  $("pp_region").onchange=e=>{ D.region=e.target.value; D.items=[]; renderPainPicker(); };
+  $("pp_region").onchange=onRegion;
   box.querySelectorAll("[data-pitem]").forEach(b=>b.onclick=()=>{ const x=b.dataset.pitem; D.items=D.items.includes(x)?D.items.filter(y=>y!==x):[...D.items,x]; b.setAttribute("aria-pressed",D.items.includes(x)); });
   box.querySelectorAll("[data-pqual]").forEach(b=>b.onclick=()=>{ const x=b.dataset.pqual; D.qual=D.qual.includes(x)?D.qual.filter(y=>y!==x):[...D.qual,x]; b.setAttribute("aria-pressed",D.qual.includes(x)); });
   $("pp_vas").onchange=e=>{ D.vas=e.target.value; };
