@@ -1406,6 +1406,7 @@ const SUG_DEF={knee:145,kops:0,back:NaN,shoulder:NaN,elbow:160};
 const sugT=()=>{ const eT=(()=>{ try{ const v=body().elbowT; return isFinite(v)?v:160; }catch(e){ return 160; } })(); const t={...SUG_DEF,elbow:eT,...(S.sugT||{})}; for(const k in t) if(!(typeof t[k]==="number"&&isFinite(t[k]))) t[k]=k==="back"?NaN:k==="shoulder"?styleShoulder():SUG_DEF[k]; return t; };
 let sugCache={key:"",val:null};
 const styleBack=()=>(STYLE_STD[S.person.style]||STYLE_STD.sportlich).back;
+const STEM_IDEAL=105, STEM_PREF=0.6;
 function suggest(){
   const B=body(), c0={...S.comp}, T=sugT();
   const back=isFinite(T.back)?T.back:styleBack();
@@ -1435,7 +1436,8 @@ function suggest(){
     const Sh=add(add(hip,mul(u,a)),mul({x:-u.y,y:u.x},hh));
     const bk=degs(Math.atan2(Sh.y-hip.y,Sh.x-hip.x));
     const E=ik(Sh,G,L1,L2,-1).mid, shA=angAt(Sh,hip,E);
-    const cost=((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==c0.stemAngle?0.3:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400;
+    const cost=((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==c0.stemAngle?0.3:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400
+      +STEM_PREF*((L-STEM_IDEAL)/20)**2;   /* Vorliebe für übliche Vorbauten um 100–110 mm, Abweichung nur wenn die Winkel es verlangen */
     if(!best||cost<best.cost) best={L,sp,sa,cost,grip:G,back:bk,shoulder:shA};
   }
   if(!best){ const g=compute(vals,base.c); best={L:c0.stemLen,sp:c0.spacer,sa:c0.stemAngle,grip:g.grip,back,shoulder:NaN,cost:Infinity}; }
