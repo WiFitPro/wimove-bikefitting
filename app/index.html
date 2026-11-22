@@ -1409,6 +1409,8 @@ const styleBack=()=>(STYLE_STD[S.person.style]||STYLE_STD.sportlich).back;
 const STEM_PREF=0.6;
 const STEM_BY_STYLE={comfort:90,endurance:100,sportlich:105,ambitioniert:115,professional:125};   // bevorzugte Vorbaulänge je Sitzposition (mm)
 const stemIdeal=()=>STEM_BY_STYLE[S.person&&S.person.style]||105;
+const SPACER_BY_STYLE={comfort:25,endurance:20,sportlich:15,ambitioniert:10,professional:5};   // übliche Spacerhöhe je Sitzposition (mm)
+const spacerIdeal=()=>{ const v=SPACER_BY_STYLE[S.person&&S.person.style]; return isFinite(v)?v:15; };
 function suggest(){
   const B=body(), c0={...S.comp}, T=sugT();
   const back=isFinite(T.back)?T.back:styleBack();
@@ -1868,12 +1870,13 @@ function sizeFitFor(bike){   // Vorschlag für diese Größe; Bewertung nach Vor
     const expo=isFinite(v.stl)&&v.stl>0?r.sh-v.stl:NaN;   // Sattelhöhe über Sitzrohr-Ende (Stützenauszug inkl. Sattel)
     let pen=(isFinite(r.cost)?0:9)
       +Math.max(0,Math.abs(p.stemLen-SI)-20)/10
-      +(p.spacer>30?(p.spacer-30)/5:0)+(p.spacer<5?(5-p.spacer)/2.5:0)
+      +(p.spacer>30?(p.spacer-30)/5:0)   /* 0 mm Spacer ist erlaubt; ob die Front dann noch zu hoch ist, zeigt die Rückenwinkel-Abweichung */
       +(isFinite(r.back)&&isFinite(r.backTarget)?Math.max(0,Math.abs(r.back-r.backTarget)-3)/3:0)
       +(isFinite(r.ev&&r.ev.shoulder)?Math.max(0,Math.abs(r.ev.shoulder-sugT().shoulder)-6)/6:0)
       +(isFinite(expo)?Math.max(0,expo-SEAT_EXPO_MAX)/15+Math.max(0,SEAT_EXPO_MIN-expo)/15:0);
     pen+=isFinite(r.saRef)&&p.stemAngle!==r.saRef?Math.abs(p.stemAngle-r.saRef)/8:0;   // Größe nicht durch einen steileren Vorbau „schönrechnen“
-    const soft=Math.abs(p.stemLen-SI)/40+Math.abs(p.spacer-15)/30+(isFinite(expo)?Math.abs(expo-0.26*r.sh)/150:0);
+    const soft=Math.abs(p.stemLen-SI)/40+Math.abs(p.spacer-spacerIdeal())/30
+      +(isFinite(r.back)&&isFinite(r.backTarget)?Math.abs(r.back-r.backTarget)/5:0)+(isFinite(expo)?Math.abs(expo-0.26*r.sh)/150:0);
     return {pen,score:pen+soft,stem:p.stemLen,spacer:p.spacer,setback:Math.round(-dev),expo:isFinite(expo)?Math.round(expo):null};
   }catch(e){ return {pen:99,score:99}; }
   finally{ vals=keepV; sugCache=keepC; }
