@@ -2687,7 +2687,7 @@ function renderPainPicker(){
   box.innerHTML=regionSel+`
     <label class="f">Beschwerden <span class="note">(Mehrfachauswahl)</span></label><div class="chips">${chips(cat,D.items,"data-pitem")}</div>
     <label class="f">Schmerzqualität <span class="note">(Mehrfachauswahl)</span></label><div class="chips">${chips(PAIN_QUAL,D.qual,"data-pqual")}</div>
-    <div class="two"><div><label class="f" for="pp_vas">Stärke (0–10)</label><select class="bfi" id="pp_vas"><option value="">–</option>${Array.from({length:11},(_,i)=>`<option${String(i)===String(D.vas)?" selected":""}>${i}</option>`).join("")}</select></div>
+    <div><div><label class="f" for="pp_vas">Stärke (0–10)</label><select class="bfi" id="pp_vas"><option value="">–</option>${Array.from({length:11},(_,i)=>`<option${String(i)===String(D.vas)?" selected":""}>${i}</option>`).join("")}</select></div>
       <div><label class="f" for="pp_when">Auftreten</label><select class="bfi" id="pp_when">${PAIN_WHEN.map(x=>`<option${x===D.when?" selected":""}>${x}</option>`).join("")}</select></div></div>
     <label class="f" for="pp_text">Freitext zu ${esc(painRegions().find(r=>r[0]===D.region)[1])}</label><input class="bfi" id="pp_text" value="${esc(bf()["p_"+D.region]||"")}" placeholder="z. B. seit wann, Auslöser, Besserung">
     <div class="row" style="margin-top:10px"><button type="button" class="btn small" id="pp_add">Hinzufügen</button></div><p class="note warn" id="pp_err"></p>
