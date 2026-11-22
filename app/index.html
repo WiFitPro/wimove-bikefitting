@@ -1427,7 +1427,9 @@ function suggest(){
   const L1=B.upperArm+(isFinite(B.protr)?B.protr:40), L2=B.forearm, T0=shLen(B);
   const dt=Math.sqrt(L1*L1+L2*L2-2*L1*L2*Math.cos(rad(T.elbow)));
   const integ=(()=>{ const b=FIT.lists.bars.find(x=>x.name===S.compSel.bar); return !!(b&&isFinite(b.angle)); })();
-  const angles=[...new Set([c0.stemAngle,...(integ?[]:[-6,-10,-17])])];
+  /* Vorbauwinkel: mit gewähltem Vorbau/Cockpit dessen Winkel, sonst Standard −6°; steilere Winkel nur wenn die Position es deutlich verlangt */
+  const saRef=(integ||S.compSel.stem)?c0.stemAngle:(COMP.find(x=>x.key==="stemAngle")||{def:-6}).def;
+  const angles=[...new Set([saRef,...(integ?[]:[-6,-10,-17])])];
   let best=null;
   for(const sa of angles) for(let L=60;L<=140;L+=10) for(let sp=0;sp<=40;sp+=5){
     const g=compute(vals,{...base.c,stemLen:L,spacer:sp,stemAngle:sa}), G=g.grip;
@@ -1436,7 +1438,7 @@ function suggest(){
     const Sh=add(add(hip,mul(u,a)),mul({x:-u.y,y:u.x},hh));
     const bk=degs(Math.atan2(Sh.y-hip.y,Sh.x-hip.x));
     const E=ik(Sh,G,L1,L2,-1).mid, shA=angAt(Sh,hip,E);
-    const cost=((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==c0.stemAngle?0.3:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400
+    const cost=((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==saRef?0.3+Math.abs(sa-saRef)*0.06:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400
       +STEM_PREF*((L-STEM_IDEAL)/20)**2;   /* Vorliebe für übliche Vorbauten um 100–110 mm, Abweichung nur wenn die Winkel es verlangen */
     if(!best||cost<best.cost) best={L,sp,sa,cost,grip:G,back:bk,shoulder:shA};
   }
