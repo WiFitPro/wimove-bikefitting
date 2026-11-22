@@ -1854,19 +1854,22 @@ const opt=(v,t,sel,dis)=>`<option value="${esc(v)}"${sel?" selected":""}${dis?" 
 function pickSize(b,m,pref){ const l=sizesOf(b,m),ok=l.filter(x=>x.hasData); if(pref&&ok.some(x=>x.s===pref)) return pref; const p=ok.length?ok:l; return p.length?p[Math.floor((p.length-1)/2)].s:""; }
 /* ================= Rahmengrößen-Empfehlung: jede Größe des Modells mit dem Vorschlag durchrechnen ================= */
 let sizeFitCache={key:"",res:null}, sizeFitT=null;
+const SEAT_EXPO_MIN=120, SEAT_EXPO_MAX=290;   // sinnvoller Bereich Sattelhöhe minus Sitzrohrlänge (mm)
 function sizeFitFor(bike){   // Vorschlag für diese Größe; Bewertung nach Vorbau, Spacer, Sattelversatz zur Stütze und Haltung
   const keepV=vals, keepC=sugCache;
   try{
     vals=valuesFor(bike,false).v; sugCache={key:"",val:null};
     const r=suggest(), p=r.parts, v=vals;
     const dev=r.sb-r.sy/Math.tan(rad(v.sta));   // Sattel vor (+) / hinter (−) der Stützenachse bei Nullversatz
+    const expo=isFinite(v.stl)&&v.stl>0?r.sh-v.stl:NaN;   // Sattelhöhe über Sitzrohr-Ende (Stützenauszug inkl. Sattel)
     const pen=(isFinite(r.cost)?0:9)
       +Math.max(0,Math.abs(p.stemLen-100)-20)/10
       +(p.spacer>30?(p.spacer-30)/5:0)+(p.spacer<5?(5-p.spacer)/2.5:0)
       +(isFinite(r.back)&&isFinite(r.backTarget)?Math.max(0,Math.abs(r.back-r.backTarget)-3)/3:0)
-      +(isFinite(r.ev&&r.ev.shoulder)?Math.max(0,Math.abs(r.ev.shoulder-sugT().shoulder)-6)/6:0);
-    const soft=Math.abs(p.stemLen-100)/40+Math.abs(p.spacer-15)/30;
-    return {pen,score:pen+soft,stem:p.stemLen,spacer:p.spacer,setback:Math.round(-dev)};
+      +(isFinite(r.ev&&r.ev.shoulder)?Math.max(0,Math.abs(r.ev.shoulder-sugT().shoulder)-6)/6:0)
+      +(isFinite(expo)?Math.max(0,expo-SEAT_EXPO_MAX)/15+Math.max(0,SEAT_EXPO_MIN-expo)/15:0);
+    const soft=Math.abs(p.stemLen-100)/40+Math.abs(p.spacer-15)/30+(isFinite(expo)?Math.abs(expo-0.26*r.sh)/150:0);
+    return {pen,score:pen+soft,stem:p.stemLen,spacer:p.spacer,setback:Math.round(-dev),expo:isFinite(expo)?Math.round(expo):null};
   }catch(e){ return {pen:99,score:99}; }
   finally{ vals=keepV; sugCache=keepC; }
 }
