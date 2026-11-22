@@ -657,8 +657,8 @@ const COMP = [
   {key:"stemLen", label:"Vorbaulänge", g:"Cockpit", min:40,max:150,step:5,def:100},
   {key:"stemAngle", label:"Vorbauwinkel", g:"Cockpit", unit:"°", min:-25,max:25,step:1,def:-6},
   {key:"stemHeight", label:"Vorbauhöhe (Klemmung)", g:"Cockpit", min:30,max:60,step:1,def:40},
-  {key:"barReach", label:"Lenker-Reach", g:"Cockpit", min:30,max:110,step:1,def:75},
-  {key:"leverReach", label:"Griff-Reach (Klemmung bis Griffposition)", g:"Cockpit", min:20,max:90,step:1,def:60},
+  {key:"barReach", label:"Lenker-Reach (Mitte Oberlenker bis Bremsgriff)", g:"Cockpit", min:30,max:110,step:1,def:75},
+  {key:"leverReach", label:"Bremsgriff-Reach (Beginn Bremsgriff bis Griffpunkt)", g:"Cockpit", min:20,max:90,step:1,def:60},
   {key:"leverAngle", label:"Bremsgriffwinkel", g:"Cockpit", unit:"°", min:-10,max:20,step:1,def:0},
   {key:"crank", label:"Kurbellänge", g:"Antrieb", min:150,max:180,step:2.5,def:172.5},
   {key:"pedalStack", label:"Pedal-Stackhöhe", g:"Antrieb", min:5,max:25,step:0.1,def:12},
@@ -1744,7 +1744,7 @@ function updateSelPart(k,x){
 }
 function clearSelFor(k){ const s=SEL_OF[k]; if(s){ S.compSel[s]=""; if(s==="stem"&&S.compSel.bar){ const b=FIT.lists.bars.find(x=>x.name===S.compSel.bar); if(b&&isFinite(b.angle)) S.compSel.bar=""; } } }
 function fillCompSelects(){
-  const L=FIT.lists, nv=x=>isFinite(x)?x:"–", o=(arr,cur,fmt)=>`<option value="">eigene Werte</option>`+arr.map(x=>`<option value="${esc(x.name)}"${x.name===cur?" selected":""}>${esc(x.name)} · ${fmt(x)}</option>`).join("")+`<option value="__add">+ Bauteil hinzufügen …</option>`;
+  const L=FIT.lists, nv=x=>isFinite(x)?x:"–", o=(arr,cur,fmt)=>`<option value="">Werte manuell eingeben</option>`+arr.map(x=>`<option value="${esc(x.name)}"${x.name===cur?" selected":""}>${esc(x.name)} · ${fmt(x)}</option>`).join("")+`<option value="__add">+ Bauteil hinzufügen …</option>`;
   document.getElementById("selBar").innerHTML=o(L.bars,S.compSel.bar,x=>`Reach ${nv(x.reach)}${isFinite(x.angle)?`, integriert ${x.angle}°`:""}`);
   document.getElementById("selStem").innerHTML=o(L.stems,S.compSel.stem,x=>`${nv(x.angle)}°, Höhe ${nv(x.height)}`);
   document.getElementById("selLever").innerHTML=o(L.levers,S.compSel.lever,x=>`Reach ${x.reach}`);
@@ -1752,11 +1752,24 @@ function fillCompSelects(){
   document.getElementById("selShoe").innerHTML=o(L.shoes,S.compSel.shoe,x=>`${x.sole} mm`);
   const bar=L.bars.find(x=>x.name===S.compSel.bar);
   document.getElementById("stemWrap").hidden=!!(bar&&isFinite(bar.angle));   // integriertes Cockpit: kein separater Vorbau
-  renderMissing();
+  renderManual(); renderMissing();
+}
+/* „Werte manuell eingeben“: Maße direkt unter der jeweiligen Auswahl eintragen */
+const MANUAL={bar:["selBar",["barReach"]],stem:["selStem",["stemAngle","stemHeight"]],lever:["selLever",["leverReach"]],pedal:["selPedal",["pedalStack"]],shoe:["selShoe",["sole"]]};
+function renderManual(){
+  for(const [k,[selId,keys]] of Object.entries(MANUAL)){
+    const sel=document.getElementById(selId); if(!sel) continue;
+    let box=document.getElementById("man_"+k); if(!box){ box=document.createElement("div"); box.id="man_"+k; sel.insertAdjacentElement("afterend",box); }
+    if(S.compSel[k]){ box.innerHTML=""; continue; }
+    if(box.contains(document.activeElement)) continue;   // nicht während der Eingabe neu aufbauen
+    box.innerHTML=keys.map(key=>{ const p=COMP.find(x=>x.key===key), v=S.comp[key];
+      return `<div class="param" style="grid-template-columns:1fr 90px;padding:3px 0"><label class="lbl" for="man_${key}" style="font-size:13px">${esc(p.label)}${p.unit?` (${p.unit})`:" (mm)"}</label><input type="number" id="man_${key}" data-man="${key}" step="${p.step||1}" value="${isFinite(v)?v:""}"></div>`; }).join("");
+    box.querySelectorAll("[data-man]").forEach(el=>el.onchange=()=>{ const x=num(el.value); if(!isFinite(x)) return; S.comp[el.dataset.man]=x; syncComp(); render(); save(); });
+  }
 }
 /* fehlende Maße des gewählten Teils direkt eintragen; der Wert wird am Teil gespeichert */
-const MISS=[["bar","bars","reach","barReach","Reach Lenker (mm)"],["barI","bars","angle","stemAngle","Vorbauwinkel Cockpit (°)"],["barI","bars","height","stemHeight","Vorbauhöhe Cockpit (mm)"],["stem","stems","angle","stemAngle","Vorbauwinkel (°)"],["stem","stems","height","stemHeight","Vorbauhöhe (mm)"],
-  ["lever","levers","reach","leverReach","Reach Schalt-/Bremsgriff (mm)"],["pedal","pedals","stack","pedalStack","Stack Height Pedal (mm)"],["shoe","shoes","sole","sole","Sohlendicke (mm)"]];
+const MISS=[["bar","bars","reach","barReach","Lenker-Reach – Mitte Oberlenker bis Bremsgriff (mm)"],["barI","bars","angle","stemAngle","Vorbauwinkel Cockpit (°)"],["barI","bars","height","stemHeight","Vorbauhöhe Cockpit (mm)"],["stem","stems","angle","stemAngle","Vorbauwinkel (°)"],["stem","stems","height","stemHeight","Vorbauhöhe (mm)"],
+  ["lever","levers","reach","leverReach","Bremsgriff-Reach – Beginn Bremsgriff bis Griffpunkt (mm)"],["pedal","pedals","stack","pedalStack","Stack Height Pedal (mm)"],["shoe","shoes","sole","sole","Sohlendicke (mm)"]];
 function renderMissing(){
   const box=document.getElementById("compMissing"); if(!box) return;
   const L=FIT.lists, bar=L.bars.find(x=>x.name===S.compSel.bar), integ=!!(bar&&isFinite(bar.angle));
@@ -2221,9 +2234,9 @@ const PART_TYPES={pedalName:"pedals",barName:"bars",stemName:"stems",shoeName:"s
 const PART_FORMS={
   pedals:{title:"Pedal hinzufügen",fields:[["stack","Stack Height (mm)"]]},
   shoes:{title:"Schuh hinzufügen",fields:[["sole","Sohlendicke (mm)"]]},
-  levers:{title:"Schalt-/Bremsgriff hinzufügen",fields:[["reach","Reach Klemmung bis Griffposition (mm)"]]},
+  levers:{title:"Schalt-/Bremsgriff hinzufügen",fields:[["reach","Bremsgriff-Reach – Beginn Bremsgriff bis Griffpunkt (mm)"]]},
   stems:{title:"Vorbau hinzufügen",fields:[["angle","Vorbauwinkel (°)"],["height","Vorbauhöhe / Klemmung (mm)"]]},
-  bars:{title:"Lenker hinzufügen",fields:[["reach","Reach Lenker (mm)"]],integ:true},
+  bars:{title:"Lenker hinzufügen",fields:[["reach","Lenker-Reach – Mitte Oberlenker bis Bremsgriff (mm)"]],integ:true},
   saddles:{title:"Sattel hinzufügen",fields:[]}
 };
 function mergeCustomParts(){
@@ -2617,10 +2630,10 @@ const SU_ROWS=[
   ["h","Komponenten & Zubehör"],
   ["c","crank","Kurbellänge","num"],["c","pedalName","Pedale","pedals"],["c","pedalStack","Stack Height Pedal","num"],
   ["c","saddleName","Sattel","saddles"],["c","barWidth","Lenkerbreite","num"],["c","barName","Lenker","bars"],
-  ["c","barReach","Reach Lenker","num"],["c","stemName","Vorbau","stems"],["c","stemLen","Vorbaulänge","num"],
+  ["c","barReach","Lenker-Reach","num"],["c","stemName","Vorbau","stems"],["c","stemLen","Vorbaulänge","num"],
   ["c","stemAngle","Vorbauwinkel","num"],["c","stemHeight","Vorbauhöhe","num"],["c","cap","Steuersatzkappe","num"],["c","spacer","Spacer","num"],
   ["c","shoeName","Schuhe","shoes"],["c","sole","Sohlendicke","num"],
-  ["c","leverName","Schalt-/Bremsgriffe","levers"],["c","leverReach","Reach Schalt-/Bremsgriffe","num"],["c","leverAngle","Bremsgriffwinkel","num"],
+  ["c","leverName","Schalt-/Bremsgriffe","levers"],["c","leverReach","Bremsgriff-Reach","num"],["c","leverAngle","Bremsgriffwinkel","num"],
   ["c","cleatPct","Cleatposition (% Fußlänge ab Ferse)","num"]
 ];
 const CLEAT_PCTS=Array.from({length:21},(_,i)=>60+i);   // Auswahl 60–80 %
@@ -2748,7 +2761,8 @@ function renderSetup(){
     }
     const [g,k,lab,typ]=r.length===3?["pos",r[1],r[2],"num"]:r;
     const rowStart=h.length, rowLinked=g==="c"&&!!SU_LINK[k];
-    h+=`<span>${lab}</span>`;
+    const SU_DESC={barReach:"Mitte Oberlenker bis Bremsgriff",leverReach:"Beginn Bremsgriff bis Griffpunkt"};
+    h+=`<span>${lab}${SU_DESC[k]&&g==="c"?`<small>${SU_DESC[k]}</small>`:""}</span>`;
     for(const w of ["ist","opt"]){
       let val=g==="pos"?U.pos[w][k]:(w==="ist"?U.ci:U.co)[k];
       if(w==="opt"&&g==="c"&&(val===0||val==="0")) val="";
