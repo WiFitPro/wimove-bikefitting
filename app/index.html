@@ -657,11 +657,11 @@ const COMP = [
   {key:"stemLen", label:"Vorbaulänge", g:"Cockpit", min:40,max:150,step:5,def:100},
   {key:"stemAngle", label:"Vorbauwinkel", g:"Cockpit", unit:"°", min:-25,max:25,step:1,def:-6},
   {key:"stemHeight", label:"Vorbauhöhe (Klemmung)", g:"Cockpit", min:30,max:60,step:1,def:40},
-  {key:"barReach", label:"Lenker-Reach (Mitte Oberlenker bis Bremsgriff)", g:"Cockpit", min:30,max:110,step:1,def:75},
-  {key:"leverReach", label:"Bremsgriff-Reach (Beginn Bremsgriff bis Griffpunkt)", g:"Cockpit", min:20,max:90,step:1,def:60},
+  {key:"barReach", label:"Lenker-Reach (Mitte Oberlenker bis Bremsgriff)", g:"Cockpit", min:30,max:110,step:1,def:60},
+  {key:"leverReach", label:"Bremsgriff-Reach (Beginn Bremsgriff bis Griffpunkt)", g:"Cockpit", min:20,max:90,step:1,def:50},
   {key:"leverAngle", label:"Bremsgriffwinkel", g:"Cockpit", unit:"°", min:-10,max:20,step:1,def:0},
   {key:"crank", label:"Kurbellänge", g:"Antrieb", min:150,max:180,step:2.5,def:172.5},
-  {key:"pedalStack", label:"Pedal-Stackhöhe", g:"Antrieb", min:5,max:25,step:0.1,def:12},
+  {key:"pedalStack", label:"Pedal-Stackhöhe", g:"Antrieb", min:5,max:25,step:0.1,def:16},
   {key:"sole", label:"Sohlendicke", g:"Antrieb", min:4,max:25,step:1,def:11},
   {key:"cleat", label:"Cleatposition (% Fußlänge ab Ferse)", g:"Antrieb", unit:"%", min:45,max:80,step:1,def:72}
 ];
@@ -2194,7 +2194,9 @@ window.addEventListener("beforeunload",e=>{
 /* Startbildschirm: bei jedem Start Auswahl, welches Fitting gemacht wird */
 { let fresh=false;   // beim Öffnen der App immer ohne Personendaten starten (einmal pro Aufruf)
   const startFresh=()=>{ if(fresh) return; fresh=true;
-    S.pdfTouched=false; if(!S.basic) applyPdfDefault(); else S.pdfSel={};   /* PDF: Voreinstellung des Kontos (Standard: nichts ausgewählt) */
+    S.pdfTouched=false; if(!S.basic) applyPdfDefault(); else S.pdfSel={};
+    /* manuell eingegebene Bauteilmaße beim Start auf die Standardwerte (Lenker-Reach 60, Bremsgriff-Reach 50, Pedal 16 …) */
+    try{ for(const [k,[,keys]] of Object.entries(MANUAL)) if(!S.compSel[k]) for(const key of keys){ const d=COMP.find(x=>x.key===key); if(d) S.comp[key]=d.def; } syncComp(); render(); }catch(e){}   /* PDF: Voreinstellung des Kontos (Standard: nichts ausgewählt) */
     S.show.targets=false; $("tTargets").checked=false;   /* Fadenkreuze beim Öffnen aus */ try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
   const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; showTab(S.basic?"person":"befund"); try{ $("basicBtn").focus(); }catch(e){} };   /* WiFitPro startet bei Befund, Basic bei Person (je 30/70) */
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); done(); };
