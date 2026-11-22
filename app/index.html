@@ -144,6 +144,11 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 #pkgDef{max-width:340px}
 #pwNew,#pwNew2{max-width:280px}
 #brandBox .bfi{max-width:420px}
+/* Bike Set Up: Spalten so breit wie die Felder, berechnete Werte direkt unter den Feldern */
+.su{grid-template-columns:minmax(110px,240px) minmax(0,260px) minmax(0,260px);justify-content:start;column-gap:14px}
+.su .suv{text-align:left;padding-left:7px}
+/* Beschwerdebild */
+#pp_vas{max-width:120px} #pp_when{max-width:260px} #pp_text{max-width:560px}
 .bfg b{font-size:12px;color:var(--muted)}
 .bfg .bfn{grid-column:1/-1;margin-bottom:8px}
 .pwarn{margin:4px 0 10px;padding:8px 10px;border:1px solid #c0392b;border-radius:8px;font-size:13px;color:var(--ink);background:var(--field)}
