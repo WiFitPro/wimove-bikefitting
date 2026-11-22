@@ -1459,6 +1459,9 @@ function renderSug(){
   const T=sugT();
   for(const [id,k] of [["tKnee","knee"],["tKops","kops"],["tBack","back"],["tShoulder","shoulder"],["tElbow","elbow"]]){ const el=$(id); if(document.activeElement!==el) el.value=isFinite(T[k])?T[k]:(k==="back"?styleBack():""); }
   $("tBack").placeholder=`${styleBack()} (Fahrstil)`;
+  /* Vorschlag erst, wenn alle Körpermaße eingetragen sind */
+  const ready=personReady(); for(const el of [$("sugApply"),$("sugCmp"),document.querySelector('label[for="sugCmp"]'),$("sugParts"),$("autoBack")&&$("autoBack").closest("label")]) if(el) el.classList.toggle("notReady",!ready);
+  if(!ready){ $("sugNote").textContent=""; $("sugTable").innerHTML=`<div class="riderHint" style="margin:6px 0;max-width:none">Der Vorschlag erscheint, sobald alle Körpermaße eingetragen sind.<button type="button" class="btn small" onclick="document.querySelector('[data-tab=person]').click()">Zu den Messwerten</button></div>`; return; }
   const r=suggest(), mode=$("sugCmp").value;
   const A={sx:r.sb,sy:r.sy,gx:r.grip.x,gy:r.grip.y,...r.ev};
   let Bv=null, lbl="";
@@ -3847,7 +3850,7 @@ async function makePdf(){
     gauge("Rücken",J.back,20,70,sr[0],sr[1],"°",null,P.style);
     if(cur.R.armOver>0){ T("Ellbogen: Griff nicht erreichbar",9.5,true,C.bad); } else gauge("Ellbogen",J.elbow,120,180,145,165,"°",null,"");
     gauge("Knielot (3 Uhr)",kops.dx,-60,60,(T2.kops||0)-10,(T2.kops||0)+10," mm",null,"+ vor / - hinter Pedalachse"); }
-  if(pdfOn("sug")) try{
+  if(pdfOn("sug")&&personReady()) try{
     const r=suggest(), p=r.parts; H2("Vorschlag optimale Sitzposition");
     const sY=Math.round(Math.sqrt(Math.max(0,p.saddleH**2-p.setback**2)));
     tiles([["Sattelhöhe",p.saddleH+" mm"],["Sattelposition X / Y",`${Math.round(p.setback)} / ${sY} mm`,"ab Tretlager"],["Vorbau",p.stemLen+" mm",`Winkel ${p.stemAngle}°`],["Spacer",p.spacer+" mm"]]);
