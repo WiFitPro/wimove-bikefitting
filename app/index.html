@@ -385,12 +385,11 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div id="fitGrip"></div>
         <p class="note" id="gripNote">Griff X/Y wird über Vorbaulänge und Spacer eingestellt; Lenker, Griff-Reach und Winkel bleiben gleich.</p>
       </section>
-      <section>
-        <h2>Gelenkwinkel</h2>
+      <details class="acc" id="angDetails"><summary>Gelenkwinkel</summary>
         <div id="angTable"></div>
         <p class="note">Bereich: kleinster und größter Wert über eine Kurbelumdrehung. Richtwerte sind übliche Orientierungswerte für Rennrad und Gravel, keine festen Grenzen.</p>
-        <div id="fitWarn"></div>
-      </section>
+      </details>
+      <div id="fitWarn"></div>
       <details class="acc"><summary>Kalibrierung des Modells</summary>
         <p class="note" style="margin-top:0">Für eine Person mit eingestelltem Ist-Setup die in Contemplas gemessene Kniestreckung (größter Kniewinkel unten) eintragen. Die App ermittelt, wie tief die Hüfte im Sattel sitzen muss, damit das Modell denselben Winkel ergibt.</p>
         <div class="two"><div><label class="f" for="calKnee">Kniestreckung gemessen (°)</label><input class="bfi" id="calKnee" inputmode="decimal" placeholder="z. B. 144"></div>
