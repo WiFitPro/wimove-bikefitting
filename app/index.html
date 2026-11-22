@@ -70,10 +70,9 @@ h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:600;font
 .legend{display:flex;gap:18px;color:var(--muted);font-size:13px;flex-wrap:wrap}
 .legend span::before{content:"";display:inline-block;width:22px;height:0;border-top:4px solid var(--frame);vertical-align:middle;margin-right:7px}
 .legend span.g::before{border-top:3px dashed var(--gc,var(--ghost))}
-.cmpRow{display:grid;grid-template-columns:18px 1fr 1fr 96px 32px;gap:8px;align-items:end;margin-top:4px}
-.cmpDot{display:block;height:0;border-top:4px dashed;margin-bottom:15px}
+.cmpBlock{margin-top:10px;padding-top:6px;border-top:1px dashed var(--rule)}
+.cmpRow{display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:end}
 .cmpDel{padding:5px 0;width:32px;font-size:16px;line-height:1}
-.cmpFit{margin:3px 0 6px 26px}
 .legend span.t::before{width:12px;height:12px;border:2px solid var(--target);border-radius:50%}
 .drop-hint{position:absolute;inset:0;display:none;align-items:center;justify-content:center;border:2px dashed var(--frame);border-radius:14px;background:color-mix(in srgb,var(--paper) 85%,transparent);font-weight:600;font-size:18px}
 body.dragging .drop-hint{display:flex}
@@ -478,7 +477,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <p class="note" id="sizeFitNote" style="margin-top:6px"></p>
         <h3>Rahmen vergleichen mit</h3>
         <div id="cmpRows"></div>
-        <div class="row" style="margin-top:8px">
+        <div class="row" id="cmpBtns" style="margin-top:8px">
           <button class="btn ghost small" id="cmpOptBike">Mit Rad der optimierten Position vergleichen</button>
           <button class="btn ghost small" id="cmpIstBike">Mit Ist-Rad vergleichen</button>
         </div>
@@ -1918,26 +1917,29 @@ function updateCmpFit(){   // Größenempfehlung für die Vergleichsräder im Hi
 }
 function fillCmp(){
   const box=document.getElementById("cmpRows"); if(!box) return;
-  const slots=cmpSlots(); let last=0; slots.forEach((sl,i)=>{ if(sl.b) last=i; });
-  S.cmpN=Math.min(3,Math.max(1,S.cmpN||1,last+1));
+  const slots=cmpSlots(); let last=-1; slots.forEach((sl,i)=>{ if(sl.b) last=i; });
+  S.cmpN=Math.min(3,Math.max(S.cmpN||0,last+1));   /* standardmäßig kein Vergleich; Zeilen erst über „+“ */
   let h="", pending=false;
   for(let i=0;i<S.cmpN;i++){
     const sl=slots[i]||EMPTY_CMP(), F=sl.b?cmpFit[cmpFitKey(sl.b,sl.m)]:null; if(sl.b&&!F) pending=true;
-    const mark=x=>{ const f=F&&F.res[x]; return f?(f.cls==="fit-g"?"  ✓":f.cls==="fit-o"?"  ~":"  ✗"):""; };
-    h+=`<div class="cmpRow"><span class="cmpDot" style="border-color:${CMP_COLORS[i]}" title="Farbe in der Zeichnung"></span>
-      <div><label class="f">Marke</label><select data-cmp="${i}" data-f="b">${opt("","Keine",!sl.b)+DB.brands.map(x=>opt(x,x,x===sl.b)).join("")}</select></div>
+    h+=`<div class="cmpBlock"><div class="cmpRow">
+      <div><label class="f">Marke</label><select data-cmp="${i}" data-f="b">${opt("","Bitte wählen",!sl.b)+DB.brands.map(x=>opt(x,x,x===sl.b)).join("")}</select></div>
       <div><label class="f">Modell</label><select data-cmp="${i}" data-f="m"${sl.b?"":" disabled"}>${sl.b?DB.models[sl.b].map(x=>opt(x,x,x===sl.m)).join(""):""}</select></div>
-      <div><label class="f">Größe</label><select data-cmp="${i}" data-f="s"${sl.b?"":" disabled"}>${sl.b?sizesOf(sl.b,sl.m).map(x=>opt(x.s,x.s+mark(x.s),x.s===sl.s,!x.hasData)).join(""):""}</select></div>
       <button type="button" class="btn ghost small cmpDel" data-cmpdel="${i}" title="Vergleich entfernen" aria-label="Vergleich ${i+1} entfernen">×</button></div>`;
-    if(sl.b) h+=`<p class="note cmpFit">${F?(F.best?`Empfehlung: <b style="color:${CMP_COLORS[i]}">${esc(String(F.best))}</b> · ✓ passt · ~ bedingt · ✗ passt nicht`:"Keine Bewertung möglich."):"Größenempfehlung wird berechnet …"}</p>`;
+    if(sl.b){ h+=`<label class="f">Größe</label><div class="chips">${sizesOf(sl.b,sl.m).map(x=>{ const f=F&&F.res[x.s];
+        return `<button type="button" class="chip${f?" "+f.cls:""}${F&&x.s===F.best?" fit-best":""}" data-cmpsize="${i}" data-s="${esc(x.s)}" aria-pressed="${x.s===sl.s}"${x.hasData?"":` disabled title="Keine Geometriedaten"`}${f&&f.pen<99?` title="Vorbau ${f.stem} mm · Spacer ${f.spacer} mm"`:""}>${esc(x.s)}</button>`; }).join("")}</div>
+      <p class="note" style="margin-top:6px">${F?(F.best?`<span class="fitdot g"></span>passt <span class="fitdot o"></span>bedingt <span class="fitdot r"></span>passt nicht · Empfehlung: <b>${esc(String(F.best))}</b>`:"Keine Bewertung möglich."):"Größenempfehlung wird berechnet …"}</p>`; }
+    h+=`</div>`;
   }
   if(S.cmpN<3) h+=`<div class="row" style="margin-top:8px"><button type="button" class="btn ghost small" id="cmpAdd">+ Rahmen hinzufügen</button></div>`;
   box.innerHTML=h;
+  const btns=document.getElementById("cmpBtns"); if(btns) btns.hidden=S.cmpN===0;   // Bike-Set-Up-Vergleich erst mit einer Vergleichszeile
   box.querySelectorAll("[data-cmp]").forEach(el=>el.onchange=()=>{ const i=+el.dataset.cmp, f=el.dataset.f, sl=cmpSlots()[i]||EMPTY_CMP();
-    if(f==="b") selectCmp(el.value,"",sl.s,i); else if(f==="m") selectCmp(sl.b,el.value,sl.s,i); else selectCmp(sl.b,sl.m,el.value,i); });
+    if(f==="b") selectCmp(el.value,"",sl.s,i); else selectCmp(sl.b,el.value,sl.s,i); });
+  box.querySelectorAll("[data-cmpsize]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.cmpsize, sl=cmpSlots()[i]; selectCmp(sl.b,sl.m,b.dataset.s,i); });
   box.querySelectorAll("[data-cmpdel]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.cmpdel, all=cmpSlots(); all.splice(i,1); all.push(EMPTY_CMP());
-    S.cmp=all[0]; S.cmpX=all.slice(1,3); S.cmpN=Math.max(1,S.cmpN-1); fillCmp(); renderBikeResults(); render(); save(); });
-  if($("cmpAdd")) $("cmpAdd").onclick=()=>{ S.cmpN=Math.min(3,(S.cmpN||1)+1); fillCmp(); };
+    S.cmp=all[0]; S.cmpX=all.slice(1,3); S.cmpN=Math.max(0,S.cmpN-1); fillCmp(); renderBikeResults(); render(); save(); });
+  if($("cmpAdd")) $("cmpAdd").onclick=()=>{ S.cmpN=Math.min(3,(S.cmpN||0)+1); fillCmp(); save(); };
   if(pending) updateCmpFit();
 }
 function selectMain(b,m,s){
@@ -2004,7 +2006,7 @@ function useData(geoRows,fitObj,fileName,source,keep){
   if(!keep){
     const want=FIT.setup&&FIT.setup.bike.b?matchSel(FIT.setup.bike):null;
     const first=want||DB.bikes.find(x=>x.hasData)||DB.bikes[0];
-    S.sel={b:first.b,m:first.m,s:first.s}; S.cmp={b:"",m:"",s:""}; S.cmpX=[]; S.cmpN=1; S.edits={};
+    S.sel={b:first.b,m:first.m,s:first.s}; S.cmp={b:"",m:"",s:""}; S.cmpX=[]; S.cmpN=0; S.edits={};
   }
   if(S.cmp.b&&!findBike(S.cmp)) S.cmp={b:"",m:"",s:""};
   S.cmpX=(S.cmpX||[]).map(x=>x&&x.b&&findBike(x)?x:EMPTY_CMP());
