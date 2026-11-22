@@ -683,7 +683,7 @@ const PERS = [
   {key:"torso", label:"Oberkörper (Hüftgelenk bis Brustbein)", g:"Segmente", min:380,max:800,step:1, f:p=>p.sternum-(p.inseam+p.hipStand)},
   {key:"shoulderDrop", label:"Schultergelenk unter Schulterdach", g:"Segmente", min:0,max:90,step:1, f:()=>45},
   {key:"protr", label:"Schulterblatt nach vorn (Protraktion)", g:"Segmente", min:0,max:100,step:1, f:()=>40},
-  {key:"elbowT", label:"Ellbogenwinkel (Ziel)", g:"Haltung", unit:"°", min:120,max:180,step:1, f:()=>160},
+  {key:"elbowT", label:"Ellbogenwinkel (Ziel)", g:"Haltung", unit:"°", min:120,max:180,step:1, f:()=>styleElbow()},
   {key:"kneeBack", label:"Drehpunkt Knie: + hinter / − vor Kniemitte", g:"Segmente", min:-30,max:30,step:1, f:()=>0},
   {key:"armAdd", label:"Handgelenk bis Griffpunkt (Zuschlag)", g:"Segmente", min:40,max:110,step:1, f:()=>75},
   {key:"upperArm", label:"Oberarm (ab Schultergelenk)", g:"Segmente", min:220,max:400,step:0.1, f:p=>(p.acromion-p.shoulderDrop-p.hand-p.armAdd)*p.armRatio},
@@ -692,9 +692,10 @@ const PERS = [
   {key:"footAngle", label:"Fußwinkel unten (Ferse höher als Ballen; im Rückhub +12°, im Druck −12°)", g:"Haltung", unit:"°", min:0,max:40,step:0.5, f:()=>25}
 ];
 /* Standardwerte je Fahrstil: Rückenwinkel und Schulterwinkel (Zielwerte), Richtwertbereiche jeweils darum herum */
-const STYLE_STD={comfort:{back:48,shoulder:77},endurance:{back:46.5,shoulder:78.5},sportlich:{back:45,shoulder:80},ambitioniert:{back:43.5,shoulder:81.5},professional:{back:42,shoulder:83}};
+const STYLE_STD={comfort:{back:48,shoulder:77,elbow:165},endurance:{back:46.5,shoulder:78.5,elbow:162},sportlich:{back:45,shoulder:80,elbow:160},ambitioniert:{back:43.5,shoulder:81.5,elbow:157},professional:{back:42,shoulder:83,elbow:155}};
 const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v.back-5,v.back+5]]));
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
+const styleElbow=()=>{ const v=(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).elbow; return isFinite(v)?v:160; };   // Ellbogen-Ziel je Fahrstil (sportlicher = stärker angewinkelt)
 const shoulderRange=()=>[styleShoulder()-10,styleShoulder()+10];
 
 /* Pflicht-Messwerte (rechts und links): die Person wird erst gezeichnet, wenn alle eingegeben sind */
@@ -873,7 +874,7 @@ function personFrom(){
 }
 const isFem=()=>!!(S.person&&S.person.sex==="weiblich");
 /* Modellwerte, die als eigener Standard gespeichert werden können (bleiben bei neuen Excel-Dateien erhalten) */
-const MODEL_KEYS=["hipStand","hipFwd","sitBack","sink","shoulderDrop","protr","elbowT","kneeBack","ankleH","footAngle","armAdd"];   // Hüftgelenk über Sattel folgt immer Hüftgelenk über Schritthöhe
+const MODEL_KEYS=["hipStand","hipFwd","sitBack","sink","shoulderDrop","protr","kneeBack","ankleH","footAngle","armAdd"];   // Ellbogenwinkel kommt aus den Richtwerten je Fahrstil   // Hüftgelenk über Sattel folgt immer Hüftgelenk über Schritthöhe
 const stdVal=k=>S.modelStd&&isFinite(S.modelStd[k])?S.modelStd[k]:NaN;
 /* Fehlende Messwerte: geschlechtsspezifische Normwerte wie in den Spalten I (männlich) und M (weiblich) von „Peronendaten“ */
 function measures(){
@@ -902,7 +903,7 @@ function body(){
   /* Zuschlag Handgelenk–Griffpunkt: in der App einstellbar, Standard 75 mm (statt des Excel-Parameters) */
   m.armAdd=isFinite(p.ov.armAdd)?p.ov.armAdd:(isFinite(stdVal("armAdd"))?stdVal("armAdd"):75); m.armRatio=isFinite(X.armRatio)?X.armRatio:0.52; m.legRatio=isFinite(X.legRatio)?X.legRatio:0.52;
   for(const d of PERS){
-    if(d.f){ b[d.key]= isFinite(p.ov[d.key]) ? p.ov[d.key] : (isFinite(p.measured[d.key]) ? p.measured[d.key]+(d.key==="thigh"?m.legRatio*m.hipStand:d.key==="shank"?(1-m.legRatio)*m.hipStand:d.key==="forearm"?m.armAdd:0) : (isFinite(stdVal(d.key)) ? stdVal(d.key) : d.f(m))); }
+    if(d.f){ b[d.key]= isFinite(p.ov[d.key]) ? p.ov[d.key] : (isFinite(p.measured[d.key]) ? p.measured[d.key]+(d.key==="thigh"?m.legRatio*m.hipStand:d.key==="shank"?(1-m.legRatio)*m.hipStand:d.key==="forearm"?m.armAdd:0) : (d.key!=="elbowT"&&isFinite(stdVal(d.key)) ? stdVal(d.key) : d.f(m))); }
     else b[d.key]=m[d.key];
   }
   /* Segmente der linken Seite (hinteres Bein und hinterer Arm) */
@@ -2001,7 +2002,8 @@ function useData(geoRows,fitObj,fileName,source,keep){
   if(!S.knee0){ if(S.modelStd) delete S.modelStd.kneeBack; if(S.person&&S.person.ov) delete S.person.ov.kneeBack; S.knee0=true; }
   if(!S.hipSitLink){ if(S.modelStd) delete S.modelStd.hipSit; if(S.person&&S.person.ov) delete S.person.ov.hipSit; S.hipSitLink=true; }
   if(!S.cleat72){ S.comp.cleat=72; if(S.compBase) S.compBase.cleat=72; S.cleat72=true; }
-  if(!S.styleStd3){ if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; delete S.sugT.elbow; } if(S.person&&S.person.ov) delete S.person.ov.backAngle; S.styleStd3=true; }   // neue Fahrstil-Standards und Ellbogen 160°
+  if(!S.styleStd3){ if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; delete S.sugT.elbow; } if(S.person&&S.person.ov) delete S.person.ov.backAngle; S.styleStd3=true; }
+  if(!S.styleStd4){ if(S.sugT) delete S.sugT.elbow; if(S.person&&S.person.ov) delete S.person.ov.elbowT; S.styleStd4=true; }   // Ellbogen jetzt je Fahrstil   // neue Fahrstil-Standards und Ellbogen 160°
   if(!S.cap5){ for(const c of [S.comp,S.compBase]) if(c&&(c.cap===10||c.cap===undefined)) c.cap=5;
     for(const o of [S.setupOv&&S.setupOv.ci,S.setupOv&&S.setupOv.co]) if(o&&+o.cap===10) o.cap=5; S.cap5=true; }   // Steuersatzkappe neu 5 mm
   if(!S.carbon1){ S.color=16; S.carbon1=true; }   // Werkseinstellung Rahmen: Carbon schwarz
@@ -4130,7 +4132,7 @@ const STYLE_FACTORY=JSON.parse(JSON.stringify(STYLE_STD));
 function applyStyleStd(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
   for(const st of Object.keys(STYLE_FACTORY)){
     const o=(S.styleOv&&S.styleOv[st])||{}, d=(S.modelStd&&S.modelStd.styleStd&&S.modelStd.styleStd[st])||{};
-    for(const k of ["back","shoulder"]) STYLE_STD[st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:STYLE_FACTORY[st][k];
+    for(const k of ["back","shoulder","elbow"]) STYLE_STD[st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:STYLE_FACTORY[st][k];
     STYLE_BACK[st]=[STYLE_STD[st].back-5,STYLE_STD[st].back+5];
   }
 }
@@ -4139,11 +4141,11 @@ function renderStyleStd(){
   applyStyleStd();
   const tag=(st,k)=>S.styleOv&&S.styleOv[st]&&isFinite(S.styleOv[st][k])?'<small class="src edit">geändert</small>'
     :S.modelStd&&S.modelStd.styleStd&&S.modelStd.styleStd[st]&&isFinite(S.modelStd.styleStd[st][k])?'<small class="src">Standard</small>':"";
-  box.innerHTML=`<h3 style="margin:14px 0 4px">Richtwerte je Fahrstil</h3><div class="bfg"><span></span><b>Rücken (°)</b><b>Schulter (°)</b>`+
-    ["comfort","endurance","sportlich","ambitioniert","professional"].map(st=>`<span>${st}</span>${["back","shoulder"].map(k=>`<div><input class="bfi" type="number" step="0.5" data-stylestd="${st}|${k}" value="${STYLE_STD[st][k]}" aria-label="${k==="back"?"Rücken":"Schulter"} ${st}">${tag(st,k)}</div>`).join("")}`).join("")+
-    `</div><p class="note">Rücken: Rückenwinkel und Ziel im Vorschlag, Bereich ±5°. Schulter: Ziel im Vorschlag, Bereich ±10°. Mit „Modellwerte als Standard speichern“ (ganz unten) als Werkseinstellung sichern.</p>`;
+  box.innerHTML=`<h3 style="margin:14px 0 4px">Richtwerte je Fahrstil</h3><div class="bfg" style="grid-template-columns:1.4fr 1fr 1fr 1fr"><span></span><b>Rücken (°)</b><b>Schulter (°)</b><b>Ellbogen (°)</b>`+
+    ["comfort","endurance","sportlich","ambitioniert","professional"].map(st=>`<span>${st}</span>${["back","shoulder","elbow"].map(k=>`<div><input class="bfi" type="number" step="${k==="elbow"?1:0.5}" data-stylestd="${st}|${k}" value="${STYLE_STD[st][k]}" aria-label="${k==="back"?"Rücken":k==="shoulder"?"Schulter":"Ellbogen"} ${st}">${tag(st,k)}</div>`).join("")}`).join("")+
+    `</div><p class="note">Rücken: Rückenwinkel und Ziel im Vorschlag, Bereich ±5°. Schulter: Ziel im Vorschlag, Bereich ±10°. Ellbogen: Ziel im Vorschlag und Armhaltung der Figur (180° = gestreckt). Mit „Modellwerte als Standard speichern“ (ganz unten) als Werkseinstellung sichern.</p>`;
   box.querySelectorAll("[data-stylestd]").forEach(el=>el.onchange=()=>{
-    const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value); if(!(x>=20&&x<=130)){ renderStyleStd(); return; }
+    const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value); if(!(k==="elbow"?(x>=120&&x<=180):(x>=20&&x<=130))){ renderStyleStd(); return; }
     S.styleOv=S.styleOv||{}; (S.styleOv[st]=S.styleOv[st]||{})[k]=x;
     applyStyleStd(); delete S.person.ov.backAngle; sugCache.key="";
     setTimeout(()=>{ syncPerson(); render(); renderStyleStd(); save(); },0);
