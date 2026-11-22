@@ -69,7 +69,11 @@ h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:600;font
 .play svg{width:16px;height:16px;fill:currentColor}
 .legend{display:flex;gap:18px;color:var(--muted);font-size:13px;flex-wrap:wrap}
 .legend span::before{content:"";display:inline-block;width:22px;height:0;border-top:4px solid var(--frame);vertical-align:middle;margin-right:7px}
-.legend span.g::before{border-top:3px dashed var(--ghost)}
+.legend span.g::before{border-top:3px dashed var(--gc,var(--ghost))}
+.cmpRow{display:grid;grid-template-columns:18px 1fr 1fr 96px 32px;gap:8px;align-items:end;margin-top:4px}
+.cmpDot{display:block;height:0;border-top:4px dashed;margin-bottom:15px}
+.cmpDel{padding:5px 0;width:32px;font-size:16px;line-height:1}
+.cmpFit{margin:3px 0 6px 26px}
 .legend span.t::before{width:12px;height:12px;border:2px solid var(--target);border-radius:50%}
 .drop-hint{position:absolute;inset:0;display:none;align-items:center;justify-content:center;border:2px dashed var(--frame);border-radius:14px;background:color-mix(in srgb,var(--paper) 85%,transparent);font-weight:600;font-size:18px}
 body.dragging .drop-hint{display:flex}
@@ -473,11 +477,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="chips" id="sizeChips"></div>
         <p class="note" id="sizeFitNote" style="margin-top:6px"></p>
         <h3>Rahmen vergleichen mit</h3>
-        <div class="three">
-          <div><label class="f" for="cBrand">Marke</label><select id="cBrand"></select></div>
-          <div><label class="f" for="cModel">Modell</label><select id="cModel"></select></div>
-          <div><label class="f" for="cSize">Größe</label><select id="cSize"></select></div>
-        </div>
+        <div id="cmpRows"></div>
         <div class="row" style="margin-top:8px">
           <button class="btn ghost small" id="cmpOptBike">Mit Rad der optimierten Position vergleichen</button>
           <button class="btn ghost small" id="cmpIstBike">Mit Ist-Rad vergleichen</button>
@@ -1505,12 +1505,11 @@ function calc(){
 function render(full=true){
   if(S.tab==="bike"&&sizeFitCache.key&&sizeFitCache.key!==sizeFitKey()) updateSizeFit();   // Empfehlung nach Änderungen an Person oder Bauteilen aktualisieren
   cur=calc(); const {c,B,g,R,J}=cur;
-  const cb=findBike(S.cmp); let cg=null;
-  if(cb&&cb!==findBike(S.sel)) cg=compute(valuesFor(cb,true).v,c);
+  const cgs=cmpGhosts(c);
   const t=target();
   const pts=[{x:g.rAxle.x-g.R,y:g.ground},{x:g.fAxle.x+g.R,y:g.ground},g.steererTop,g.grip,g.seat];
   if(showRider()) pts.push(add(R.head,{x:0,y:R.hr}),add(R.hip,{x:-B.height*0.06,y:0}));
-  if(cg) pts.push({x:cg.rAxle.x-cg.R,y:0},{x:cg.fAxle.x+cg.R,y:0},cg.steererTop);
+  for(const {g:cg} of cgs) pts.push({x:cg.rAxle.x-cg.R,y:0},{x:cg.fAxle.x+cg.R,y:0},cg.steererTop);
   if(t) pts.push({x:-t.sx,y:t.sy},{x:t.gx,y:t.gy});
   const minX=Math.min(...pts.map(p=>p.x))-50, maxX=Math.max(...pts.map(p=>p.x))+50;
   const minY=g.ground-(S.show.dims?135:40), maxY=Math.max(...pts.map(p=>p.y))+60;
@@ -1523,11 +1522,11 @@ function render(full=true){
   s+=line({x:minX+10,y:g.ground},{x:maxX-10,y:g.ground},2,"var(--rule)");
   if(showRider()) s+=riderBack(R,B,c,g);
   s+=crankArm(c,S.crank+180,"var(--parts)");
-  if(cg) s+=ghostSVG(cg,.9);
+  for(const x of cgs) s+=ghostSVG(x.g,.9,x.col);
   s+=bikeSVG(vals,g,c);
   if(showRider()) s+=crankArm(c,S.crank,"var(--parts)")+circ({x:0,y:0},24,"var(--frame)",0,"var(--frame)")+riderFront(R,B,g);
   else s+=crankArm(c,S.crank,"var(--parts)")+circ({x:0,y:0},24,"var(--frame)",0,"var(--frame)");
-  if(cg) s+=ghostSVG(cg,.45);
+  for(const x of cgs) s+=ghostSVG(x.g,.45,x.col);
   if(S.show.targets!==false) s+=targetSVG(t);
   if(S.show.dims) s+=dims(vals,g);
   if(showRider()&&S.show.angles) s+=anglesSVG(R,J);
@@ -1551,8 +1550,8 @@ function plumbSVG(k,g){
   s+=`<text x="${r1(x+20)}" y="${r1(-(g.ground+75))}" class="pl">${kopsText(k)} (3 Uhr)</text>`;
   return s;
 }
-function ghostSVG(g,op){
-  const st=`stroke-dasharray="16 12"`,C="var(--ghost)",w=4;
+function ghostSVG(g,op,col){
+  const st=`stroke-dasharray="16 12"`,C=col||"var(--ghost)",w=4;
   return `<g opacity="${op}">`+circ(g.rAxle,g.R,C,w,"none",st)+circ(g.fAxle,g.R,C,w,"none",st)
    +[[{x:0,y:0},g.rAxle],[g.rAxle,g.ssTop],[{x:0,y:0},g.dtFront],[{x:0,y:0},g.stTop],[g.ttRear,g.ttFront],[g.htBot,g.htTop],[g.crown,g.fAxle],[g.htTop,g.steererTop],[g.stemC,g.barC]].map(([a,b])=>line(a,b,w,C,st)).join("")
    +circ(g.grip,12,C,w)+`</g>`;
@@ -1843,7 +1842,8 @@ function renderBikeResults(){
     h+=`<span>${n}</span><span class="v">${isR?a.toFixed(2).replace(".",","):mm(a)+" mm"}</span><span class="d">${cg?(isR?(a-cg[k]).toFixed(2).replace(".",","):sgn(a-cg[k])):""}</span>`;
     const ref=ik2?info[ik2]:undefined; if(isFinite(ref)&&Math.abs(ref-a)>=(k==="ett"?15:5)) h+=`<span class="x">Tabelle: ${mm(ref)} mm, Abweichung ${mm(Math.abs(ref-a))} mm</span>`; }
   document.getElementById("results").innerHTML=h;
-  document.getElementById("legend").innerHTML=(cg?`<span>${esc(cb?`${S.sel.b} ${S.sel.m} ${S.sel.s}`:"")}</span><span class="g">${esc(`${cb.b} ${cb.m} ${cb.s}`)}</span>`:"")+((S.show.targets!==false)&&target()?`<span class="t">${({opt:"Optimierte Position",ist:"Ist-Position",vor:"Vorschlag"})[targetKey()]} (Sattel und Griff)</span>`:"");
+  const cgl=cmpGhosts(S.comp);
+  document.getElementById("legend").innerHTML=(cgl.length?`<span>${esc(`${S.sel.b} ${S.sel.m} ${S.sel.s}`)}</span>`+cgl.map(x=>`<span class="g" style="--gc:${x.col}">${esc(`${x.bike.b} ${x.bike.m} ${x.bike.s}`)}</span>`).join(""):"")+((S.show.targets!==false)&&target()?`<span class="t">${({opt:"Optimierte Position",ist:"Ist-Position",vor:"Vorschlag"})[targetKey()]} (Sattel und Griff)</span>`:"");
   const cu=findBike(S.sel);
   document.getElementById("brandBig").textContent=cu?cu.b:"";
   document.getElementById("modelBig").textContent=cu?cu.m:"";
@@ -1880,7 +1880,7 @@ function updateSizeFit(){   // nach kurzer Pause rechnen, damit die Auswahl flü
       if(best&&best[1].score<3) best[1].cls="fit-g";   // die beste machbare Größe immer grün
       sizeFitCache={key,res,best:best&&best[0]};
     }
-    paintSizeFit();
+    paintSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp();
   },120);
 }
 function paintSizeFit(){
@@ -1897,11 +1897,48 @@ function fillMain(){
   document.getElementById("sizeChips").innerHTML=sizesOf(b,m).map(x=>`<button class="chip" aria-pressed="${x.s===S.sel.s}" data-s="${esc(x.s)}"${x.hasData?"":` disabled title="Keine Geometriedaten"`}>${esc(x.s)}</button>`).join("");
   paintSizeFit(); updateSizeFit();   // Größenempfehlung grün/orange/rot
 }
+/* ================= Rahmen vergleichen: bis zu drei Räder, je eigene Farbe und Größenempfehlung ================= */
+const CMP_COLORS=["#E0702E","#8E44AD","#13917A"];
+const EMPTY_CMP=()=>({b:"",m:"",s:""});
+function cmpSlots(){ S.cmpX=(S.cmpX||[]).slice(0,2); return [S.cmp||EMPTY_CMP(),...S.cmpX]; }
+function cmpGhosts(c){ return cmpSlots().map((sl,i)=>{ const cb=sl&&sl.b?findBike(sl):null; return cb&&cb!==findBike(S.sel)?{g:compute(valuesFor(cb,true).v,c),col:CMP_COLORS[i],bike:cb}:null; }).filter(Boolean); }
+let cmpFit={}, cmpFitT=null;
+const cmpFitKey=(b,m)=>JSON.stringify([b,m,body(),S.comp,sugT(),S.bar,S.compSel&&S.compSel.bar,S.bikeFix||null]);
+function updateCmpFit(){   // Größenempfehlung für die Vergleichsräder im Hintergrund rechnen
+  clearTimeout(cmpFitT);
+  cmpFitT=setTimeout(()=>{ let changed=false;
+    for(const sl of cmpSlots()){ if(!sl.b) continue; const k=cmpFitKey(sl.b,sl.m); if(cmpFit[k]) continue;
+      const res={}; for(const x of sizesOf(sl.b,sl.m)) if(x.hasData) res[x.s]=sizeFitFor(x);
+      const best=Object.entries(res).sort((a,b)=>a[1].score-b[1].score)[0];
+      for(const f of Object.values(res)) f.cls=f.score<1.3?"fit-g":f.score<3?"fit-o":"fit-r";
+      if(best&&best[1].score<3) best[1].cls="fit-g";
+      cmpFit[k]={res,best:best&&best[0]}; changed=true; }
+    if(changed) fillCmp();
+  },150);
+}
 function fillCmp(){
-  const {b,m,s}=S.cmp, cm=document.getElementById("cModel"), cs=document.getElementById("cSize");
-  document.getElementById("cBrand").innerHTML=opt("","Keine",!b)+DB.brands.map(x=>opt(x,x,x===b)).join("");
-  cm.disabled=cs.disabled=!b;
-  cm.innerHTML=b?DB.models[b].map(x=>opt(x,x,x===m)).join(""):""; cs.innerHTML=b?sizesOf(b,m).map(x=>opt(x.s,x.s,x.s===s,!x.hasData)).join(""):"";
+  const box=document.getElementById("cmpRows"); if(!box) return;
+  const slots=cmpSlots(); let last=0; slots.forEach((sl,i)=>{ if(sl.b) last=i; });
+  S.cmpN=Math.min(3,Math.max(1,S.cmpN||1,last+1));
+  let h="", pending=false;
+  for(let i=0;i<S.cmpN;i++){
+    const sl=slots[i]||EMPTY_CMP(), F=sl.b?cmpFit[cmpFitKey(sl.b,sl.m)]:null; if(sl.b&&!F) pending=true;
+    const mark=x=>{ const f=F&&F.res[x]; return f?(f.cls==="fit-g"?"  ✓":f.cls==="fit-o"?"  ~":"  ✗"):""; };
+    h+=`<div class="cmpRow"><span class="cmpDot" style="border-color:${CMP_COLORS[i]}" title="Farbe in der Zeichnung"></span>
+      <div><label class="f">Marke</label><select data-cmp="${i}" data-f="b">${opt("","Keine",!sl.b)+DB.brands.map(x=>opt(x,x,x===sl.b)).join("")}</select></div>
+      <div><label class="f">Modell</label><select data-cmp="${i}" data-f="m"${sl.b?"":" disabled"}>${sl.b?DB.models[sl.b].map(x=>opt(x,x,x===sl.m)).join(""):""}</select></div>
+      <div><label class="f">Größe</label><select data-cmp="${i}" data-f="s"${sl.b?"":" disabled"}>${sl.b?sizesOf(sl.b,sl.m).map(x=>opt(x.s,x.s+mark(x.s),x.s===sl.s,!x.hasData)).join(""):""}</select></div>
+      <button type="button" class="btn ghost small cmpDel" data-cmpdel="${i}" title="Vergleich entfernen" aria-label="Vergleich ${i+1} entfernen">×</button></div>`;
+    if(sl.b) h+=`<p class="note cmpFit">${F?(F.best?`Empfehlung: <b style="color:${CMP_COLORS[i]}">${esc(String(F.best))}</b> · ✓ passt · ~ bedingt · ✗ passt nicht`:"Keine Bewertung möglich."):"Größenempfehlung wird berechnet …"}</p>`;
+  }
+  if(S.cmpN<3) h+=`<div class="row" style="margin-top:8px"><button type="button" class="btn ghost small" id="cmpAdd">+ Rahmen hinzufügen</button></div>`;
+  box.innerHTML=h;
+  box.querySelectorAll("[data-cmp]").forEach(el=>el.onchange=()=>{ const i=+el.dataset.cmp, f=el.dataset.f, sl=cmpSlots()[i]||EMPTY_CMP();
+    if(f==="b") selectCmp(el.value,"",sl.s,i); else if(f==="m") selectCmp(sl.b,el.value,sl.s,i); else selectCmp(sl.b,sl.m,el.value,i); });
+  box.querySelectorAll("[data-cmpdel]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.cmpdel, all=cmpSlots(); all.splice(i,1); all.push(EMPTY_CMP());
+    S.cmp=all[0]; S.cmpX=all.slice(1,3); S.cmpN=Math.max(1,S.cmpN-1); fillCmp(); renderBikeResults(); render(); save(); });
+  if($("cmpAdd")) $("cmpAdd").onclick=()=>{ S.cmpN=Math.min(3,(S.cmpN||1)+1); fillCmp(); };
+  if(pending) updateCmpFit();
 }
 function selectMain(b,m,s){
   if(!DB.models[b]) b=DB.brands[0]; if(!DB.models[b].includes(m)) m=DB.models[b][0];
@@ -1909,9 +1946,10 @@ function selectMain(b,m,s){
   S.sel={b,m,s}; for(const k of Object.keys(S.edits)) if(!KEEP.includes(k)) delete S.edits[k];
   fillMain(); loadBike(); save();
 }
-function selectCmp(b,m,s){
-  if(!b) S.cmp={b:"",m:"",s:""};
-  else{ if(!DB.models[b].includes(m)) m=DB.models[b][0]; if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s); S.cmp={b,m,s}; }
+function selectCmp(b,m,s,i=0){
+  let v=EMPTY_CMP();
+  if(b){ if(!DB.models[b].includes(m)) m=DB.models[b][0]; if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s); v={b,m,s}; }
+  cmpSlots(); if(i===0) S.cmp=v; else S.cmpX[i-1]=v;
   fillCmp(); renderBikeResults(); render(); save();
 }
 function matchSel(sel){ // tolerant gegen Leerzeichen und Groß/Klein
@@ -1966,9 +2004,10 @@ function useData(geoRows,fitObj,fileName,source,keep){
   if(!keep){
     const want=FIT.setup&&FIT.setup.bike.b?matchSel(FIT.setup.bike):null;
     const first=want||DB.bikes.find(x=>x.hasData)||DB.bikes[0];
-    S.sel={b:first.b,m:first.m,s:first.s}; S.cmp={b:"",m:"",s:""}; S.edits={};
+    S.sel={b:first.b,m:first.m,s:first.s}; S.cmp={b:"",m:"",s:""}; S.cmpX=[]; S.cmpN=1; S.edits={};
   }
   if(S.cmp.b&&!findBike(S.cmp)) S.cmp={b:"",m:"",s:""};
+  S.cmpX=(S.cmpX||[]).map(x=>x&&x.b&&findBike(x)?x:EMPTY_CMP());
   document.getElementById("styleSel").value=S.person.style;
   if(!S.person.sex) S.person.sex=(FIT.person&&FIT.person.sex==="weiblich")?"weiblich":"männlich";
   document.getElementById("sexSel").value=S.person.sex;
@@ -2039,9 +2078,6 @@ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>showTab(b.dataset.tab
 $("brandSel").onchange=e=>selectMain(e.target.value,"",S.sel.s);
 $("modelSel").onchange=e=>selectMain(S.sel.b,e.target.value,S.sel.s);
 $("sizeChips").onclick=e=>{ const c=e.target.closest(".chip"); if(c&&!c.disabled) selectMain(S.sel.b,S.sel.m,c.dataset.s); };
-$("cBrand").onchange=e=>selectCmp(e.target.value,"",S.cmp.s);
-$("cModel").onchange=e=>selectCmp(S.cmp.b,e.target.value,S.cmp.s);
-$("cSize").onchange=e=>selectCmp(S.cmp.b,S.cmp.m,e.target.value);
 function cmpSetupBike(which){
   const U=FIT.setup, bk=U?(which==="opt"?U.bikeOpt:U.bike):null, hit=bk&&bk.b&&bk.m?matchSel(bk):null;
   if(!hit){ $("cmpNote").textContent=`Im Blatt „Bike Set Up“ ist für ${which==="opt"?"die optimierte Position":"den Ist-Zustand"} kein Rad aus der Geometrietabelle eingetragen.`; return; }
