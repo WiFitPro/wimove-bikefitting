@@ -148,6 +148,8 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .su{grid-template-columns:minmax(110px,240px) minmax(0,260px) minmax(0,260px);justify-content:start;column-gap:14px}
 .su .suv{text-align:left;padding-left:7px}
 /* Beschwerdebild */
+.param.manParam{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.param.manParam input[type=number]{width:90px!important;max-width:90px;flex:none}
 #pp_vas{max-width:120px} #pp_when{max-width:260px} #pp_text{max-width:560px}
 .bfg b{font-size:12px;color:var(--muted)}
 .bfg .bfn{grid-column:1/-1;margin-bottom:8px}
@@ -1796,7 +1798,7 @@ function renderManual(){
     if(S.compSel[k]){ box.innerHTML=""; continue; }
     if(box.contains(document.activeElement)) continue;   // nicht während der Eingabe neu aufbauen
     box.innerHTML=keys.map(key=>{ const p=COMP.find(x=>x.key===key), v=S.comp[key];
-      return `<div class="param" style="grid-template-columns:1fr 90px;padding:3px 0"><label class="lbl" for="man_${key}" style="font-size:13px">${esc(p.label)}${p.unit?` (${p.unit})`:" (mm)"}</label><input type="number" id="man_${key}" data-man="${key}" step="${p.step||1}" value="${isFinite(v)?v:""}"></div>`; }).join("");
+      return `<div class="param manParam" style="padding:3px 0"><label class="lbl" for="man_${key}" style="font-size:13px">${esc(p.label)}${p.unit?` (${p.unit})`:" (mm)"}</label><input type="number" id="man_${key}" data-man="${key}" step="${p.step||1}" value="${isFinite(v)?v:""}"></div>`; }).join("");
     box.querySelectorAll("[data-man]").forEach(el=>el.onchange=()=>{ const x=num(el.value); if(!isFinite(x)) return; S.comp[el.dataset.man]=x; syncComp(); render(); save(); });
   }
 }
@@ -1813,7 +1815,7 @@ function renderMissing(){
     const name=S.compSel[sel==="barI"?"bar":sel], part=name&&(L[t]||[]).find(x=>x.name===name);
     if(part&&isFinite(part[f])) continue;
     if(!name) continue;   // ohne gewähltes Teil keine Einzelmaße
-    h+=`<div class="param" style="grid-template-columns:1fr 90px"><label class="lbl" for="miss_${ck}">${lab} <span class="src edit">für ${esc(name)} nicht hinterlegt</span></label><input type="number" id="miss_${ck}" data-miss="${t}|${esc(name)}|${f}|${ck}" value="" placeholder="eintragen" step="0.1"></div>`;
+    h+=`<div class="param manParam"><label class="lbl" for="miss_${ck}">${lab} <span class="src edit">für ${esc(name)} nicht hinterlegt</span></label><input type="number" id="miss_${ck}" data-miss="${t}|${esc(name)}|${f}|${ck}" value="" placeholder="eintragen" step="0.1"></div>`;
   }
   box.innerHTML=h?`<div style="margin-top:10px;padding:8px 10px;border:1px dashed var(--dim);border-radius:8px">${h}</div>`:"";
   box.querySelectorAll("[data-miss]").forEach(el=>el.onchange=()=>{
