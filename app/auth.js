@@ -166,7 +166,7 @@
 
   /* ---------- Konto-Bereich und Benutzerverwaltung (Tab „Daten“) ---------- */
   function renderAccount() {
-    const who = WF.profile ? `${WF.profile.full_name || ""} (${WF.profile.email || WF.user.email}) · ${WF.isAdmin ? "Admin" : WF.canPro ? "Nutzer · WiFitPro + Basic" : "Nutzer · nur WiFitBasic"}` : "";
+    const who = WF.profile ? `${WF.profile.full_name || ""} (${WF.profile.email || WF.user.email})` : "";   // nur das angemeldete Konto; Freigaben sieht man an den Knöpfen
     document.querySelectorAll(".wfWho").forEach(el => (el.textContent = who));
     document.querySelectorAll(".wfOut").forEach(b => (b.onclick = signOut));
     const pw = document.getElementById("acPwBtn");
