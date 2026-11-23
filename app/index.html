@@ -344,6 +344,7 @@ table.t td.r{font-size:14px;color:var(--muted)}
 .res .x{grid-column:1/-1;font-size:12px;color:var(--dim);margin-top:-2px}
 .tg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 10px;margin:6px 0 4px}
 details.acc{border-bottom:1px solid var(--rule);padding:2px 0 12px;margin-bottom:14px}
+section>details.acc:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}   /* kein doppelter Trennstrich am Abschnittsende */
 details.acc>summary{list-style:none;cursor:pointer;font-size:16px;font-weight:600;padding:6px 0;display:flex;justify-content:space-between;align-items:center}
 details.acc>summary::-webkit-details-marker{display:none}
 details.acc>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-right:4px;transition:transform .15s}
