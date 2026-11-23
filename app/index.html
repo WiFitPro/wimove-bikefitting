@@ -240,7 +240,8 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 /* Anmeldung (über dem Startbildschirm) */
 #authScr{position:fixed;inset:0;z-index:49;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #authScr[hidden]{display:none}
-#authScr .startCard::before{content:"";position:absolute;inset:0;background:url("brand/start.jpg") center/cover no-repeat}
+#authScr::before{content:"";position:absolute;inset:0;background:url("brand/start_full.jpg") center/cover no-repeat,url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAkABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDVKzLK0mwk47c8elVy7hFHBONxXGMVYnuo2t2ZZAcYyB1xTIYkS2LIxZj1x2zXrLbU+eersmUIYg7s8xAA7k4yTRVoRJJG7yRFI2+6QBx25oq73MeWy2KwVjNITGcYPXjj61PaySh4AsbEYwW7EVUz23DGehzira3IRTsYqSMcdRRJaBBq9xL6V4k+zEYGc5B6iioZf3xyG3bR0J5/+vRVR0RE7t3I7hBHMyLnA9ajoopol7hiiiimI//Z") center/cover no-repeat;opacity:.7}   /* wie die Titelseite: Foto über den ganzen Bildschirm */
+#authScr>.startCard{z-index:1}
 .authIn{position:absolute;z-index:1;left:0;right:0;top:24%;display:flex;flex-direction:column;align-items:center;gap:2.6cqi;color:#fff;text-align:center;padding:0 9cqi}
 .authIn h2{font:italic 700 11cqi/1 "Barlow",system-ui,sans-serif;margin:0}
 .authSub{font:400 3.6cqi/1.35 "Barlow",system-ui,sans-serif;margin:0}
@@ -2330,7 +2331,7 @@ function markBasic(){
   adv.push($("loadOptFit"),$("loadIstFit"),$("fitBtn"),$("loadIst").closest("section"),$("loadBtnT"));   // Laden aus Set-up / Excel und Bauteile anpassen
   document.querySelectorAll('.tab[data-tab="befund"],.tab[data-tab="setup"]').forEach(t=>adv.push(t));
   /* Tab „Daten“ in WiFitBasic nur mit Konto (Passwort, Abmelden) und – für Admins – Benutzerverwaltung */
-  $("newPersonBtn").closest("section").classList.add("adv"); $("exportBtn").closest("section").classList.add("adv");
+  $("newPersonBtn").classList.add("adv"); $("exportBtn").closest("section").classList.add("adv");
   adv.forEach(e=>e&&e.classList.add("adv"));
 }
 /* Weiter-Button am Ende jedes Tabs: springt zum nächsten sichtbaren Tab */
