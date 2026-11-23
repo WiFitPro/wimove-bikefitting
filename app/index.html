@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<link rel="preload" as="image" href="brand/start_full.jpg">
+<link rel="preload" as="image" href="brand/start_bg.jpg">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>WiFitPro</title>
 <meta name="theme-color" content="#F7FAFC" media="(prefers-color-scheme: light)">
@@ -226,7 +226,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 /* Startbildschirm: Deckblatt mit Auswahl WiFitPro / WiFitBasic */
 #startScr{position:fixed;inset:0;z-index:48;background:#fff;   /* weiß: Safari 26 übernimmt die Farbe für Adressleiste und Tabs */display:flex;align-items:center;justify-content:center;overflow:hidden}
 #startScr[hidden]{display:none}
-#startScr::before{content:"";position:absolute;inset:0;background:url("brand/start_full.jpg") center/cover no-repeat,url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAkABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDVKzLK0mwk47c8elVy7hFHBONxXGMVYnuo2t2ZZAcYyB1xTIYkS2LIxZj1x2zXrLbU+eersmUIYg7s8xAA7k4yTRVoRJJG7yRFI2+6QBx25oq73MeWy2KwVjNITGcYPXjj61PaySh4AsbEYwW7EVUz23DGehzira3IRTsYqSMcdRRJaBBq9xL6V4k+zEYGc5B6iioZf3xyG3bR0J5/+vRVR0RE7t3I7hBHMyLnA9ajoopol7hiiiimI//Z") center/cover no-repeat;opacity:.7}   /* winziges Vorschaubild, bis das Foto geladen ist */   /* Foto etwas transparenter */
+#startScr::before{content:"";position:absolute;inset:0;background:#0BA2D6 url("brand/start_bg.jpg") center/100% auto no-repeat}   /* winziges Vorschaubild, bis das Foto geladen ist */   /* Foto etwas transparenter */
 #startScr>.startCard{z-index:1}
 .startCard{position:relative;height:min(100vh,141.45vw);aspect-ratio:1240/1754;container-type:inline-size}
 .startCard::before{content:"";position:absolute;left:35%;top:75.5%;width:30%;aspect-ratio:900/510;background:url("brand/logo_stack.png") center/contain no-repeat;}   /* Foto füllt den ganzen Bildschirm, Logo an alter Stelle */   /* Blau etwas zurückgenommen */
@@ -243,7 +243,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 /* Anmeldung (über dem Startbildschirm) */
 #authScr{position:fixed;inset:0;z-index:49;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #authScr[hidden]{display:none}
-#authScr::before{content:"";position:absolute;inset:0;background:url("brand/start_full.jpg") center/cover no-repeat,url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAkABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDVKzLK0mwk47c8elVy7hFHBONxXGMVYnuo2t2ZZAcYyB1xTIYkS2LIxZj1x2zXrLbU+eersmUIYg7s8xAA7k4yTRVoRJJG7yRFI2+6QBx25oq73MeWy2KwVjNITGcYPXjj61PaySh4AsbEYwW7EVUz23DGehzira3IRTsYqSMcdRRJaBBq9xL6V4k+zEYGc5B6iioZf3xyG3bR0J5/+vRVR0RE7t3I7hBHMyLnA9ajoopol7hiiiimI//Z") center/cover no-repeat;opacity:.7}   /* wie die Titelseite: Foto über den ganzen Bildschirm */
+#authScr::before{content:"";position:absolute;inset:0;background:#0BA2D6 url("brand/start_bg.jpg") center/100% auto no-repeat}   /* wie die Titelseite */
 #authScr>.startCard{z-index:1}
 .authIn{position:absolute;z-index:1;left:0;right:0;top:24%;display:flex;flex-direction:column;align-items:center;gap:2.6cqi;color:#fff;text-align:center;padding:0 9cqi}
 .authIn h2{font:italic 700 11cqi/1 "Barlow",system-ui,sans-serif;margin:0}
