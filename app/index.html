@@ -298,6 +298,8 @@ h3{font-size:13px;font-weight:600;color:var(--muted);margin:16px 0 6px}
 .btn{font:inherit;font-weight:600;border:0;border-radius:8px;padding:8px 13px;cursor:pointer;background:var(--frame);color:#fff}
 .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule);font-weight:500}
 body.basic .adv{display:none!important}
+body.basic #pdfSecsBox>summary{pointer-events:none;cursor:default}
+body.basic #pdfSecsBox>summary::after{display:none}
 .normtag{font-size:11px;font-weight:600;margin-left:6px;white-space:nowrap}
 .normtag.nok{color:#2e8b57} .normtag.nmid{color:#c98a00} .normtag.nbad{color:#c0392b}
 .param.armtot{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0 10px;border-bottom:1px dashed var(--rule)}
@@ -639,7 +641,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <h2>PDF erstellen</h2>
         <p class="src-line" id="pdfWho"></p>
         <details class="acc adv" id="pkgDetails"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
-        <details class="acc" id="pdfSecsBox" style="margin-top:12px"><summary>Inhalte auswählen <span class="note" id="pdfSecsCount" style="margin:0 auto 0 10px;font-weight:400"></span></summary>
+        <details class="acc" id="pdfSecsBox" style="margin-top:12px" ontoggle="if(document.body.classList.contains('basic')&&!this.open)this.open=true"><summary>Inhalte auswählen <span class="note" id="pdfSecsCount" style="margin:0 auto 0 10px;font-weight:400"></span></summary>
           <div class="row" style="margin-top:4px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
           <div id="pdfSecs"></div>
         </details>
@@ -2349,6 +2351,7 @@ function renderNext(){
 }
 function applyBasic(){
   const on=!!S.basic; document.body.classList.toggle("basic",on);
+  if(on&&$("pdfSecsBox")) $("pdfSecsBox").open=true;   // WiFitBasic: Inhalte immer offen, kein Aufklappen
   $("basicBtn").setAttribute("aria-pressed",on);
   $("basicBtn").textContent=on?"WiFitBasic":"WiFitPro";   // zeigt die aktive Ansicht; Klick wechselt
   $("basicBtn").title=on?"Abgespeckte Ansicht aktiv – klicken für WiFitPro":"Volle Ansicht aktiv – klicken für WiFitBasic";
