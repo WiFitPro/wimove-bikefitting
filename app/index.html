@@ -173,7 +173,13 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .su b{text-align:right}
 .fitmGrid{grid-template-columns:minmax(160px,1fr) auto;justify-content:stretch}
 .fitmIn{justify-self:end}
-.param.manParam{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.param.manParam{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+/* Bezeichnung links, Feld rechts (automatisch für Bezeichnung + Feld untereinander) */
+.frow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+.frow>label.f{margin:0;flex:0 1 auto}
+.frow>input,.frow>select,.frow>textarea{flex:0 1 auto;margin-left:auto}
+.frow>textarea{flex:1 1 auto;max-width:560px}
+.two:has(>div>.frow){grid-template-columns:1fr}
 .param.manParam input[type=number]{width:90px!important;max-width:90px;flex:none}
 #pp_vas{max-width:120px} #pp_when{max-width:260px} #pp_text{max-width:560px}
 .bfg b{font-size:12px;color:var(--muted)}
@@ -4613,6 +4619,16 @@ const FRESH=!S.stdStart1;   // erster Start in diesem Browser
 if(!S.stdStart1){ S.stdStart1=true; setTimeout(()=>{ $("suClear").click(); },0); }
 syncPerson(); render(true);
 if(S.proAt===undefined) S.basic=true;   // Gerät kennt den Passwortstand noch nicht: sicherheitshalber in WiFitBasic starten
+/* Bezeichnung und Feld in eine Zeile setzen: Feld rechtsbündig */
+function wrapFieldRows(root){
+  (root||document).querySelectorAll("aside label.f").forEach(l=>{
+    const f=l.nextElementSibling; if(!f||l.parentElement.classList.contains("frow")) return;
+    if(!/^(INPUT|SELECT|TEXTAREA)$/.test(f.tagName)||f.type==="checkbox"||f.type==="file"||f.hidden) return;
+    const w=document.createElement("div"); w.className="frow"; l.parentNode.insertBefore(w,l); w.appendChild(l); w.appendChild(f);
+  });
+}
+wrapFieldRows();
+try{ let t=null; new MutationObserver(()=>{ clearTimeout(t); t=setTimeout(()=>wrapFieldRows(),30); }).observe(document.querySelector("aside"),{childList:true,subtree:true}); }catch(e){}
 markBasic(); applyBasic(); enforceLock(); showTab("person"); renderPwBox(); applyStyleStd(); renderStyleStd(); syncPerson(); render(true);   // App startet immer im Tab „Person“
 factoryLoad(); brandLoad(); pdfPrefsLoad(); renderBefund(); renderOwnBikes(); applyPendingCalib(); renderCalib(); if(S.tab==="setup") renderSetup(); if(S.tab==="pdf"){ renderPdfTab(); renderCP(); renderEV(); }
 </script>
