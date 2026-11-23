@@ -211,10 +211,10 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .savebar .note{margin:0;flex:1;min-width:140px}
 .savebar.dirty .note{color:var(--dim);font-weight:600}
 /* Startbildschirm: Deckblatt mit Auswahl WiFitPro / WiFitBasic */
-#startScr{position:fixed;inset:0;z-index:48;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#startScr{position:fixed;inset:0;z-index:48;background:#03a0d6 url("brand/start_full.jpg") center/cover no-repeat;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #startScr[hidden]{display:none}
 .startCard{position:relative;height:min(100vh,141.45vw);aspect-ratio:1240/1754;container-type:inline-size}
-.startCard::before{content:"";position:absolute;inset:0;background:url("brand/start.jpg") center/cover no-repeat;}   /* Blau etwas zurückgenommen */
+.startCard::before{content:"";position:absolute;left:33.5%;top:82.9%;width:33.1%;aspect-ratio:410/83;background:url("brand/start_logo.png") center/contain no-repeat;}   /* Foto füllt den ganzen Bildschirm, Logo an alter Stelle */   /* Blau etwas zurückgenommen */
 .startIn{position:absolute;z-index:1;left:0;right:0;top:27%;display:flex;flex-direction:column;align-items:center;gap:3.5cqi;color:#fff;text-align:center;padding:0 6cqi}
 .startIn h2{font:italic 700 12.5cqi/1 "Barlow",system-ui,sans-serif;margin:0;letter-spacing:-.005em}
 .startIn p{font:400 3.6cqi/1.3 "Barlow",system-ui,sans-serif;margin:0}
