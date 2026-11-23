@@ -85,8 +85,8 @@ aside{background-image:linear-gradient(color-mix(in srgb,var(--panel) 95%,transp
 .stage{container-type:inline-size}
 /* wimove-Logo vom Deckblatt als dezenter Hintergrund der Raddarstellung */
 .stage{position:relative;isolation:isolate}
-.stage::before{content:"";position:absolute;left:50%;top:50%;width:min(86%,980px);aspect-ratio:410/83;transform:translate(-50%,-50%);background:var(--frame);opacity:.11;pointer-events:none;z-index:-1;
-  -webkit-mask:url(brand/start_logo.png) center/contain no-repeat;mask:url(brand/start_logo.png) center/contain no-repeat}
+.stage::before{content:"";position:absolute;left:50%;top:50%;width:min(56%,620px);aspect-ratio:900/510;transform:translate(-50%,-50%);background:var(--frame);opacity:.11;pointer-events:none;z-index:-1;
+  -webkit-mask:url(brand/logo_stack.png) center/contain no-repeat;mask:url(brand/logo_stack.png) center/contain no-repeat}
 .summary{flex:1 1 0;min-width:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px 1.6cqi;align-self:flex-start;margin-top:4px;margin-left:clamp(16px,5cqi,64px)}   /* Gelenkwinkel über die ganze obere Zeile, mit der Fensterbreite skaliert */
 @container (max-width:760px){ .summary{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .tile{min-width:0}
@@ -229,7 +229,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 #startScr::before{content:"";position:absolute;inset:0;background:url("brand/start_full.jpg") center/cover no-repeat,url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAkABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDVKzLK0mwk47c8elVy7hFHBONxXGMVYnuo2t2ZZAcYyB1xTIYkS2LIxZj1x2zXrLbU+eersmUIYg7s8xAA7k4yTRVoRJJG7yRFI2+6QBx25oq73MeWy2KwVjNITGcYPXjj61PaySh4AsbEYwW7EVUz23DGehzira3IRTsYqSMcdRRJaBBq9xL6V4k+zEYGc5B6iioZf3xyG3bR0J5/+vRVR0RE7t3I7hBHMyLnA9ajoopol7hiiiimI//Z") center/cover no-repeat;opacity:.7}   /* winziges Vorschaubild, bis das Foto geladen ist */   /* Foto etwas transparenter */
 #startScr>.startCard{z-index:1}
 .startCard{position:relative;height:min(100vh,141.45vw);aspect-ratio:1240/1754;container-type:inline-size}
-.startCard::before{content:"";position:absolute;left:33.5%;top:82.9%;width:33.1%;aspect-ratio:410/83;background:url("brand/start_logo.png") center/contain no-repeat;}   /* Foto füllt den ganzen Bildschirm, Logo an alter Stelle */   /* Blau etwas zurückgenommen */
+.startCard::before{content:"";position:absolute;left:35%;top:75.5%;width:30%;aspect-ratio:900/510;background:url("brand/logo_stack.png") center/contain no-repeat;}   /* Foto füllt den ganzen Bildschirm, Logo an alter Stelle */   /* Blau etwas zurückgenommen */
 .startIn{position:absolute;z-index:1;left:0;right:0;top:27%;display:flex;flex-direction:column;align-items:center;gap:3.5cqi;color:#fff;text-align:center;padding:0 6cqi}
 .startIn h2{font:italic 700 12.5cqi/1 "Barlow",system-ui,sans-serif;margin:0;letter-spacing:-.005em}
 .startIn p{font:400 3.6cqi/1.3 "Barlow",system-ui,sans-serif;margin:0}
@@ -511,7 +511,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
 
     <div class="panel" id="tab-person" hidden>
-      <div class="ptools"><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn small" id="basicClear" title="Name, Datum, Messwerte, Befund und Bike Set Up werden geleert. Eigene Teile, Räder, Pakete und Logo bleiben erhalten.">Neue Person anlegen</button></div><p class="note" id="basicClearNote"></p></div>
+      <div class="ptools"><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn small" id="basicClear" title="Name, Datum, Messwerte, Befund und Bike Set Up werden geleert. Eigene Teile, Räder, Pakete und Logo bleiben erhalten.">Personendaten leeren</button></div><p class="note" id="basicClearNote"></p></div>
       <section>
         <h2>Person</h2>
         <p class="src-line" id="personSrc"></p>
@@ -2402,10 +2402,10 @@ let clearArm=0;
 $("basicClear").onclick=()=>{
   const b=$("basicClear");
   if(Date.now()-clearArm>4000){ clearArm=Date.now(); b.textContent="Wirklich? Nochmal klicken"; $("basicClearNote").textContent="Name, Datum, Messwerte, Befund und Bike Set Up der aktuellen Person werden gelöscht.";
-    setTimeout(()=>{ if(Date.now()-clearArm>=4000){ b.textContent="Neue Person anlegen"; $("basicClearNote").textContent=""; } },4100); return; }
-  clearArm=0; b.textContent="Neue Person anlegen";
+    setTimeout(()=>{ if(Date.now()-clearArm>=4000){ b.textContent="Personendaten leeren"; $("basicClearNote").textContent=""; } },4100); return; }
+  clearArm=0; b.textContent="Personendaten leeren";
   newPerson(); syncPName(); const cb=findBike(S.sel);
-  const nn=$("basicClearNote"); nn.textContent=`Neue Person angelegt: Standardwerte, Standardrad${cb?` ${cb.s}`:""} und eine passende Position.`; clearTimeout(newPerson.t); newPerson.t=setTimeout(()=>{ if(nn.textContent.startsWith("Neue Person")) nn.textContent=""; },4000); };
+  const nn=$("basicClearNote"); nn.textContent=`Personendaten geleert: Standardwerte, Standardrad${cb?` ${cb.s}`:""} und eine passende Position.`; clearTimeout(newPerson.t); newPerson.t=setTimeout(()=>{ if(nn.textContent.startsWith("Personendaten")) nn.textContent=""; },4000); };
 
 const swBox=$("swatches");
 swBox.innerHTML=COLORS.map((c,i)=>`<button class="sw" style="background:${c}" aria-label="Rahmenfarbe ${COLOR_NAMES[i]}" title="${COLOR_NAMES[i]}" data-i="${i}"></button>`).join("");
