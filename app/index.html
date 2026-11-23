@@ -3455,7 +3455,8 @@ function renderBefund(){
       return s; }).join("")+`</div>`; }
   if(!B.date) B.date=new Date().toISOString().slice(0,10);
   $("bfName").value=B.name||""; $("bfDate").value=B.date; syncPName();
-  document.querySelectorAll("[data-bf]").forEach(el=>{ el.oninput=el.onchange=()=>{ bf()[el.dataset.bf]=el.value; save(); if(el.dataset.bf==="s_beinlaenge"||el.dataset.bf==="s_becken"||/^[mk]_.+_[lr]$/.test(el.dataset.bf)) setTimeout(renderBefund,0); }; });
+  document.querySelectorAll("[data-bf]").forEach(el=>{ el.oninput=el.onchange=()=>{ bf()[el.dataset.bf]=el.value; save(); if(el.dataset.bf==="s_beinlaenge"||el.dataset.bf==="s_becken"||/^[mk]_.+_[lr]$/.test(el.dataset.bf)) setTimeout(()=>{ const k=el.dataset.bf; renderBefund();   // Fokus nach dem Neuaufbau zurück aufs Feld, damit Tab zum nächsten Feld springt
+      const n=document.querySelector(`[data-bf="${k}"]`); if(n) try{ n.focus({preventScroll:true}); }catch(e){} },0); }; });
 }
 
 /* ================= Contemplas-Videoanalyse: große Vergleichsbilder aus dem PDF ================= */
