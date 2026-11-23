@@ -668,8 +668,8 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
           <div><label class="f" for="bfDate">Datum</label><input class="bfi" id="bfDate" type="date"></div>
         </div>
       </section>
-      <details class="acc"><summary>Beschwerden</summary><div id="bfPainPick"></div><div id="bfPain" hidden></div></details>
       <details class="acc"><summary>Anamnese</summary><div id="bfText"></div></details>
+      <details class="acc"><summary>Beschwerden</summary><div id="bfPainPick"></div><div id="bfPain" hidden></div></details>
       <details class="acc"><summary>Statikbefund</summary><div id="bfStatik"></div></details>
       <details class="acc"><summary>Dynamischer Befund</summary><div id="bfDyn"></div></details>
       <details class="acc"><summary>Mobilitätstests</summary><div id="bfMob"></div><p class="note">BAM = Bewegungsausmaß</p></details>
@@ -3611,7 +3611,7 @@ async function drawingPng(){
   const cx=cv.getContext("2d"); cx.fillStyle="#ffffff"; cx.fillRect(0,0,W,H); cx.drawImage(img,0,0,W,H);
   return {url:cv.toDataURL("image/jpeg",0.9),ratio:H/W};
 }
-const PDF_SECS=[["person","Personendaten & Abmessungen"],["seg","Segmentlängen (Modell)"],["pain","Beschwerden"],["anam","Anamnese"],["statik","Statikbefund"],["dyn","Dynamischer Befund"],["mob","Mobilitätstests"],["kraft","Muskelfunktion / Krafttests"],["setup","Bike Set Up"],["bikedims","Rad mit Maßen der Sitzposition"],["drawing","Zeichnung der Sitzposition"],["angles","Gelenkwinkel"],["sug","Vorschlag optimale Sitzposition"],["rw","Empfohlene Richtwerte"],["video","Videoanalyse (Contemplas)"],["ev","Satteldruckmessung (Everve)"]];
+const PDF_SECS=[["person","Personendaten & Abmessungen"],["seg","Segmentlängen (Modell)"],["anam","Anamnese"],["pain","Beschwerden"],["statik","Statikbefund"],["dyn","Dynamischer Befund"],["mob","Mobilitätstests"],["kraft","Muskelfunktion / Krafttests"],["setup","Bike Set Up"],["bikedims","Rad mit Maßen der Sitzposition"],["drawing","Zeichnung der Sitzposition"],["angles","Gelenkwinkel"],["sug","Vorschlag optimale Sitzposition"],["rw","Empfohlene Richtwerte"],["video","Videoanalyse (Contemplas)"],["ev","Satteldruckmessung (Everve)"]];
 /* Pakete für den Report (WiFitPro): Plus, Advanced, Professional – bestimmen Inhalt und Deckblatt */
 const PDF_TIERS=[["plus","Plus",["person","pain","anam","setup","bikedims","rw"]],
   ["advanced","Advanced",["person","pain","anam","setup","bikedims","rw","video"]],
@@ -3968,6 +3968,13 @@ async function makePdf(){
     kv([["Cleatposition",S.comp.cleat+" % ab Ferse"]],2); }
 
   if(pdfOn("pain")||pdfOn("anam")) H1("Körperliche Voraussetzungen");
+  if(pdfOn("anam")){ H2("Anamnese"); let any=false;
+    for(const [grp,list] of ANAM){ const r=list.filter(([k])=>{ const x=String(Bf[k]??"").trim(); return x&&x!=="–"; }).map(([k,l])=>[l,String(Bf[k])]);
+      if(!r.length) continue; any=true;
+      font(8.5,true); col(C.mute); need(8); doc.text(pdfTxt(grp.toUpperCase()),M,y+3); y+=5;
+      kv(r,2); }
+    if(!any) T("Keine Angaben.",9.5,false,C.mute); }
+
   if(pdfOn("pain")){ migratePain(); H2("Beschwerden");
     const L=[...(Bf.painList||[])]; for(const [k,l] of painRegions()) if(String(Bf["p_"+k]||"").trim()&&!L.some(e=>e.region===k)) L.push({regionLabel:l,region:k,items:[],qual:[],vas:"",when:""});
     if(!L.length) T(Bf.noPain!==false?"Keine Beschwerden.":"Keine Beschwerden angegeben.",9.5,false,C.mute);
@@ -3983,13 +3990,6 @@ async function makePdf(){
       font(9); col(C.ink); doc.text(wrap,M+56,y+5.5);
       y+=hh+3; }
   }
-  if(pdfOn("anam")){ H2("Anamnese"); let any=false;
-    for(const [grp,list] of ANAM){ const r=list.filter(([k])=>{ const x=String(Bf[k]??"").trim(); return x&&x!=="–"; }).map(([k,l])=>[l,String(Bf[k])]);
-      if(!r.length) continue; any=true;
-      font(8.5,true); col(C.mute); need(8); doc.text(pdfTxt(grp.toUpperCase()),M,y+3); y+=5;
-      kv(r,2); }
-    if(!any) T("Keine Angaben.",9.5,false,C.mute); }
-
   if(pdfOn("statik")||pdfOn("dyn")||pdfOn("mob")||pdfOn("kraft")) H1("Körperliche Funktionsuntersuchung");
   if(pdfOn("statik")){ migrateStatik(); H2("Statikbefund (im Stand)");
     for(const [k,l,t,o] of BF_STATIK){
