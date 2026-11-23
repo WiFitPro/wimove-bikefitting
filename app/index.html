@@ -160,6 +160,19 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .fitmGrid>label small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
 .fitmGrid .suh{grid-column:1/-1}
 .fitmIn{display:flex;align-items:center;gap:6px}
+/* Eingabefelder rechtsbündig am Zeilenende */
+.bfg .bfi[inputmode=decimal],.bfg .bfi[inputmode=numeric],.bfg select,.bfg input.bfi,.bfg textarea.bfi{justify-self:end}
+.bfg select,.bfg .bfi{width:100%;min-width:0;box-sizing:border-box}
+.bfg:not(.styleGrid){grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr)}
+.bfg>*{min-width:0}
+.bfg>div[style*="grid-column:2/4"]{display:flex;justify-content:flex-end}
+.bfg.styleGrid{grid-template-columns:minmax(90px,1fr) repeat(3,minmax(64px,92px));justify-content:stretch}
+.bfg.styleGrid>div{align-items:flex-end}
+.su input[data-t=num],.su select{justify-self:end}
+.su .suv{text-align:right;padding-left:0;padding-right:7px}
+.su b{text-align:right}
+.fitmGrid{grid-template-columns:minmax(160px,1fr) auto;justify-content:stretch}
+.fitmIn{justify-self:end}
 .param.manParam{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
 .param.manParam input[type=number]{width:90px!important;max-width:90px;flex:none}
 #pp_vas{max-width:120px} #pp_when{max-width:260px} #pp_text{max-width:560px}
@@ -295,7 +308,7 @@ select{font:inherit;width:100%;padding:7px 8px;border:1px solid var(--rule);bord
 .param .lbl{font-size:14px;display:flex;gap:6px;align-items:baseline;min-width:0;flex-wrap:wrap}
 .param .src{font-size:11px;color:var(--muted)}
 .param .src.edit{color:var(--dim)}
-.param input[type=number]{font:500 16px "Barlow Condensed","Arial Narrow",sans-serif;width:100%;padding:3px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink);text-align:right}
+.param input[type=number]{font:500 16px "Barlow Condensed","Arial Narrow",sans-serif;width:100%;box-sizing:border-box;padding:3px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink);text-align:right}
 .param input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--frame);margin:0}
 table.t{width:100%;border-collapse:collapse;font-size:14px}
 table.t th{font-size:12px;font-weight:500;color:var(--muted);text-align:right;padding:4px 0 4px 8px}
