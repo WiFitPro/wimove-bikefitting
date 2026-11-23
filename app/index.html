@@ -69,7 +69,10 @@ h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:600;font
 .play svg{width:16px;height:16px;fill:currentColor}
 .legend{display:flex;gap:18px;color:var(--muted);font-size:13px;flex-wrap:wrap}
 .legend span::before{content:"";display:inline-block;width:22px;height:0;border-top:4px solid var(--frame);vertical-align:middle;margin-right:7px}
-.legend span.g::before{border-top:3px dashed var(--ghost)}
+.legend span.g::before{border-top:3px dashed var(--gc,var(--ghost))}
+.cmpBlock{margin-top:10px;padding-top:6px;border-top:1px dashed var(--rule)}
+.cmpRow{display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:end}
+.cmpDel{padding:5px 0;width:32px;font-size:16px;line-height:1}
 .legend span.t::before{width:12px;height:12px;border:2px solid var(--target);border-radius:50%}
 .drop-hint{position:absolute;inset:0;display:none;align-items:center;justify-content:center;border:2px dashed var(--frame);border-radius:14px;background:color-mix(in srgb,var(--paper) 85%,transparent);font-weight:600;font-size:18px}
 body.dragging .drop-hint{display:flex}
@@ -85,7 +88,7 @@ aside{background:var(--panel);border-left:1px solid var(--rule);overflow-y:auto;
 .good{color:var(--ok)} .bad{color:var(--dim)}
 .tabs{display:flex;flex-wrap:wrap;gap:4px;margin:14px 0 16px;border-bottom:1px solid var(--rule)}
 .su{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:4px 6px;align-items:center;font-size:13px}
-.su b{font-size:12px;color:var(--muted);font-weight:600}
+.su b{font-size:13px;color:var(--ink);font-weight:700}
 .su input,.su select,.bfg select,.bfi{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink);width:100%;min-width:0}
 .suh{grid-column:1/-1;font-weight:600;color:var(--muted);margin-top:10px;font-size:12px;border-bottom:1px solid var(--rule);padding-bottom:3px}
 .suv{font:500 15px "Barlow Condensed","Arial Narrow",sans-serif;text-align:right}
@@ -120,6 +123,44 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .suback{flex:none;width:28px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink);cursor:pointer;padding:0}
 .sul small{display:block;font:400 11px Barlow,sans-serif;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bfg{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:6px;align-items:center;font-size:13px}
+.bfg.styleGrid{grid-template-columns:minmax(90px,120px) repeat(3,minmax(64px,92px));column-gap:10px;row-gap:4px;align-items:start;justify-content:start}
+.bfg.styleGrid>span{padding-top:7px}
+.bfg.styleGrid>div{display:flex;flex-direction:column;min-width:0}
+.bfg.styleGrid .bfi{width:100%;box-sizing:border-box}
+.bfg.styleGrid small.src{display:block;line-height:1.3;min-height:1.3em}
+/* Eingabefelder nur so breit wie ihr Inhalt es braucht */
+.bfg .bfi[inputmode=decimal],.bfg .bfi[inputmode=numeric]{max-width:120px;justify-self:start}
+.bfg select{max-width:320px;justify-self:start}
+.bfg input.bfi:not([inputmode]){max-width:420px}
+.bfg textarea.bfi{max-width:560px}
+#pp_region{max-width:360px}
+.su input[data-t=num]{max-width:110px;justify-self:start}
+.su select{max-width:260px}
+#styleSel,#sexSel{max-width:260px}
+#pName{max-width:360px} #pDate{max-width:200px}
+#selBar,#selStem,#selLever,#selPedal,#selShoe{max-width:380px}
+#sugCmp{max-width:300px}
+#calKnee,#calAnkle{max-width:140px} #calLabel{max-width:360px}
+#pkgDef{max-width:340px}
+#pwNew,#pwNew2{max-width:280px}
+#brandBox .bfi{max-width:420px}
+/* Bike Set Up: Spalten so breit wie die Felder, berechnete Werte direkt unter den Feldern */
+.su{grid-template-columns:minmax(110px,240px) minmax(0,260px) minmax(0,260px);justify-content:start;column-gap:14px}
+.su .suv{text-align:left;padding-left:7px}
+/* Beschwerdebild */
+/* Überschriften der Eingabefelder präsenter */
+.param .lbl{font-weight:600;color:var(--ink)}
+.bfg>label,.bfg>span:not(.src){font-size:14px;font-weight:600;color:var(--ink)}
+.su>span:not(.suv){font-size:14px;font-weight:600;color:var(--ink)}
+.su>span small,.param .lbl .src,.param .lbl small{font-weight:400}
+.fitmGrid{display:grid;grid-template-columns:minmax(160px,300px) auto;gap:6px 12px;align-items:center;justify-content:start;font-size:13px}
+.fitmGrid>label{font-size:14px;font-weight:600;color:var(--ink)}
+.fitmGrid>label small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
+.fitmGrid .suh{grid-column:1/-1}
+.fitmIn{display:flex;align-items:center;gap:6px}
+.param.manParam{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.param.manParam input[type=number]{width:90px!important;max-width:90px;flex:none}
+#pp_vas{max-width:120px} #pp_when{max-width:260px} #pp_text{max-width:560px}
 .bfg b{font-size:12px;color:var(--muted)}
 .bfg .bfn{grid-column:1/-1;margin-bottom:8px}
 .pwarn{margin:4px 0 10px;padding:8px 10px;border:1px solid #c0392b;border-radius:8px;font-size:13px;color:var(--ink);background:var(--field)}
@@ -135,7 +176,7 @@ textarea.bfi{resize:vertical}
 .bfImgBox img{width:100%;max-height:80vh;object-fit:contain}
 .bfImgBox .row{justify-content:space-between}
 .bfImgBox p{margin:0;font-weight:600;font-size:16px}
-select.bfi.ppRegion{font:600 19px/1.2 "Barlow",system-ui,sans-serif;padding:10px 12px;border:2px solid var(--frame);border-radius:8px}   /* Bereich gut sichtbar */
+select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px 9px;border:1.5px solid var(--frame);border-radius:7px}   /* Bereich: sichtbar, aber dezent */
 .tab{font:inherit;font-weight:600;font-size:14px;background:none;border:0;border-bottom:3px solid transparent;padding:8px 10px;color:var(--muted);cursor:pointer;margin-bottom:-1px}
 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--frame)}
 .panel[hidden]{display:none}
@@ -235,7 +276,7 @@ body.basic .basic-only{display:block}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .note{font-size:13px;color:var(--muted);margin:8px 0 0}
 .warn{font-size:13px;color:var(--dim);margin:6px 0 0}
-label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+label.f{display:block;font-size:14px;font-weight:600;color:var(--ink);margin:12px 0 5px}
 select{font:inherit;width:100%;padding:7px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .three{display:grid;grid-template-columns:1fr 1fr 84px;gap:8px}
@@ -280,6 +321,12 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
 .sw[aria-pressed="true"]{border-color:var(--ink)}
 .toggle{display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
 .toggle input{accent-color:var(--frame);width:16px;height:16px;margin:0}
+/* Überschriften markanter und größer */
+aside h2{font-size:19px;font-weight:700;letter-spacing:.005em}
+details.acc>summary{font-size:18px;font-weight:700}
+details.acc>summary::after{width:9px;height:9px;border-width:0 2.5px 2.5px 0}
+aside h3{font-size:15px;font-weight:700;color:var(--ink)}
+.suh{font-size:13.5px;font-weight:700;color:var(--ink);border-bottom-width:1.5px}
 @media (max-width:900px){
   .app{grid-template-columns:1fr;height:auto}
   .splitter{display:none}
@@ -379,12 +426,11 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
         <div id="fitGrip"></div>
         <p class="note" id="gripNote">Griff X/Y wird über Vorbaulänge und Spacer eingestellt; Lenker, Griff-Reach und Winkel bleiben gleich.</p>
       </section>
-      <section>
-        <h2>Gelenkwinkel</h2>
+      <details class="acc" id="angDetails"><summary>Gelenkwinkel</summary>
         <div id="angTable"></div>
         <p class="note">Bereich: kleinster und größter Wert über eine Kurbelumdrehung. Richtwerte sind übliche Orientierungswerte für Rennrad und Gravel, keine festen Grenzen.</p>
-        <div id="fitWarn"></div>
-      </section>
+      </details>
+      <div id="fitWarn"></div>
       <details class="acc"><summary>Kalibrierung des Modells</summary>
         <p class="note" style="margin-top:0">Für eine Person mit eingestelltem Ist-Setup die in Contemplas gemessene Kniestreckung (größter Kniewinkel unten) eintragen. Die App ermittelt, wie tief die Hüfte im Sattel sitzen muss, damit das Modell denselben Winkel ergibt.</p>
         <div class="two"><div><label class="f" for="calKnee">Kniestreckung gemessen (°)</label><input class="bfi" id="calKnee" inputmode="decimal" placeholder="z. B. 144"></div>
@@ -468,12 +514,8 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
         <div class="chips" id="sizeChips"></div>
         <p class="note" id="sizeFitNote" style="margin-top:6px"></p>
         <h3>Rahmen vergleichen mit</h3>
-        <div class="three">
-          <div><label class="f" for="cBrand">Marke</label><select id="cBrand"></select></div>
-          <div><label class="f" for="cModel">Modell</label><select id="cModel"></select></div>
-          <div><label class="f" for="cSize">Größe</label><select id="cSize"></select></div>
-        </div>
-        <div class="row" style="margin-top:8px">
+        <div id="cmpRows"></div>
+        <div class="row" id="cmpBtns" style="margin-top:8px">
           <button class="btn ghost small" id="cmpOptBike">Mit Rad der optimierten Position vergleichen</button>
           <button class="btn ghost small" id="cmpIstBike">Mit Ist-Rad vergleichen</button>
         </div>
@@ -491,6 +533,7 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
         <div id="params"></div>
       </details>
       <details class="acc"><summary>Berechnet</summary><div class="res" id="results"></div></details>
+      <details class="acc adminOnly" id="fitModelDetails"><summary>Bewertungsmodell Größenempfehlung</summary><div id="fitModelBox"></div></details>
       <details class="acc"><summary>Rahmenfarbe <span class="note" id="colorName" style="margin:0 auto 0 10px;font-weight:400"></span></summary><div class="swatches" id="swatches" style="flex-wrap:wrap"></div></details>
       <details class="acc adminOnly" id="bmDetails"><summary>Räder verwalten</summary><p class="note dbstat" style="margin-top:0"></p>
         <div class="row"><button class="btn ghost small" id="newBikeBtn">+ Rad anlegen</button></div>
@@ -561,11 +604,12 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
       <section>
         <h2>PDF erstellen</h2>
         <p class="src-line" id="pdfWho"></p>
+        <details class="acc adv" id="pkgDetails"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
         <div class="adv" id="pdfTierBox"><label class="f" style="margin-top:0">Paket</label><div class="chips" id="pdfTiers"></div><p class="note" id="pdfTierNote"></p></div>
-        <p class="note" style="margin-top:8px">Wähle ein Paket oder einzelne Inhalte für das PDF aus.</p>
-        <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
-        <div id="pdfSecs"></div>
-        <details class="acc adv" id="pkgDetails" style="margin-top:12px"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
+        <details class="acc" id="pdfSecsBox" style="margin-top:12px"><summary>Inhalte auswählen <span class="note" id="pdfSecsCount" style="margin:0 auto 0 10px;font-weight:400"></span></summary>
+          <div class="row" style="margin-top:4px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
+          <div id="pdfSecs"></div>
+        </details>
       </section>
       <section>
         <h2>Videoanalyse (Contemplas)</h2>
@@ -651,11 +695,11 @@ const COMP = [
   {key:"stemLen", label:"Vorbaulänge", g:"Cockpit", min:40,max:150,step:5,def:100},
   {key:"stemAngle", label:"Vorbauwinkel", g:"Cockpit", unit:"°", min:-25,max:25,step:1,def:-6},
   {key:"stemHeight", label:"Vorbauhöhe (Klemmung)", g:"Cockpit", min:30,max:60,step:1,def:40},
-  {key:"barReach", label:"Lenker-Reach", g:"Cockpit", min:30,max:110,step:1,def:75},
-  {key:"leverReach", label:"Griff-Reach (Klemmung bis Griffposition)", g:"Cockpit", min:20,max:90,step:1,def:60},
+  {key:"barReach", label:"Lenker-Reach (Mitte Oberlenker bis Bremsgriff)", g:"Cockpit", min:30,max:110,step:1,def:60},
+  {key:"leverReach", label:"Bremsgriff-Reach (Beginn Bremsgriff bis Griffpunkt)", g:"Cockpit", min:20,max:90,step:1,def:50},
   {key:"leverAngle", label:"Bremsgriffwinkel", g:"Cockpit", unit:"°", min:-10,max:20,step:1,def:0},
   {key:"crank", label:"Kurbellänge", g:"Antrieb", min:150,max:180,step:2.5,def:172.5},
-  {key:"pedalStack", label:"Pedal-Stackhöhe", g:"Antrieb", min:5,max:25,step:0.1,def:12},
+  {key:"pedalStack", label:"Pedal-Stackhöhe", g:"Antrieb", min:5,max:25,step:0.1,def:16},
   {key:"sole", label:"Sohlendicke", g:"Antrieb", min:4,max:25,step:1,def:11},
   {key:"cleat", label:"Cleatposition (% Fußlänge ab Ferse)", g:"Antrieb", unit:"%", min:45,max:80,step:1,def:72}
 ];
@@ -678,7 +722,7 @@ const PERS = [
   {key:"torso", label:"Oberkörper (Hüftgelenk bis Brustbein)", g:"Segmente", min:380,max:800,step:1, f:p=>p.sternum-(p.inseam+p.hipStand)},
   {key:"shoulderDrop", label:"Schultergelenk unter Schulterdach", g:"Segmente", min:0,max:90,step:1, f:()=>45},
   {key:"protr", label:"Schulterblatt nach vorn (Protraktion)", g:"Segmente", min:0,max:100,step:1, f:()=>40},
-  {key:"elbowT", label:"Ellbogenwinkel (Ziel)", g:"Haltung", unit:"°", min:120,max:180,step:1, f:()=>160},
+  {key:"elbowT", label:"Ellbogenwinkel (Ziel)", g:"Haltung", unit:"°", min:120,max:180,step:1, f:()=>styleElbow()},
   {key:"kneeBack", label:"Drehpunkt Knie: + hinter / − vor Kniemitte", g:"Segmente", min:-30,max:30,step:1, f:()=>0},
   {key:"armAdd", label:"Handgelenk bis Griffpunkt (Zuschlag)", g:"Segmente", min:40,max:110,step:1, f:()=>75},
   {key:"upperArm", label:"Oberarm (ab Schultergelenk)", g:"Segmente", min:220,max:400,step:0.1, f:p=>(p.acromion-p.shoulderDrop-p.hand-p.armAdd)*p.armRatio},
@@ -687,9 +731,10 @@ const PERS = [
   {key:"footAngle", label:"Fußwinkel unten (Ferse höher als Ballen; im Rückhub +12°, im Druck −12°)", g:"Haltung", unit:"°", min:0,max:40,step:0.5, f:()=>25}
 ];
 /* Standardwerte je Fahrstil: Rückenwinkel und Schulterwinkel (Zielwerte), Richtwertbereiche jeweils darum herum */
-const STYLE_STD={comfort:{back:48,shoulder:77},endurance:{back:46.5,shoulder:78.5},sportlich:{back:45,shoulder:80},ambitioniert:{back:43.5,shoulder:81.5},professional:{back:42,shoulder:83}};
+const STYLE_STD={comfort:{back:48,shoulder:77,elbow:165},endurance:{back:46.5,shoulder:78.5,elbow:162},sportlich:{back:45,shoulder:80,elbow:160},ambitioniert:{back:43.5,shoulder:81.5,elbow:157},professional:{back:42,shoulder:83,elbow:155}};
 const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v.back-5,v.back+5]]));
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
+const styleElbow=()=>{ const v=(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).elbow; return isFinite(v)?v:160; };   // Ellbogen-Ziel je Fahrstil (sportlicher = stärker angewinkelt)
 const shoulderRange=()=>[styleShoulder()-10,styleShoulder()+10];
 
 /* Pflicht-Messwerte (rechts und links): die Person wird erst gezeichnet, wenn alle eingegeben sind */
@@ -868,7 +913,7 @@ function personFrom(){
 }
 const isFem=()=>!!(S.person&&S.person.sex==="weiblich");
 /* Modellwerte, die als eigener Standard gespeichert werden können (bleiben bei neuen Excel-Dateien erhalten) */
-const MODEL_KEYS=["hipStand","hipFwd","sitBack","sink","shoulderDrop","protr","elbowT","kneeBack","ankleH","footAngle","armAdd"];   // Hüftgelenk über Sattel folgt immer Hüftgelenk über Schritthöhe
+const MODEL_KEYS=["hipStand","hipFwd","sitBack","sink","shoulderDrop","protr","kneeBack","ankleH","footAngle","armAdd"];   // Ellbogenwinkel kommt aus den Richtwerten je Fahrstil   // Hüftgelenk über Sattel folgt immer Hüftgelenk über Schritthöhe
 const stdVal=k=>S.modelStd&&isFinite(S.modelStd[k])?S.modelStd[k]:NaN;
 /* Fehlende Messwerte: geschlechtsspezifische Normwerte wie in den Spalten I (männlich) und M (weiblich) von „Peronendaten“ */
 function measures(){
@@ -897,7 +942,7 @@ function body(){
   /* Zuschlag Handgelenk–Griffpunkt: in der App einstellbar, Standard 75 mm (statt des Excel-Parameters) */
   m.armAdd=isFinite(p.ov.armAdd)?p.ov.armAdd:(isFinite(stdVal("armAdd"))?stdVal("armAdd"):75); m.armRatio=isFinite(X.armRatio)?X.armRatio:0.52; m.legRatio=isFinite(X.legRatio)?X.legRatio:0.52;
   for(const d of PERS){
-    if(d.f){ b[d.key]= isFinite(p.ov[d.key]) ? p.ov[d.key] : (isFinite(p.measured[d.key]) ? p.measured[d.key]+(d.key==="thigh"?m.legRatio*m.hipStand:d.key==="shank"?(1-m.legRatio)*m.hipStand:d.key==="forearm"?m.armAdd:0) : (isFinite(stdVal(d.key)) ? stdVal(d.key) : d.f(m))); }
+    if(d.f){ b[d.key]= isFinite(p.ov[d.key]) ? p.ov[d.key] : (isFinite(p.measured[d.key]) ? p.measured[d.key]+(d.key==="thigh"?m.legRatio*m.hipStand:d.key==="shank"?(1-m.legRatio)*m.hipStand:d.key==="forearm"?m.armAdd:0) : (d.key!=="elbowT"&&isFinite(stdVal(d.key)) ? stdVal(d.key) : d.f(m))); }
     else b[d.key]=m[d.key];
   }
   /* Segmente der linken Seite (hinteres Bein und hinterer Arm) */
@@ -1401,10 +1446,15 @@ const SUG_DEF={knee:145,kops:0,back:NaN,shoulder:NaN,elbow:160};
 const sugT=()=>{ const eT=(()=>{ try{ const v=body().elbowT; return isFinite(v)?v:160; }catch(e){ return 160; } })(); const t={...SUG_DEF,elbow:eT,...(S.sugT||{})}; for(const k in t) if(!(typeof t[k]==="number"&&isFinite(t[k]))) t[k]=k==="back"?NaN:k==="shoulder"?styleShoulder():SUG_DEF[k]; return t; };
 let sugCache={key:"",val:null};
 const styleBack=()=>(STYLE_STD[S.person.style]||STYLE_STD.sportlich).back;
+const STEM_PREF=0.6;
+const STEM_BY_STYLE={comfort:90,endurance:100,sportlich:105,ambitioniert:115,professional:125};   // bevorzugte Vorbaulänge je Sitzposition (mm)
+const stemIdeal=()=>STEM_BY_STYLE[S.person&&S.person.style]||105;
+const SPACER_BY_STYLE={comfort:25,endurance:20,sportlich:15,ambitioniert:10,professional:5};   // übliche Spacerhöhe je Sitzposition (mm)
+const spacerIdeal=()=>{ const v=SPACER_BY_STYLE[S.person&&S.person.style]; return isFinite(v)?v:15; };
 function suggest(){
   const B=body(), c0={...S.comp}, T=sugT();
   const back=isFinite(T.back)?T.back:styleBack();
-  const key=JSON.stringify([vals,c0,B,T,S.bar,back,S.compSel&&S.compSel.bar]);
+  const SI=stemIdeal(), key=JSON.stringify([vals,c0,B,T,S.bar,back,S.compSel&&S.compSel.bar,SI]);
   if(sugCache.key===key) return sugCache.val;
   const Bx={...B,backAngle:back,_back:back};
   const setup=(sb,sh,extra)=>{ const c={...c0,setback:sb,saddleH:sh,...(extra||{})}; return {c,g:compute(vals,c)}; };
@@ -1421,7 +1471,9 @@ function suggest(){
   const L1=B.upperArm+(isFinite(B.protr)?B.protr:40), L2=B.forearm, T0=shLen(B);
   const dt=Math.sqrt(L1*L1+L2*L2-2*L1*L2*Math.cos(rad(T.elbow)));
   const integ=(()=>{ const b=FIT.lists.bars.find(x=>x.name===S.compSel.bar); return !!(b&&isFinite(b.angle)); })();
-  const angles=[...new Set([c0.stemAngle,...(integ?[]:[-6,-10,-17])])];
+  /* Vorbauwinkel: mit gewähltem Vorbau/Cockpit dessen Winkel, sonst Standard −6°; steilere Winkel nur wenn die Position es deutlich verlangt */
+  const saRef=(integ||S.compSel.stem)?c0.stemAngle:(COMP.find(x=>x.key==="stemAngle")||{def:-6}).def;
+  const angles=[...new Set([saRef,...(integ?[]:[-6,-10,-17])])];
   let best=null;
   for(const sa of angles) for(let L=60;L<=140;L+=10) for(let sp=0;sp<=40;sp+=5){
     const g=compute(vals,{...base.c,stemLen:L,spacer:sp,stemAngle:sa}), G=g.grip;
@@ -1430,13 +1482,14 @@ function suggest(){
     const Sh=add(add(hip,mul(u,a)),mul({x:-u.y,y:u.x},hh));
     const bk=degs(Math.atan2(Sh.y-hip.y,Sh.x-hip.x));
     const E=ik(Sh,G,L1,L2,-1).mid, shA=angAt(Sh,hip,E);
-    const cost=((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==c0.stemAngle?0.3:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400;
+    const cost=((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==saRef?0.3+Math.abs(sa-saRef)*0.06:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400
+      +STEM_PREF*((L-SI)/20)**2;   /* Vorliebe für die zur Sitzposition passende Vorbaulänge (comfort 90 … professional 125 mm), Abweichung nur wenn die Winkel es verlangen */
     if(!best||cost<best.cost) best={L,sp,sa,cost,grip:G,back:bk,shoulder:shA};
   }
   if(!best){ const g=compute(vals,base.c); best={L:c0.stemLen,sp:c0.spacer,sa:c0.stemAngle,grip:g.grip,back,shoulder:NaN,cost:Infinity}; }
   const parts={setback:Math.round(sb),saddleH:Math.round(sh),stemLen:best.L,spacer:best.sp,stemAngle:best.sa};
   const sy=Math.sqrt(sh*sh-sb*sb);
-  const val={sb,sh,sy,gt:best.grip,grip:best.grip,parts,back:best.back,backTarget:back,cost:best.cost,
+  const val={sb,sh,sy,saRef,gt:best.grip,grip:best.grip,parts,back:best.back,backTarget:back,cost:best.cost,
     ev:evalPos({x:-sb,y:sy},best.grip,best.back)};
   sugCache={key,val}; return val;
 }
@@ -1452,6 +1505,9 @@ function renderSug(){
   const T=sugT();
   for(const [id,k] of [["tKnee","knee"],["tKops","kops"],["tBack","back"],["tShoulder","shoulder"],["tElbow","elbow"]]){ const el=$(id); if(document.activeElement!==el) el.value=isFinite(T[k])?T[k]:(k==="back"?styleBack():""); }
   $("tBack").placeholder=`${styleBack()} (Fahrstil)`;
+  /* Vorschlag erst, wenn alle Körpermaße eingetragen sind */
+  const ready=personReady(); for(const el of [$("sugApply"),$("sugCmp"),document.querySelector('label[for="sugCmp"]'),$("sugParts"),$("autoBack")&&$("autoBack").closest("label")]) if(el) el.classList.toggle("notReady",!ready);
+  if(!ready){ $("sugNote").textContent=""; $("sugTable").innerHTML=`<div class="riderHint" style="margin:6px 0;max-width:none">Der Vorschlag erscheint, sobald alle Körpermaße eingetragen sind.<button type="button" class="btn small" onclick="document.querySelector('[data-tab=person]').click()">Zu den Messwerten</button></div>`; return; }
   const r=suggest(), mode=$("sugCmp").value;
   const A={sx:r.sb,sy:r.sy,gx:r.grip.x,gy:r.grip.y,...r.ev};
   let Bv=null, lbl="";
@@ -1496,12 +1552,11 @@ function calc(){
 function render(full=true){
   if(S.tab==="bike"&&sizeFitCache.key&&sizeFitCache.key!==sizeFitKey()) updateSizeFit();   // Empfehlung nach Änderungen an Person oder Bauteilen aktualisieren
   cur=calc(); const {c,B,g,R,J}=cur;
-  const cb=findBike(S.cmp); let cg=null;
-  if(cb&&cb!==findBike(S.sel)) cg=compute(valuesFor(cb,true).v,c);
+  const cgs=cmpGhosts(c);
   const t=target();
   const pts=[{x:g.rAxle.x-g.R,y:g.ground},{x:g.fAxle.x+g.R,y:g.ground},g.steererTop,g.grip,g.seat];
   if(showRider()) pts.push(add(R.head,{x:0,y:R.hr}),add(R.hip,{x:-B.height*0.06,y:0}));
-  if(cg) pts.push({x:cg.rAxle.x-cg.R,y:0},{x:cg.fAxle.x+cg.R,y:0},cg.steererTop);
+  for(const {g:cg} of cgs) pts.push({x:cg.rAxle.x-cg.R,y:0},{x:cg.fAxle.x+cg.R,y:0},cg.steererTop);
   if(t) pts.push({x:-t.sx,y:t.sy},{x:t.gx,y:t.gy});
   const minX=Math.min(...pts.map(p=>p.x))-50, maxX=Math.max(...pts.map(p=>p.x))+50;
   const minY=g.ground-(S.show.dims?135:40), maxY=Math.max(...pts.map(p=>p.y))+60;
@@ -1514,11 +1569,11 @@ function render(full=true){
   s+=line({x:minX+10,y:g.ground},{x:maxX-10,y:g.ground},2,"var(--rule)");
   if(showRider()) s+=riderBack(R,B,c,g);
   s+=crankArm(c,S.crank+180,"var(--parts)");
-  if(cg) s+=ghostSVG(cg,.9);
+  for(const x of cgs) s+=ghostSVG(x.g,.9,x.col);
   s+=bikeSVG(vals,g,c);
   if(showRider()) s+=crankArm(c,S.crank,"var(--parts)")+circ({x:0,y:0},24,"var(--frame)",0,"var(--frame)")+riderFront(R,B,g);
   else s+=crankArm(c,S.crank,"var(--parts)")+circ({x:0,y:0},24,"var(--frame)",0,"var(--frame)");
-  if(cg) s+=ghostSVG(cg,.45);
+  for(const x of cgs) s+=ghostSVG(x.g,.45,x.col);
   if(S.show.targets!==false) s+=targetSVG(t);
   if(S.show.dims) s+=dims(vals,g);
   if(showRider()&&S.show.angles) s+=anglesSVG(R,J);
@@ -1542,8 +1597,8 @@ function plumbSVG(k,g){
   s+=`<text x="${r1(x+20)}" y="${r1(-(g.ground+75))}" class="pl">${kopsText(k)} (3 Uhr)</text>`;
   return s;
 }
-function ghostSVG(g,op){
-  const st=`stroke-dasharray="16 12"`,C="var(--ghost)",w=4;
+function ghostSVG(g,op,col){
+  const st=`stroke-dasharray="16 12"`,C=col||"var(--ghost)",w=4;
   return `<g opacity="${op}">`+circ(g.rAxle,g.R,C,w,"none",st)+circ(g.fAxle,g.R,C,w,"none",st)
    +[[{x:0,y:0},g.rAxle],[g.rAxle,g.ssTop],[{x:0,y:0},g.dtFront],[{x:0,y:0},g.stTop],[g.ttRear,g.ttFront],[g.htBot,g.htTop],[g.crown,g.fAxle],[g.htTop,g.steererTop],[g.stemC,g.barC]].map(([a,b])=>line(a,b,w,C,st)).join("")
    +circ(g.grip,12,C,w)+`</g>`;
@@ -1735,7 +1790,7 @@ function updateSelPart(k,x){
 }
 function clearSelFor(k){ const s=SEL_OF[k]; if(s){ S.compSel[s]=""; if(s==="stem"&&S.compSel.bar){ const b=FIT.lists.bars.find(x=>x.name===S.compSel.bar); if(b&&isFinite(b.angle)) S.compSel.bar=""; } } }
 function fillCompSelects(){
-  const L=FIT.lists, nv=x=>isFinite(x)?x:"–", o=(arr,cur,fmt)=>`<option value="">eigene Werte</option>`+arr.map(x=>`<option value="${esc(x.name)}"${x.name===cur?" selected":""}>${esc(x.name)} · ${fmt(x)}</option>`).join("")+`<option value="__add">+ Bauteil hinzufügen …</option>`;
+  const L=FIT.lists, nv=x=>isFinite(x)?x:"–", o=(arr,cur,fmt)=>`<option value="">Werte manuell eingeben</option>`+arr.map(x=>`<option value="${esc(x.name)}"${x.name===cur?" selected":""}>${esc(x.name)} · ${fmt(x)}</option>`).join("")+`<option value="__add">+ Bauteil hinzufügen …</option>`;
   document.getElementById("selBar").innerHTML=o(L.bars,S.compSel.bar,x=>`Reach ${nv(x.reach)}${isFinite(x.angle)?`, integriert ${x.angle}°`:""}`);
   document.getElementById("selStem").innerHTML=o(L.stems,S.compSel.stem,x=>`${nv(x.angle)}°, Höhe ${nv(x.height)}`);
   document.getElementById("selLever").innerHTML=o(L.levers,S.compSel.lever,x=>`Reach ${x.reach}`);
@@ -1743,11 +1798,24 @@ function fillCompSelects(){
   document.getElementById("selShoe").innerHTML=o(L.shoes,S.compSel.shoe,x=>`${x.sole} mm`);
   const bar=L.bars.find(x=>x.name===S.compSel.bar);
   document.getElementById("stemWrap").hidden=!!(bar&&isFinite(bar.angle));   // integriertes Cockpit: kein separater Vorbau
-  renderMissing();
+  renderManual(); renderMissing();
+}
+/* „Werte manuell eingeben“: Maße direkt unter der jeweiligen Auswahl eintragen */
+const MANUAL={bar:["selBar",["barReach"]],stem:["selStem",["stemAngle","stemHeight"]],lever:["selLever",["leverReach"]],pedal:["selPedal",["pedalStack"]],shoe:["selShoe",["sole"]]};
+function renderManual(){
+  for(const [k,[selId,keys]] of Object.entries(MANUAL)){
+    const sel=document.getElementById(selId); if(!sel) continue;
+    let box=document.getElementById("man_"+k); if(!box){ box=document.createElement("div"); box.id="man_"+k; sel.insertAdjacentElement("afterend",box); }
+    if(S.compSel[k]){ box.innerHTML=""; continue; }
+    if(box.contains(document.activeElement)) continue;   // nicht während der Eingabe neu aufbauen
+    box.innerHTML=keys.map(key=>{ const p=COMP.find(x=>x.key===key), v=S.comp[key];
+      return `<div class="param manParam" style="padding:3px 0"><label class="lbl" for="man_${key}" style="font-size:13px">${esc(p.label)}${p.unit?` (${p.unit})`:" (mm)"}</label><input type="number" id="man_${key}" data-man="${key}" step="${p.step||1}" value="${isFinite(v)?v:""}"></div>`; }).join("");
+    box.querySelectorAll("[data-man]").forEach(el=>el.onchange=()=>{ const x=num(el.value); if(!isFinite(x)) return; S.comp[el.dataset.man]=x; syncComp(); render(); save(); });
+  }
 }
 /* fehlende Maße des gewählten Teils direkt eintragen; der Wert wird am Teil gespeichert */
-const MISS=[["bar","bars","reach","barReach","Reach Lenker (mm)"],["barI","bars","angle","stemAngle","Vorbauwinkel Cockpit (°)"],["barI","bars","height","stemHeight","Vorbauhöhe Cockpit (mm)"],["stem","stems","angle","stemAngle","Vorbauwinkel (°)"],["stem","stems","height","stemHeight","Vorbauhöhe (mm)"],
-  ["lever","levers","reach","leverReach","Reach Schalt-/Bremsgriff (mm)"],["pedal","pedals","stack","pedalStack","Stack Height Pedal (mm)"],["shoe","shoes","sole","sole","Sohlendicke (mm)"]];
+const MISS=[["bar","bars","reach","barReach","Lenker-Reach – Mitte Oberlenker bis Bremsgriff (mm)"],["barI","bars","angle","stemAngle","Vorbauwinkel Cockpit (°)"],["barI","bars","height","stemHeight","Vorbauhöhe Cockpit (mm)"],["stem","stems","angle","stemAngle","Vorbauwinkel (°)"],["stem","stems","height","stemHeight","Vorbauhöhe (mm)"],
+  ["lever","levers","reach","leverReach","Bremsgriff-Reach – Beginn Bremsgriff bis Griffpunkt (mm)"],["pedal","pedals","stack","pedalStack","Stack Height Pedal (mm)"],["shoe","shoes","sole","sole","Sohlendicke (mm)"]];
 function renderMissing(){
   const box=document.getElementById("compMissing"); if(!box) return;
   const L=FIT.lists, bar=L.bars.find(x=>x.name===S.compSel.bar), integ=!!(bar&&isFinite(bar.angle));
@@ -1758,7 +1826,7 @@ function renderMissing(){
     const name=S.compSel[sel==="barI"?"bar":sel], part=name&&(L[t]||[]).find(x=>x.name===name);
     if(part&&isFinite(part[f])) continue;
     if(!name) continue;   // ohne gewähltes Teil keine Einzelmaße
-    h+=`<div class="param" style="grid-template-columns:1fr 90px"><label class="lbl" for="miss_${ck}">${lab} <span class="src edit">für ${esc(name)} nicht hinterlegt</span></label><input type="number" id="miss_${ck}" data-miss="${t}|${esc(name)}|${f}|${ck}" value="" placeholder="eintragen" step="0.1"></div>`;
+    h+=`<div class="param manParam"><label class="lbl" for="miss_${ck}">${lab} <span class="src edit">für ${esc(name)} nicht hinterlegt</span></label><input type="number" id="miss_${ck}" data-miss="${t}|${esc(name)}|${f}|${ck}" value="" placeholder="eintragen" step="0.1"></div>`;
   }
   box.innerHTML=h?`<div style="margin-top:10px;padding:8px 10px;border:1px dashed var(--dim);border-radius:8px">${h}</div>`:"";
   box.querySelectorAll("[data-miss]").forEach(el=>el.onchange=()=>{
@@ -1821,7 +1889,8 @@ function renderBikeResults(){
     h+=`<span>${n}</span><span class="v">${isR?a.toFixed(2).replace(".",","):mm(a)+" mm"}</span><span class="d">${cg?(isR?(a-cg[k]).toFixed(2).replace(".",","):sgn(a-cg[k])):""}</span>`;
     const ref=ik2?info[ik2]:undefined; if(isFinite(ref)&&Math.abs(ref-a)>=(k==="ett"?15:5)) h+=`<span class="x">Tabelle: ${mm(ref)} mm, Abweichung ${mm(Math.abs(ref-a))} mm</span>`; }
   document.getElementById("results").innerHTML=h;
-  document.getElementById("legend").innerHTML=(cg?`<span>${esc(cb?`${S.sel.b} ${S.sel.m} ${S.sel.s}`:"")}</span><span class="g">${esc(`${cb.b} ${cb.m} ${cb.s}`)}</span>`:"")+((S.show.targets!==false)&&target()?`<span class="t">${({opt:"Optimierte Position",ist:"Ist-Position",vor:"Vorschlag"})[targetKey()]} (Sattel und Griff)</span>`:"");
+  const cgl=cmpGhosts(S.comp);
+  document.getElementById("legend").innerHTML=(cgl.length?`<span>${esc(`${S.sel.b} ${S.sel.m} ${S.sel.s}`)}</span>`+cgl.map(x=>`<span class="g" style="--gc:${x.col}">${esc(`${x.bike.b} ${x.bike.m} ${x.bike.s}`)}</span>`).join(""):"")+((S.show.targets!==false)&&target()?`<span class="t">${({opt:"Optimierte Position",ist:"Ist-Position",vor:"Vorschlag"})[targetKey()]} (Sattel und Griff)</span>`:"");
   const cu=findBike(S.sel);
   document.getElementById("brandBig").textContent=cu?cu.b:"";
   document.getElementById("modelBig").textContent=cu?cu.m:"";
@@ -1831,34 +1900,92 @@ const opt=(v,t,sel,dis)=>`<option value="${esc(v)}"${sel?" selected":""}${dis?" 
 function pickSize(b,m,pref){ const l=sizesOf(b,m),ok=l.filter(x=>x.hasData); if(pref&&ok.some(x=>x.s===pref)) return pref; const p=ok.length?ok:l; return p.length?p[Math.floor((p.length-1)/2)].s:""; }
 /* ================= Rahmengrößen-Empfehlung: jede Größe des Modells mit dem Vorschlag durchrechnen ================= */
 let sizeFitCache={key:"",res:null}, sizeFitT=null;
+/* ================= Bewertungsmodell der Größenempfehlung (im Adminmodus unter „Rad“ einstellbar) ================= */
+const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schritt, Erklärung]
+  ["stemTol","Strafpunkte","Vorbau: Toleranz","mm",20,1,"Abweichung von der Vorliebe der Sitzposition ohne Strafpunkte"],
+  ["stemPer","Strafpunkte","Vorbau: 1 Punkt je","mm",10,1,"darüber hinaus"],
+  ["spacerMax","Strafpunkte","Spacer: Höchstwert","mm",30,1,"darüber gibt es Strafpunkte"],
+  ["spacerPer","Strafpunkte","Spacer: 1 Punkt je","mm",5,1,"über dem Höchstwert"],
+  ["backTol","Strafpunkte","Rückenwinkel: Toleranz","°",3,0.5,"Abweichung vom Ziel ohne Strafpunkte"],
+  ["backPer","Strafpunkte","Rückenwinkel: 1 Punkt je","°",3,0.5,"darüber hinaus"],
+  ["shTol","Strafpunkte","Schulterwinkel: Toleranz","°",6,0.5,"Abweichung vom Ziel ohne Strafpunkte"],
+  ["shPer","Strafpunkte","Schulterwinkel: 1 Punkt je","°",6,0.5,"darüber hinaus"],
+  ["expoMin","Strafpunkte","Stützenauszug: Minimum","mm",120,5,"Sattelhöhe minus Sitzrohrlänge"],
+  ["expoMax","Strafpunkte","Stützenauszug: Maximum","mm",290,5,"Sattelhöhe minus Sitzrohrlänge"],
+  ["expoPer","Strafpunkte","Stützenauszug: 1 Punkt je","mm",15,1,"unter dem Minimum oder über dem Maximum"],
+  ["anglePer","Strafpunkte","Steilerer Vorbauwinkel: 1 Punkt je","°",8,1,"Unterschied zum Bezugswinkel (−6° bzw. gewählter Vorbau)"],
+  ["softStem","Feinabstimmung","Vorbau: 1 Punkt je","mm",40,1,"Abstand zur bevorzugten Vorbaulänge"],
+  ["softSpacer","Feinabstimmung","Spacer: 1 Punkt je","mm",30,1,"Abstand zur üblichen Spacerhöhe"],
+  ["softBack","Feinabstimmung","Rückenwinkel: 1 Punkt je","°",5,0.5,"Abweichung vom Ziel"],
+  ["expoTarget","Feinabstimmung","Typischer Stützenauszug","% der Sattelhöhe",26,1,"Bezug für die Feinabstimmung"],
+  ["softExpo","Feinabstimmung","Stützenauszug: 1 Punkt je","mm",150,5,"Abstand zum typischen Auszug"],
+  ["green","Farben","Grün bis Score","",1.3,0.1,"darunter: passt"],
+  ["orange","Farben","Orange bis Score","",3,0.1,"darunter: bedingt, ab hier rot; die beste Größe unter diesem Wert ist immer grün"]];
+const FITM={}; for(const d of FITM_DEF) FITM[d[0]]=d[4];
+const STEM_FACTORY={comfort:90,endurance:100,sportlich:105,ambitioniert:115,professional:125}, SPACER_FACTORY={comfort:25,endurance:20,sportlich:15,ambitioniert:10,professional:5};
+function applyFitModel(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
+  const o=S.fitOv||{}, d=(S.modelStd&&S.modelStd.fitModel)||{}, pick=(k,def)=>isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:def;
+  for(const x of FITM_DEF) FITM[x[0]]=pick(x[0],x[4]);
+  for(const st of Object.keys(STEM_FACTORY)){ STEM_BY_STYLE[st]=pick("stem_"+st,STEM_FACTORY[st]); SPACER_BY_STYLE[st]=pick("spacer_"+st,SPACER_FACTORY[st]); }
+}
+const fitModelKey=()=>JSON.stringify([FITM,STEM_BY_STYLE,SPACER_BY_STYLE]);
+function fitModelVals(){ const v={...FITM}; for(const st of Object.keys(STEM_FACTORY)){ v["stem_"+st]=STEM_BY_STYLE[st]; v["spacer_"+st]=SPACER_BY_STYLE[st]; } return v; }
+function fitModelChanged(){ sugCache.key=""; cmpFit={}; sizeFitCache.key=""; try{ updateSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp(); }catch(e){} save(); }
+function renderFitModel(){
+  const box=$("fitModelBox"); if(!box) return; applyFitModel();
+  const tag=k=>S.fitOv&&isFinite(S.fitOv[k])?'<small class="src edit">geändert</small>':S.modelStd&&S.modelStd.fitModel&&isFinite(S.modelStd.fitModel[k])?'<small class="src">Standard</small>':'';
+  const inp=(k,v,st)=>`<input class="bfi" type="number" step="${st}" data-fitm="${k}" value="${v}" style="max-width:90px">`;
+  let h=`<p class="note" style="margin-top:0">Für jede Größe wird zuerst die beste Position berechnet (Vorbau 60–140 mm, Spacer 0–40 mm, Vorbauwinkel −6/−10/−17°). Score = Strafpunkte + Feinabstimmung; die Größe mit dem niedrigsten Score ist die Empfehlung.</p>`;
+  let grp="";
+  h+=`<div class="fitmGrid">`;
+  for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){
+    if(g!==grp){ grp=g; h+=`<div class="suh">${g}</div>`; }
+    h+=`<label for="fm_${k}">${esc(lab)}<small>${esc(expl)}</small></label><div class="fitmIn">${inp(k,FITM[k],step).replace('data-fitm','id="fm_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
+  }
+  h+=`</div><h3 style="margin:14px 0 4px">Vorlieben je Sitzposition</h3><div class="bfg styleGrid" style="grid-template-columns:minmax(90px,120px) repeat(2,minmax(64px,92px))"><span></span><b>Vorbau (mm)</b><b>Spacer (mm)</b>`+
+    Object.keys(STEM_FACTORY).map(st=>`<span>${st}</span><div>${inp("stem_"+st,STEM_BY_STYLE[st],5)}${tag("stem_"+st)||'<small class="src">&nbsp;</small>'}</div><div>${inp("spacer_"+st,SPACER_BY_STYLE[st],5)}${tag("spacer_"+st)||'<small class="src">&nbsp;</small>'}</div>`).join("")+`</div>`;
+  h+=`<div class="row" style="margin-top:10px"><button class="btn small" type="button" id="fmSave">Als Standard speichern</button><button class="btn ghost small" type="button" id="fmReset">Auf App-Grundwerte zurücksetzen</button></div><p class="note" id="fmNote">Änderungen wirken sofort auf die Größenempfehlung. „Als Standard speichern“ macht sie zur Werkseinstellung für alle Geräte.</p>`;
+  box.innerHTML=h;
+  box.querySelectorAll("[data-fitm]").forEach(el=>el.onchange=()=>{ const k=el.dataset.fitm, x=num(el.value); if(!isFinite(x)||x<0||(/Per$|^soft/.test(k)&&x<=0)){ renderFitModel(); return; }
+    (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); renderFitModel(); });
+  $("fmSave").onclick=()=>{ applyFitModel(); S.modelStd=S.modelStd||{}; S.modelStd.fitModel=fitModelVals(); delete S.fitOv; S.modelStdAt=Date.now(); save(); renderFitModel(); $("fmNote").textContent="Speichere …";
+    factorySave().then(ok=>{ $("fmNote").textContent=ok?"Als Werkseinstellung gespeichert. Gilt ab jetzt überall, wo die App geöffnet wird.":"In diesem Browser gespeichert. Für alle Geräte die App über ihren Link öffnen und erneut speichern."; }); };
+  $("fmReset").onclick=()=>{ delete S.fitOv; if(S.modelStd) delete S.modelStd.fitModel; S.modelStdAt=Date.now(); applyFitModel(); fitModelChanged(); renderFitModel();
+    factorySave().then(ok=>{ $("fmNote").textContent=ok?"App-Grundwerte wiederhergestellt (auch als Werkseinstellung).":"App-Grundwerte wiederhergestellt (in diesem Browser)."; }); };
+}
 function sizeFitFor(bike){   // Vorschlag für diese Größe; Bewertung nach Vorbau, Spacer, Sattelversatz zur Stütze und Haltung
   const keepV=vals, keepC=sugCache;
   try{
     vals=valuesFor(bike,false).v; sugCache={key:"",val:null};
-    const r=suggest(), p=r.parts, v=vals;
+    const r=suggest(), p=r.parts, v=vals, SI=stemIdeal();
     const dev=r.sb-r.sy/Math.tan(rad(v.sta));   // Sattel vor (+) / hinter (−) der Stützenachse bei Nullversatz
-    const pen=(isFinite(r.cost)?0:9)
-      +Math.max(0,Math.abs(p.stemLen-100)-20)/10
-      +(p.spacer>30?(p.spacer-30)/5:0)+(p.spacer<5?(5-p.spacer)/2.5:0)
-      +(isFinite(r.back)&&isFinite(r.backTarget)?Math.max(0,Math.abs(r.back-r.backTarget)-3)/3:0)
-      +(isFinite(r.ev&&r.ev.shoulder)?Math.max(0,Math.abs(r.ev.shoulder-sugT().shoulder)-6)/6:0);
-    const soft=Math.abs(p.stemLen-100)/40+Math.abs(p.spacer-15)/30;
-    return {pen,score:pen+soft,stem:p.stemLen,spacer:p.spacer,setback:Math.round(-dev)};
+    const expo=isFinite(v.stl)&&v.stl>0?r.sh-v.stl:NaN;   // Sattelhöhe über Sitzrohr-Ende (Stützenauszug inkl. Sattel)
+    const M=FITM;
+    let pen=(isFinite(r.cost)?0:9)
+      +Math.max(0,Math.abs(p.stemLen-SI)-M.stemTol)/M.stemPer
+      +(p.spacer>M.spacerMax?(p.spacer-M.spacerMax)/M.spacerPer:0)   /* 0 mm Spacer ist erlaubt; ob die Front dann noch zu hoch ist, zeigt die Rückenwinkel-Abweichung */
+      +(isFinite(r.back)&&isFinite(r.backTarget)?Math.max(0,Math.abs(r.back-r.backTarget)-M.backTol)/M.backPer:0)
+      +(isFinite(r.ev&&r.ev.shoulder)?Math.max(0,Math.abs(r.ev.shoulder-sugT().shoulder)-M.shTol)/M.shPer:0)
+      +(isFinite(expo)?Math.max(0,expo-M.expoMax)/M.expoPer+Math.max(0,M.expoMin-expo)/M.expoPer:0);
+    pen+=isFinite(r.saRef)&&p.stemAngle!==r.saRef?Math.abs(p.stemAngle-r.saRef)/M.anglePer:0;   // Größe nicht durch einen steileren Vorbau „schönrechnen“
+    const soft=Math.abs(p.stemLen-SI)/M.softStem+Math.abs(p.spacer-spacerIdeal())/M.softSpacer
+      +(isFinite(r.back)&&isFinite(r.backTarget)?Math.abs(r.back-r.backTarget)/M.softBack:0)+(isFinite(expo)?Math.abs(expo-M.expoTarget/100*r.sh)/M.softExpo:0);
+    return {pen,score:pen+soft,stem:p.stemLen,spacer:p.spacer,setback:Math.round(-dev),expo:isFinite(expo)?Math.round(expo):null};
   }catch(e){ return {pen:99,score:99}; }
   finally{ vals=keepV; sugCache=keepC; }
 }
-function sizeFitKey(){ const {b,m}=S.sel; return JSON.stringify([b,m,body(),S.comp,sugT(),S.bar,S.compSel&&S.compSel.bar,S.bikeFix&&S.bikeFix]); }
+function sizeFitKey(){ const {b,m}=S.sel; return JSON.stringify([b,m,body(),S.comp,sugT(),styleBack(),S.person.style,S.bar,S.compSel&&S.compSel.bar,S.bikeFix&&S.bikeFix,fitModelKey()]); }
 function updateSizeFit(){   // nach kurzer Pause rechnen, damit die Auswahl flüssig bleibt
   clearTimeout(sizeFitT);
   sizeFitT=setTimeout(()=>{
     const key=sizeFitKey(); if(sizeFitCache.key!==key){
       const res={}; for(const x of sizesOf(S.sel.b,S.sel.m)) if(x.hasData) res[x.s]=sizeFitFor(x);
       const best=Object.entries(res).sort((a,b)=>a[1].score-b[1].score)[0];
-      for(const [s,f] of Object.entries(res)) f.cls=f.score<1.3?"fit-g":f.score<3?"fit-o":"fit-r";
-      if(best&&best[1].score<3) best[1].cls="fit-g";   // die beste machbare Größe immer grün
+      for(const [s,f] of Object.entries(res)) f.cls=f.score<FITM.green?"fit-g":f.score<FITM.orange?"fit-o":"fit-r";
+      if(best&&best[1].score<FITM.orange) best[1].cls="fit-g";   // die beste machbare Größe immer grün
       sizeFitCache={key,res,best:best&&best[0]};
     }
-    paintSizeFit();
+    paintSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp();
   },120);
 }
 function paintSizeFit(){
@@ -1875,11 +2002,53 @@ function fillMain(){
   document.getElementById("sizeChips").innerHTML=sizesOf(b,m).map(x=>`<button class="chip" aria-pressed="${x.s===S.sel.s}" data-s="${esc(x.s)}"${x.hasData?"":` disabled title="Keine Geometriedaten"`}>${esc(x.s)}</button>`).join("");
   paintSizeFit(); updateSizeFit();   // Größenempfehlung grün/orange/rot
 }
+/* ================= Rahmen vergleichen: bis zu drei Räder, je eigene Farbe und Größenempfehlung ================= */
+const CMP_COLORS=["#E0702E","#8E44AD","#13917A"];
+const EMPTY_CMP=()=>({b:"",m:"",s:""});
+const CMP_MAX=2;   /* höchstens drei Räder insgesamt: das gewählte plus zwei Vergleiche */
+let cmpRowsN=null;   /* sichtbare Vergleichszeilen; wird nicht gespeichert */
+function cmpSlots(){ S.cmpX=(S.cmpX||[]).slice(0,CMP_MAX-1); return [S.cmp||EMPTY_CMP(),...S.cmpX]; }
+function cmpGhosts(c){ return cmpSlots().map((sl,i)=>{ const cb=sl&&sl.b?findBike(sl):null; return cb&&cb!==findBike(S.sel)?{g:compute(valuesFor(cb,true).v,c),col:CMP_COLORS[i],bike:cb}:null; }).filter(Boolean); }
+let cmpFit={}, cmpFitT=null;
+const cmpFitKey=(b,m)=>JSON.stringify([b,m,fitModelKey(),body(),S.comp,sugT(),styleBack(),S.person.style,S.bar,S.compSel&&S.compSel.bar,S.bikeFix||null]);
+function updateCmpFit(){   // Größenempfehlung für die Vergleichsräder im Hintergrund rechnen
+  clearTimeout(cmpFitT);
+  cmpFitT=setTimeout(()=>{ let changed=false;
+    for(const sl of cmpSlots()){ if(!sl.b) continue; const k=cmpFitKey(sl.b,sl.m); if(cmpFit[k]) continue;
+      const res={}; for(const x of sizesOf(sl.b,sl.m)) if(x.hasData) res[x.s]=sizeFitFor(x);
+      const best=Object.entries(res).sort((a,b)=>a[1].score-b[1].score)[0];
+      for(const f of Object.values(res)) f.cls=f.score<FITM.green?"fit-g":f.score<FITM.orange?"fit-o":"fit-r";
+      if(best&&best[1].score<FITM.orange) best[1].cls="fit-g";
+      cmpFit[k]={res,best:best&&best[0]}; changed=true; }
+    if(changed) fillCmp();
+  },150);
+}
 function fillCmp(){
-  const {b,m,s}=S.cmp, cm=document.getElementById("cModel"), cs=document.getElementById("cSize");
-  document.getElementById("cBrand").innerHTML=opt("","Keine",!b)+DB.brands.map(x=>opt(x,x,x===b)).join("");
-  cm.disabled=cs.disabled=!b;
-  cm.innerHTML=b?DB.models[b].map(x=>opt(x,x,x===m)).join(""):""; cs.innerHTML=b?sizesOf(b,m).map(x=>opt(x.s,x.s,x.s===s,!x.hasData)).join(""):"";
+  const box=document.getElementById("cmpRows"); if(!box) return;
+  const slots=cmpSlots(); let last=-1; slots.forEach((sl,i)=>{ if(sl.b) last=i; });
+  cmpRowsN=Math.min(CMP_MAX,Math.max(cmpRowsN||0,last+1));   /* standardmäßig kein Vergleich; Zeilen erst über „+“ */
+  let h="", pending=false;
+  for(let i=0;i<cmpRowsN;i++){
+    const sl=slots[i]||EMPTY_CMP(), F=sl.b?cmpFit[cmpFitKey(sl.b,sl.m)]:null; if(sl.b&&!F) pending=true;
+    h+=`<div class="cmpBlock"><div class="cmpRow">
+      <div><label class="f">Marke</label><select data-cmp="${i}" data-f="b">${opt("","Bitte wählen",!sl.b)+DB.brands.map(x=>opt(x,x,x===sl.b)).join("")}</select></div>
+      <div><label class="f">Modell</label><select data-cmp="${i}" data-f="m"${sl.b?"":" disabled"}>${sl.b?DB.models[sl.b].map(x=>opt(x,x,x===sl.m)).join(""):""}</select></div>
+      <button type="button" class="btn ghost small cmpDel" data-cmpdel="${i}" title="Vergleich entfernen" aria-label="Vergleich ${i+1} entfernen">×</button></div>`;
+    if(sl.b){ h+=`<label class="f">Größe</label><div class="chips">${sizesOf(sl.b,sl.m).map(x=>{ const f=F&&F.res[x.s];
+        return `<button type="button" class="chip${f?" "+f.cls:""}${F&&x.s===F.best?" fit-best":""}" data-cmpsize="${i}" data-s="${esc(x.s)}" aria-pressed="${x.s===sl.s}"${x.hasData?"":` disabled title="Keine Geometriedaten"`}${f&&f.pen<99?` title="Vorbau ${f.stem} mm · Spacer ${f.spacer} mm"`:""}>${esc(x.s)}</button>`; }).join("")}</div>
+      <p class="note" style="margin-top:6px">${F?(F.best?`<span class="fitdot g"></span>passt <span class="fitdot o"></span>bedingt <span class="fitdot r"></span>passt nicht · Empfehlung: <b>${esc(String(F.best))}</b>`:"Keine Bewertung möglich."):"Größenempfehlung wird berechnet …"}</p>`; }
+    h+=`</div>`;
+  }
+  if(cmpRowsN<CMP_MAX) h+=`<div class="row" style="margin-top:8px"><button type="button" class="btn ghost small" id="cmpAdd">+ Rahmen hinzufügen</button></div>`;
+  box.innerHTML=h;
+  const btns=document.getElementById("cmpBtns"); if(btns) btns.hidden=cmpRowsN===0;   // Bike-Set-Up-Vergleich erst mit einer Vergleichszeile
+  box.querySelectorAll("[data-cmp]").forEach(el=>el.onchange=()=>{ const i=+el.dataset.cmp, f=el.dataset.f, sl=cmpSlots()[i]||EMPTY_CMP();
+    if(f==="b") selectCmp(el.value,"",sl.s,i); else selectCmp(sl.b,el.value,sl.s,i); });
+  box.querySelectorAll("[data-cmpsize]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.cmpsize, sl=cmpSlots()[i]; selectCmp(sl.b,sl.m,b.dataset.s,i); });
+  box.querySelectorAll("[data-cmpdel]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.cmpdel, all=cmpSlots(); all.splice(i,1); all.push(EMPTY_CMP());
+    S.cmp=all[0]; S.cmpX=all.slice(1,CMP_MAX); cmpRowsN=Math.max(0,cmpRowsN-1); fillCmp(); renderBikeResults(); render(); save(); });
+  if($("cmpAdd")) $("cmpAdd").onclick=()=>{ cmpRowsN=Math.min(CMP_MAX,(cmpRowsN||0)+1); fillCmp(); };
+  if(pending) updateCmpFit();
 }
 function selectMain(b,m,s){
   if(!DB.models[b]) b=DB.brands[0]; if(!DB.models[b].includes(m)) m=DB.models[b][0];
@@ -1887,9 +2056,10 @@ function selectMain(b,m,s){
   S.sel={b,m,s}; for(const k of Object.keys(S.edits)) if(!KEEP.includes(k)) delete S.edits[k];
   fillMain(); loadBike(); save();
 }
-function selectCmp(b,m,s){
-  if(!b) S.cmp={b:"",m:"",s:""};
-  else{ if(!DB.models[b].includes(m)) m=DB.models[b][0]; if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s); S.cmp={b,m,s}; }
+function selectCmp(b,m,s,i=0){
+  let v=EMPTY_CMP();
+  if(b){ if(!DB.models[b].includes(m)) m=DB.models[b][0]; if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s); v={b,m,s}; }
+  cmpSlots(); if(i===0) S.cmp=v; else S.cmpX[i-1]=v;
   fillCmp(); renderBikeResults(); render(); save();
 }
 function matchSel(sel){ // tolerant gegen Leerzeichen und Groß/Klein
@@ -1924,7 +2094,8 @@ function useData(geoRows,fitObj,fileName,source,keep){
   if(!S.knee0){ if(S.modelStd) delete S.modelStd.kneeBack; if(S.person&&S.person.ov) delete S.person.ov.kneeBack; S.knee0=true; }
   if(!S.hipSitLink){ if(S.modelStd) delete S.modelStd.hipSit; if(S.person&&S.person.ov) delete S.person.ov.hipSit; S.hipSitLink=true; }
   if(!S.cleat72){ S.comp.cleat=72; if(S.compBase) S.compBase.cleat=72; S.cleat72=true; }
-  if(!S.styleStd3){ if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; delete S.sugT.elbow; } if(S.person&&S.person.ov) delete S.person.ov.backAngle; S.styleStd3=true; }   // neue Fahrstil-Standards und Ellbogen 160°
+  if(!S.styleStd3){ if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; delete S.sugT.elbow; } if(S.person&&S.person.ov) delete S.person.ov.backAngle; S.styleStd3=true; }
+  if(!S.styleStd4){ if(S.sugT) delete S.sugT.elbow; if(S.person&&S.person.ov) delete S.person.ov.elbowT; S.styleStd4=true; }   // Ellbogen jetzt je Fahrstil   // neue Fahrstil-Standards und Ellbogen 160°
   if(!S.cap5){ for(const c of [S.comp,S.compBase]) if(c&&(c.cap===10||c.cap===undefined)) c.cap=5;
     for(const o of [S.setupOv&&S.setupOv.ci,S.setupOv&&S.setupOv.co]) if(o&&+o.cap===10) o.cap=5; S.cap5=true; }   // Steuersatzkappe neu 5 mm
   if(!S.carbon1){ S.color=16; S.carbon1=true; }   // Werkseinstellung Rahmen: Carbon schwarz
@@ -1944,9 +2115,10 @@ function useData(geoRows,fitObj,fileName,source,keep){
   if(!keep){
     const want=FIT.setup&&FIT.setup.bike.b?matchSel(FIT.setup.bike):null;
     const first=want||DB.bikes.find(x=>x.hasData)||DB.bikes[0];
-    S.sel={b:first.b,m:first.m,s:first.s}; S.cmp={b:"",m:"",s:""}; S.edits={};
+    S.sel={b:first.b,m:first.m,s:first.s}; S.cmp={b:"",m:"",s:""}; S.cmpX=[]; S.edits={};
   }
   if(S.cmp.b&&!findBike(S.cmp)) S.cmp={b:"",m:"",s:""};
+  S.cmpX=(S.cmpX||[]).map(x=>x&&x.b&&findBike(x)?x:EMPTY_CMP());
   document.getElementById("styleSel").value=S.person.style;
   if(!S.person.sex) S.person.sex=(FIT.person&&FIT.person.sex==="weiblich")?"weiblich":"männlich";
   document.getElementById("sexSel").value=S.person.sex;
@@ -2010,16 +2182,15 @@ function tick(now){
 /* ================= Ereignisse ================= */
 const $=id=>document.getElementById(id);
 /* Aufteilung Darstellung / Eingabe je Tab (Anteil der Eingabe): Befund, Bike Set Up, Person 30/70 – ab Rad 60/40 – PDF, Daten 40/60 */
-const TAB_SPLIT={befund:0.7,setup:0.7,person:0.7,bike:0.4,comp:0.4,fit:0.4,pdf:0.6,data:0.6};
+const TAB_SPLIT={befund:0.6,setup:0.6,person:0.6,bike:0.4,comp:0.4,fit:0.4,pdf:0.6,data:0.6};
 function showTab(t){ S.tab=t; document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t)); document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="tab-"+t);
-  if(window.setPanelShare&&TAB_SPLIT[t]) window.setPanelShare(TAB_SPLIT[t]); save(); }
+  if(window.setPanelShare&&TAB_SPLIT[t]) window.setPanelShare(TAB_SPLIT[t]);
+  if(t==="bike"){ try{ if(sizeFitCache.key!==sizeFitKey()) updateSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp(); }catch(e){} }   /* Größenempfehlung nach Änderungen an Person, Fahrstil oder Bauteilen neu rechnen */
+  save(); }
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 $("brandSel").onchange=e=>selectMain(e.target.value,"",S.sel.s);
 $("modelSel").onchange=e=>selectMain(S.sel.b,e.target.value,S.sel.s);
 $("sizeChips").onclick=e=>{ const c=e.target.closest(".chip"); if(c&&!c.disabled) selectMain(S.sel.b,S.sel.m,c.dataset.s); };
-$("cBrand").onchange=e=>selectCmp(e.target.value,"",S.cmp.s);
-$("cModel").onchange=e=>selectCmp(S.cmp.b,e.target.value,S.cmp.s);
-$("cSize").onchange=e=>selectCmp(S.cmp.b,S.cmp.m,e.target.value);
 function cmpSetupBike(which){
   const U=FIT.setup, bk=U?(which==="opt"?U.bikeOpt:U.bike):null, hit=bk&&bk.b&&bk.m?matchSel(bk):null;
   if(!hit){ $("cmpNote").textContent=`Im Blatt „Bike Set Up“ ist für ${which==="opt"?"die optimierte Position":"den Ist-Zustand"} kein Rad aus der Geometrietabelle eingetragen.`; return; }
@@ -2070,7 +2241,8 @@ $("saveStd").onclick=()=>{
     delete S.person.ov[k];
   }
   S.modelStd.cleat=S.comp.cleat; if(S.compBase) S.compBase.cleat=S.comp.cleat;
-  applyStyleStd(); S.modelStd.styleStd=JSON.parse(JSON.stringify(STYLE_STD)); delete S.styleOv; renderStyleStd();   // Richtwerte je Fahrstil mitspeichern
+  applyStyleStd(); S.modelStd.styleStd=JSON.parse(JSON.stringify(STYLE_STD)); delete S.styleOv; renderStyleStd();
+  applyFitModel(); S.modelStd.fitModel=fitModelVals(); delete S.fitOv; renderFitModel();   // Bewertungsmodell mitspeichern   // Richtwerte je Fahrstil mitspeichern
   S.modelStdAt=Date.now();
   syncPerson(); syncComp(); render(); save();
   $("stdNote").textContent=`Gespeichert als Werkseinstellung: ${n+1} Werte (Modellwerte, von Hand geänderte Längen, Cleatposition ${S.comp.cleat} %) …`;
@@ -2081,7 +2253,7 @@ $("saveStd").onclick=()=>{
 $("resetStd").onclick=()=>{
   /* gespeicherte Segmentlängen verwerfen: Längen wieder aus den Messwerten, Modellwerte auf Werksstandard; Cleat bleibt */
   const keep=S.modelStd&&isFinite(S.modelStd.cleat)?{cleat:S.modelStd.cleat}:{};
-  S.modelStd=keep; S.modelStdAt=Date.now(); delete S.styleOv; applyStyleStd(); renderStyleStd(); for(const d of PERS) if(d.g==="Segmente") delete S.person.ov[d.key];
+  S.modelStd=keep; S.modelStdAt=Date.now(); delete S.styleOv; applyStyleStd(); renderStyleStd(); delete S.fitOv; applyFitModel(); renderFitModel(); for(const d of PERS) if(d.g==="Segmente") delete S.person.ov[d.key];
   sugCache.key=""; syncPerson(); render(); save(); factorySave();
   $("stdNote").textContent="Ursprüngliche App-Werte wiederhergestellt; sie sind jetzt die Werkseinstellung.";
 };
@@ -2172,7 +2344,10 @@ window.addEventListener("beforeunload",e=>{
 /* Startbildschirm: bei jedem Start Auswahl, welches Fitting gemacht wird */
 { let fresh=false;   // beim Öffnen der App immer ohne Personendaten starten (einmal pro Aufruf)
   const startFresh=()=>{ if(fresh) return; fresh=true;
-    S.pdfTouched=false; if(!S.basic) applyPdfDefault(); else S.pdfSel={};   /* PDF: Voreinstellung des Kontos (Standard: nichts ausgewählt) */
+    S.pdfTouched=false; if(!S.basic) applyPdfDefault(); else S.pdfSel={};
+    S.cmp={b:"",m:"",s:""}; S.cmpX=[]; delete S.cmpN; cmpRowsN=0; try{ fillCmp(); renderBikeResults(); }catch(e){}   /* beim Öffnen kein Rahmenvergleich */
+    /* manuell eingegebene Bauteilmaße beim Start auf die Standardwerte (Lenker-Reach 60, Bremsgriff-Reach 50, Pedal 16 …) */
+    try{ for(const [k,[,keys]] of Object.entries(MANUAL)) if(!S.compSel[k]) for(const key of keys){ const d=COMP.find(x=>x.key===key); if(d) S.comp[key]=d.def; } syncComp(); render(); }catch(e){}   /* PDF: Voreinstellung des Kontos (Standard: nichts ausgewählt) */
     S.show.targets=false; $("tTargets").checked=false;   /* Fadenkreuze beim Öffnen aus */ try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
   const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; showTab(S.basic?"person":"befund"); try{ $("basicBtn").focus(); }catch(e){} };   /* WiFitPro startet bei Befund, Basic bei Person (je 30/70) */
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); done(); };
@@ -2212,9 +2387,9 @@ const PART_TYPES={pedalName:"pedals",barName:"bars",stemName:"stems",shoeName:"s
 const PART_FORMS={
   pedals:{title:"Pedal hinzufügen",fields:[["stack","Stack Height (mm)"]]},
   shoes:{title:"Schuh hinzufügen",fields:[["sole","Sohlendicke (mm)"]]},
-  levers:{title:"Schalt-/Bremsgriff hinzufügen",fields:[["reach","Reach Klemmung bis Griffposition (mm)"]]},
+  levers:{title:"Schalt-/Bremsgriff hinzufügen",fields:[["reach","Bremsgriff-Reach – Beginn Bremsgriff bis Griffpunkt (mm)"]]},
   stems:{title:"Vorbau hinzufügen",fields:[["angle","Vorbauwinkel (°)"],["height","Vorbauhöhe / Klemmung (mm)"]]},
-  bars:{title:"Lenker hinzufügen",fields:[["reach","Reach Lenker (mm)"]],integ:true},
+  bars:{title:"Lenker hinzufügen",fields:[["reach","Lenker-Reach – Mitte Oberlenker bis Bremsgriff (mm)"]],integ:true},
   saddles:{title:"Sattel hinzufügen",fields:[]}
 };
 function mergeCustomParts(){
@@ -2562,22 +2737,29 @@ const PAIN_QUAL=["ziehend","stechend","brennend","dumpf","drückend","kribbelnd"
 const PAIN_WHEN=["–","sofort beim Fahren","nach weniger als 1 h","nach mehr als 1 h","nach der Fahrt","dauerhaft"];
 let painDraft={region:"knie_r",items:[],qual:[],vas:"",when:"–"};
 const painRegions=()=>BF_PAIN.flatMap(([k,l,lr])=>lr?[[k+"_l",l+" links"],[k+"_r",l+" rechts"]]:[[k,l]]);
+/* „Keine Beschwerden“ ist vorausgewählt, solange nichts eingetragen und das Häkchen nicht entfernt wurde */
+const noPainOn=()=>{ const B=bf(); return !(B.painList||[]).length&&B.noPain!==false; };
 function renderPainPicker(){
   const box=$("bfPainPick"); if(!box) return;
+  const hasList=(bf().painList||[]).length>0, none=noPainOn();
+  /* „Keine Beschwerden“ als erster Eintrag der Bereichsauswahl */
+  const regionSel=`<h3 style="margin:14px 0 6px">Beschwerdebild</h3>
+    <label class="f" for="pp_region">Bereich</label><select class="bfi ppRegion" id="pp_region"><option value="__none"${none?" selected":""}${hasList?" disabled":""}>Keine Beschwerden${hasList?" (erst Einträge löschen)":""}</option>${painRegions().map(([k,l])=>`<option value="${k}"${!none&&k===painDraft.region?" selected":""}>${l}</option>`).join("")}</select>`;
+  const onRegion=e=>{ const v=e.target.value; if(v==="__none"){ bf().noPain=true; } else { bf().noPain=false; painDraft.region=v; painDraft.items=[]; } save(); renderPainPicker(); };
+  if(none){ box.innerHTML=regionSel+`<p class="note">Zum Eintragen einen Bereich wählen.</p>`; $("pp_region").onchange=onRegion; return; }
   const D=painDraft, base=D.region.replace(/_[lr]$/,""), cat=PAIN_CAT[base]||[];
   D.items=D.items.filter(x=>cat.includes(x)||!Object.values(PAIN_CAT).flat().includes(x));
   const chips=(arr,sel,attr)=>arr.map(x=>`<button type="button" class="chip pchip" ${attr}="${esc(x)}" aria-pressed="${sel.includes(x)}">${esc(x)}</button>`).join("");
   const list=(bf().painList||[]);
-  box.innerHTML=`<h3 style="margin:14px 0 6px">Beschwerdebild</h3>
-    <label class="f" for="pp_region">Bereich</label><select class="bfi ppRegion" id="pp_region">${painRegions().map(([k,l])=>`<option value="${k}"${k===D.region?" selected":""}>${l}</option>`).join("")}</select>
+  box.innerHTML=regionSel+`
     <label class="f">Beschwerden <span class="note">(Mehrfachauswahl)</span></label><div class="chips">${chips(cat,D.items,"data-pitem")}</div>
     <label class="f">Schmerzqualität <span class="note">(Mehrfachauswahl)</span></label><div class="chips">${chips(PAIN_QUAL,D.qual,"data-pqual")}</div>
-    <div class="two"><div><label class="f" for="pp_vas">Stärke (0–10)</label><select class="bfi" id="pp_vas"><option value="">–</option>${Array.from({length:11},(_,i)=>`<option${String(i)===String(D.vas)?" selected":""}>${i}</option>`).join("")}</select></div>
+    <div><div><label class="f" for="pp_vas">Stärke (0–10)</label><select class="bfi" id="pp_vas"><option value="">–</option>${Array.from({length:11},(_,i)=>`<option${String(i)===String(D.vas)?" selected":""}>${i}</option>`).join("")}</select></div>
       <div><label class="f" for="pp_when">Auftreten</label><select class="bfi" id="pp_when">${PAIN_WHEN.map(x=>`<option${x===D.when?" selected":""}>${x}</option>`).join("")}</select></div></div>
     <label class="f" for="pp_text">Freitext zu ${esc(painRegions().find(r=>r[0]===D.region)[1])}</label><input class="bfi" id="pp_text" value="${esc(bf()["p_"+D.region]||"")}" placeholder="z. B. seit wann, Auslöser, Besserung">
     <div class="row" style="margin-top:10px"><button type="button" class="btn small" id="pp_add">Hinzufügen</button></div><p class="note warn" id="pp_err"></p>
     ${list.length?`<div class="plist">${list.map((e,i)=>`<div class="pentry"><div><b>${esc(e.regionLabel)}</b>: ${esc(e.items.join(", ")||"–")}<br><span class="note">${esc([e.qual.join(", "),e.vas!==""?`Stärke ${e.vas}/10`:"",e.when&&e.when!=="–"?e.when:""].filter(Boolean).join(" · "))}</span>${bf()["p_"+e.region]?`<br><span class="note"><i>${esc(bf()["p_"+e.region])}</i></span>`:""}</div><button type="button" class="suback" data-pdel="${i}" aria-label="Eintrag entfernen" title="Entfernen">✕</button></div>`).join("")}</div>`:""}`;
-  $("pp_region").onchange=e=>{ D.region=e.target.value; D.items=[]; renderPainPicker(); };
+  $("pp_region").onchange=onRegion;
   box.querySelectorAll("[data-pitem]").forEach(b=>b.onclick=()=>{ const x=b.dataset.pitem; D.items=D.items.includes(x)?D.items.filter(y=>y!==x):[...D.items,x]; b.setAttribute("aria-pressed",D.items.includes(x)); });
   box.querySelectorAll("[data-pqual]").forEach(b=>b.onclick=()=>{ const x=b.dataset.pqual; D.qual=D.qual.includes(x)?D.qual.filter(y=>y!==x):[...D.qual,x]; b.setAttribute("aria-pressed",D.qual.includes(x)); });
   $("pp_vas").onchange=e=>{ D.vas=e.target.value; };
@@ -2585,7 +2767,7 @@ function renderPainPicker(){
   $("pp_when").onchange=e=>{ D.when=e.target.value; };
   $("pp_add").onclick=()=>{
     if(!D.items.length&&!D.qual.length){ $("pp_err").textContent="Bitte mindestens eine Beschwerde oder Schmerzqualität auswählen."; return; }
-    const B=bf(); B.painList=B.painList||[];
+    const B=bf(); B.painList=B.painList||[]; B.noPain=false;
     B.painList.push({region:D.region,regionLabel:painRegions().find(r=>r[0]===D.region)[1],items:[...D.items],qual:[...D.qual],vas:D.vas,when:D.when});
     painDraft={region:D.region,items:[],qual:[],vas:"",when:"–"}; save(); renderPainPicker();
   };
@@ -2601,10 +2783,10 @@ const SU_ROWS=[
   ["h","Komponenten & Zubehör"],
   ["c","crank","Kurbellänge","num"],["c","pedalName","Pedale","pedals"],["c","pedalStack","Stack Height Pedal","num"],
   ["c","saddleName","Sattel","saddles"],["c","barWidth","Lenkerbreite","num"],["c","barName","Lenker","bars"],
-  ["c","barReach","Reach Lenker","num"],["c","stemName","Vorbau","stems"],["c","stemLen","Vorbaulänge","num"],
+  ["c","barReach","Lenker-Reach","num"],["c","stemName","Vorbau","stems"],["c","stemLen","Vorbaulänge","num"],
   ["c","stemAngle","Vorbauwinkel","num"],["c","stemHeight","Vorbauhöhe","num"],["c","cap","Steuersatzkappe","num"],["c","spacer","Spacer","num"],
   ["c","shoeName","Schuhe","shoes"],["c","sole","Sohlendicke","num"],
-  ["c","leverName","Schalt-/Bremsgriffe","levers"],["c","leverReach","Reach Schalt-/Bremsgriffe","num"],["c","leverAngle","Bremsgriffwinkel","num"],
+  ["c","leverName","Schalt-/Bremsgriffe","levers"],["c","leverReach","Bremsgriff-Reach","num"],["c","leverAngle","Bremsgriffwinkel","num"],
   ["c","cleatPct","Cleatposition (% Fußlänge ab Ferse)","num"]
 ];
 const CLEAT_PCTS=Array.from({length:21},(_,i)=>60+i);   // Auswahl 60–80 %
@@ -2732,7 +2914,8 @@ function renderSetup(){
     }
     const [g,k,lab,typ]=r.length===3?["pos",r[1],r[2],"num"]:r;
     const rowStart=h.length, rowLinked=g==="c"&&!!SU_LINK[k];
-    h+=`<span>${lab}</span>`;
+    const SU_DESC={barReach:"Mitte Oberlenker bis Bremsgriff",leverReach:"Beginn Bremsgriff bis Griffpunkt"};
+    h+=`<span>${lab}${SU_DESC[k]&&g==="c"?`<small>${SU_DESC[k]}</small>`:""}</span>`;
     for(const w of ["ist","opt"]){
       let val=g==="pos"?U.pos[w][k]:(w==="ist"?U.ci:U.co)[k];
       if(w==="opt"&&g==="c"&&(val===0||val==="0")) val="";
@@ -3412,10 +3595,8 @@ const findPkg=id=>id?allPkgs().find(x=>x.id===id):null;
 const pdfTier=()=>S.basic?"plus":(findPkg(S.pdfTier)?S.pdfTier:"");   /* "" = kein Paket gewählt (Standard) */
 /* Deckblatt: eingebautes Paket → eigenes Bild; eigenes Paket → Paketname; ohne Paket nach Inhalt (nur Patrick) bzw. „Report“ */
 const pdfCover=()=>{ const id=pdfTier(), pk=findPkg(id);
-  if(pk){ const std=PDF_TIERS.find(t=>t[1].toLowerCase()===String(pk.name).trim().toLowerCase());   // Plus/Advanced/Professional: gestaltetes Deckblatt
-    return std?{file:`brand/cover_${std[0]}.jpg`,name:std[1]}:{custom:pk.name,name:pk.name}; }
-  if(BUILTIN_OK){ const t=["statik","dyn","mob","kraft"].some(k=>pdfOn(k))?"professional":pdfOn("video")?"advanced":"plus"; return {file:`brand/cover_${t}.jpg`,name:PDF_TIERS.find(x=>x[0]===t)[1]}; }
-  return {custom:"Report",name:""}; };
+  if(pk) return {custom:String(pk.name).trim(),name:String(pk.name).trim()};   /* Deckblatt zeigt nur den Paketnamen */
+  return {custom:"WiFitPro",name:""}; };   /* ohne Paket: Deckblatt „WiFitPro“, Titel „WiFitPro Report“ */
 /* Vorauswahl beim Öffnen: kein Paket, alle Inhalte oder ein Paket */
 function applyPdfDefault(){
   if(S.basic) return; const d=PDFPREFS.def||"";
@@ -3448,23 +3629,48 @@ async function pdfPrefsSave(){
 }
 const pdfCurSecs=()=>PDF_SECS.map(([k])=>k).filter(k=>pdfOn(k));
 const secNames=secs=>secs.map(k=>(PDF_SECS.find(z=>z[0]===k)||[0,k])[1]).join(", ");
+let pkgEdit=null;   /* offener Paket-Editor: {i: Index oder null für neu, name, secs} */
 function renderPkgMgr(){
   const box=$("pkgMgr"); if(!box) return; const own=PDFPREFS.pkgs||[];
-  box.innerHTML=`<p class="note" style="margin-top:0">Eigene Pakete gelten nur für dein Konto. Ein Paket übernimmt die gerade angehakten Inhalte.</p>
-    ${own.length?`<div class="plist">${own.map((x,i)=>`<div class="pentry"><div><b>${esc(x.name)}</b><br><span class="note">${esc(secNames(x.secs)||"–")}</span></div>
-      <div class="row" style="flex:none;gap:4px"><button type="button" class="btn ghost small" data-pkgupd="${i}" title="Paket mit der aktuellen Auswahl überschreiben">Aktualisieren</button><button type="button" class="btn ghost small" data-pkgdel="${i}">Löschen</button></div></div>`).join("")}</div>`:`<p class="note">Noch keine eigenen Pakete.</p>`}
-    <div class="two" style="margin-top:10px;align-items:end"><div><label class="f" for="pkgName">Neues Paket aus der aktuellen Auswahl</label><input class="bfi" id="pkgName" placeholder="z. B. Komfort-Fitting" maxlength="40"></div>
-      <div><button type="button" class="btn small" id="pkgAdd">Als Paket speichern</button></div></div>
+  const E=pkgEdit, edAll=E&&PDF_SECS.every(([k])=>E.secs.includes(k));
+  const ed=E?`<div class="suadd" id="pkgEditor"><b>${E.i===null?"Neues Paket anlegen":`Paket „${esc(own[E.i].name)}“ aktualisieren`}</b>
+      <label class="f" for="pkgEdName">Name des Pakets</label><input class="bfi" id="pkgEdName" maxlength="40" placeholder="z. B. Bikefitting Plus" value="${esc(E.name)}">
+      <div class="row" style="margin-top:10px;justify-content:space-between"><span class="note" style="margin:0">Inhalte (${E.secs.length} von ${PDF_SECS.length})</span><button type="button" class="btn ghost small" id="pkgEdAll">${edAll?"Alle abwählen":"Alle auswählen"}</button></div>
+      ${PDF_SECS.map(([k,l])=>`<label class="toggle" style="display:flex;margin:6px 0"><input type="checkbox" data-pkged="${k}"${E.secs.includes(k)?" checked":""}> ${l}</label>`).join("")}
+      <div class="row" style="margin-top:10px"><button type="button" class="btn small" id="pkgEdSave">Speichern</button><button type="button" class="btn ghost small" id="pkgEdCancel">Abbrechen</button></div></div>`:"";
+  box.innerHTML=`<p class="note" style="margin-top:0">Eigene Pakete gelten nur für dein Konto.</p>
+    ${own.length?`<div class="plist">${own.map((x,i)=>`<div class="pentry"><div style="flex:1;min-width:0"><b data-pkgname="${i}">${esc(x.name)}</b><br><span class="note">${esc(secNames(x.secs)||"–")}</span></div>
+      <div class="row" style="flex:none;gap:4px"><button type="button" class="btn ghost small" data-pkgren="${i}">Umbenennen</button><button type="button" class="btn ghost small" data-pkgupd="${i}" title="Inhalte des Pakets ändern">Aktualisieren</button><button type="button" class="btn ghost small" data-pkgdel="${i}">Löschen</button></div></div>${E&&E.i===i?ed:""}`).join("")}</div>`:`<p class="note">Noch keine eigenen Pakete.</p>`}
+    ${E&&E.i===null?ed:`<div class="row" style="margin-top:10px"><button type="button" class="btn small" id="pkgNew">+ Neues Paket anlegen</button></div>`}
     <label class="f" for="pkgDef">Voreinstellung beim Öffnen der App</label>
     <select class="bfi" id="pkgDef"><option value="">Kein Paket (nichts ausgewählt)</option><option value="all">Alle Inhalte</option>${allPkgs().map(x=>`<option value="${esc(x.id)}">${esc(x.builtin?"Bikefitting "+x.name:x.name)}</option>`).join("")}</select>
     <p class="note" id="pkgNote"></p>`;
   $("pkgDef").value=findPkg(PDFPREFS.def)||PDFPREFS.def==="all"?PDFPREFS.def:"";
   const done=async t=>{ const w=await pdfPrefsSave(); renderPdfTab(); $("pkgNote").textContent=`${t} – gespeichert ${w}.`; };
-  $("pkgAdd").onclick=()=>{ const n=$("pkgName").value.trim(), cur=pdfCurSecs(); if(!n){ $("pkgNote").textContent="Bitte einen Namen eingeben."; return; }
-    if(!cur.length){ $("pkgNote").textContent="Bitte zuerst Inhalte anhaken."; return; }
-    if(allPkgs().some(x=>x.name.toLowerCase()===n.toLowerCase())){ $("pkgNote").textContent="Ein Paket mit diesem Namen gibt es schon."; return; }
-    const id="u_"+Date.now().toString(36); PDFPREFS.pkgs.push({id,name:n,secs:cur}); S.pdfTier=id; S.pdfTouched=true; done(`Paket „${n}“ angelegt`); };
-  box.querySelectorAll("[data-pkgupd]").forEach(b=>b.onclick=()=>{ const x=PDFPREFS.pkgs[+b.dataset.pkgupd], cur=pdfCurSecs(); if(!cur.length){ $("pkgNote").textContent="Bitte zuerst Inhalte anhaken."; return; } x.secs=cur; S.pdfTier=x.id; done(`Paket „${x.name}“ aktualisiert`); });
+  const openEd=v=>{ pkgEdit=v; renderPkgMgr(); const ed=$("pkgEditor"); if(ed){ try{ ed.scrollIntoView({block:"nearest",behavior:"smooth"}); }catch(e){} if(v.i===null) $("pkgEdName").focus(); } };
+  if($("pkgNew")) $("pkgNew").onclick=()=>openEd({i:null,name:"",secs:[]});
+  box.querySelectorAll("[data-pkgupd]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.pkgupd, x=PDFPREFS.pkgs[i]; openEd({i,name:x.name,secs:[...x.secs]}); });
+  if(E){
+    $("pkgEdName").oninput=e=>{ E.name=e.target.value; };
+    box.querySelectorAll("[data-pkged]").forEach(c=>c.onchange=()=>{ const k=c.dataset.pkged; E.secs=c.checked?[...new Set([...E.secs,k])]:E.secs.filter(z=>z!==k); renderPkgMgr(); });
+    $("pkgEdAll").onclick=()=>{ E.secs=edAll?[]:PDF_SECS.map(([k])=>k); renderPkgMgr(); };
+    $("pkgEdCancel").onclick=()=>{ pkgEdit=null; renderPkgMgr(); };
+    $("pkgEdSave").onclick=()=>{ const n=E.name.trim(), secs=PDF_SECS.map(([k])=>k).filter(k=>E.secs.includes(k)), cur=E.i===null?null:own[E.i];
+      if(!n){ $("pkgNote").textContent="Bitte einen Namen eingeben."; return; }
+      if(!secs.length){ $("pkgNote").textContent="Bitte mindestens einen Inhalt anhaken."; return; }
+      if(allPkgs().some(y=>(!cur||y.id!==cur.id)&&y.name.toLowerCase()===n.toLowerCase())){ $("pkgNote").textContent="Ein Paket mit diesem Namen gibt es schon."; return; }
+      let id; if(cur){ cur.name=n; cur.secs=secs; id=cur.id; } else { id="u_"+Date.now().toString(36); PDFPREFS.pkgs.push({id,name:n,secs}); }
+      pkgEdit=null; S.pdfTier=id; S.pdfTouched=true; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,secs.includes(k)]));   /* gespeichertes Paket gleich auswählen */
+      done(cur?`Paket „${n}“ aktualisiert`:`Paket „${n}“ angelegt`); };
+  }
+  /* Umbenennen: Name wird zum Eingabefeld, Enter oder OK speichert, Esc bricht ab */
+  box.querySelectorAll("[data-pkgren]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.pkgren, x=PDFPREFS.pkgs[i], nb=box.querySelector(`[data-pkgname="${i}"]`); if(!nb||nb.querySelector("input")) return;
+    nb.innerHTML=`<span class="row" style="gap:4px;flex-wrap:nowrap"><input class="bfi" maxlength="40" style="min-width:0;flex:1"><button type="button" class="btn small">OK</button><button type="button" class="btn ghost small">Abbrechen</button></span>`;
+    const inp=nb.querySelector("input"), [ok,cancel]=nb.querySelectorAll("button"); inp.value=x.name; inp.focus(); inp.select();
+    const commit=()=>{ const n=inp.value.trim(); if(!n){ $("pkgNote").textContent="Bitte einen Namen eingeben."; return; }
+      if(n!==x.name&&allPkgs().some(y=>y.id!==x.id&&y.name.toLowerCase()===n.toLowerCase())){ $("pkgNote").textContent="Ein Paket mit diesem Namen gibt es schon."; return; }
+      const old=x.name; x.name=n; done(n===old?"Name unverändert":`„${old}“ umbenannt in „${n}“`); };
+    ok.onclick=commit; cancel.onclick=()=>renderPdfTab(); inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); commit(); } if(e.key==="Escape") renderPdfTab(); }; });
   box.querySelectorAll("[data-pkgdel]").forEach(b=>b.onclick=()=>{ const x=PDFPREFS.pkgs[+b.dataset.pkgdel];
     if(!b.dataset.armed){ b.dataset.armed="1"; b.textContent="Wirklich löschen?"; b.classList.remove("ghost"); return; }   /* zweiter Klick löscht */
     PDFPREFS.pkgs.splice(+b.dataset.pkgdel,1); if(PDFPREFS.def===x.id) PDFPREFS.def=""; if(S.pdfTier===x.id) S.pdfTier=""; done(`Paket „${x.name}“ gelöscht`); });
@@ -3472,7 +3678,8 @@ function renderPkgMgr(){
 }
 const pdfVisSecs=()=>PDF_SECS.filter(([k])=>!S.basic||BASIC_PDF.includes(k)).map(([k])=>k);
 const pdfAllOn=()=>pdfVisSecs().every(k=>pdfOn(k));
-function pdfToggleLabel(){ const b=$("pdfToggle"); if(!b) return; const on=pdfAllOn(); b.textContent=on?"Alle abwählen":"Alle auswählen"; b.setAttribute("aria-pressed",on); }
+function pdfToggleLabel(){ const b=$("pdfToggle"); if(!b) return; const on=pdfAllOn();
+  const vis=pdfVisSecs(), n=vis.filter(k=>pdfOn(k)).length; if($("pdfSecsCount")) $("pdfSecsCount").textContent=`${n} von ${vis.length} ausgewählt`; b.textContent=on?"Alle abwählen":"Alle auswählen"; b.setAttribute("aria-pressed",on); }
 function setPdfTier(id){ const t=findPkg(id); if(!t) return; S.pdfTier=id; S.pdfTouched=true; S.pdfSel=Object.fromEntries(PDF_SECS.map(([k])=>[k,t.secs.includes(k)])); renderPdfTab(); save(); }
 const pdfOn=k=>!(S.pdfSel&&S.pdfSel[k]===false)&&!(S.basic&&!BASIC_PDF.includes(k));
 function renderPdfTab(){
@@ -3588,13 +3795,19 @@ function renderBrandForm(){
   $("brReset").onclick=async()=>{ brandDraft={lines:["","",""],logo:null,logoWhite:true}; const where=await brandSave(JSON.parse(JSON.stringify(brandDraft))); renderBrandForm(); $("brNote").textContent=`Standard wiederhergestellt (${where}).`; };
   prev();
 }
-async function customCover(base,name){
+async function customCover(base,name){   /* Deckblatt ohne Titel, Paketname groß in ein oder zwei Zeilen */
   const im=await loadImgEl(base), c=document.createElement("canvas"); c.width=im.naturalWidth; c.height=im.naturalHeight;
   const x=c.getContext("2d"), k=c.width/1240; x.drawImage(im,0,0);
   try{ await document.fonts.load(`italic 700 ${Math.round(106*k)}px Barlow`); }catch(e){}
-  let f=Math.round(106*k); const fam=" Barlow, Arial, sans-serif"; x.font=`italic 700 ${f}px${fam}`;
-  while(x.measureText(name).width>c.width*0.86&&f>30){ f-=2; x.font=`italic 700 ${f}px${fam}`; }
-  x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="alphabetic"; x.fillText(name,c.width/2,830*k);
+  const fam=" Barlow, Arial, sans-serif", maxW=c.width*0.86; let f=Math.round(106*k); x.font=`italic 700 ${f}px${fam}`;
+  x.fillStyle="#fff"; x.textAlign="center"; x.textBaseline="alphabetic";
+  let lines=[name];
+  if(name&&x.measureText(name).width>maxW*0.55&&name.includes(" ")){   // längere Namen wie „Bikefitting Plus“ zweizeilig wie im Original: an der Lücke nahe der Mitte umbrechen
+    const sp=[...name.matchAll(/ /g)].map(m=>m.index); const cut=sp.reduce((b,i)=>Math.abs(i-name.length/2)<Math.abs(b-name.length/2)?i:b,sp[0]);
+    lines=[name.slice(0,cut),name.slice(cut+1)]; }
+  while(lines.some(l=>x.measureText(l).width>maxW)&&f>30){ f-=2; x.font=`italic 700 ${f}px${fam}`; }
+  const ys=lines.length>1?[715,830]:[775];
+  if(name) lines.forEach((l,i)=>x.fillText(l,c.width/2,ys[i]*k));
   return c.toDataURL("image/jpeg",0.9);
 }
 async function makePdf(){
@@ -3691,7 +3904,7 @@ async function makePdf(){
 
   /* Titelkopf */
   col(C.pri,"Fill"); doc.rect(0,0,210,34,"F");
-  const RT=S.basic?"WiFitBasic Report":`${tier[1]?"Bikefitting "+tier[1]:"Bikefitting"} · Report`;
+  const RT=S.basic?"WiFitBasic Report":`${tier[1]||"WiFitPro"} Report`;   /* Paketname + Report, sonst WiFitPro Report */
   font(20,true); col([255,255,255]); doc.text(RT,M,16);
   font(10.5); doc.text(pdfTxt(`${Bf.name||"Name nicht angegeben"}${Bf.date?" · "+new Date(Bf.date).toLocaleDateString("de-DE"):""}`),M,24);
   const cb=findBike(S.sel); font(8.5); doc.text(pdfTxt(`Rad: ${cb?`${cb.b} ${cb.m} ${cb.s}`:"-"} · Fahrstil: ${P.style}`),M,29.5);
@@ -3715,7 +3928,7 @@ async function makePdf(){
   if(pdfOn("pain")||pdfOn("anam")) H1("Körperliche Voraussetzungen");
   if(pdfOn("pain")){ migratePain(); H2("Beschwerden");
     const L=[...(Bf.painList||[])]; for(const [k,l] of painRegions()) if(String(Bf["p_"+k]||"").trim()&&!L.some(e=>e.region===k)) L.push({regionLabel:l,region:k,items:[],qual:[],vas:"",when:""});
-    if(!L.length) T("Keine Beschwerden angegeben.",9.5,false,C.mute);
+    if(!L.length) T(Bf.noPain!==false?"Keine Beschwerden.":"Keine Beschwerden angegeben.",9.5,false,C.mute);
     for(const e of L){   // je Bereich eine Karte mit Schmerzskala
       const lines=[]; if(e.items.length) lines.push(e.items.join(", ")); if(e.qual.length) lines.push("Schmerzqualität: "+e.qual.join(", ")); if(e.when&&e.when!=="–") lines.push("Auftreten: "+e.when);
       const ft=String(Bf["p_"+e.region]||"").trim(); font(9); const wrap=lines.concat(ft?[ft]:[]).flatMap(t=>doc.splitTextToSize(pdfTxt(t),PW-60));
@@ -3777,7 +3990,7 @@ async function makePdf(){
     cmp("Sattelhöhe",mm(ca.sh),mm(cOpt.sh)); cmp("Sattelüberhöhung",mm(ca.drop),mm(cOpt.drop)); cmp("Abstand Sattel - Griff",mm(ca.dist),mm(cOpt.dist));
     cmp("Reach / Stack (Rahmen)",`${mm(ca.reach)} / ${mm(ca.stack)}`,`${mm(cOpt.reach)} / ${mm(cOpt.stack)}`);
     H2("Komponenten");
-    const PDF_SKIP=["barReach","stemHeight","sole","leverReach"];   // gekoppelte Maße der Teile nicht im Bericht
+    const PDF_SKIP=["barReach","stemHeight","sole","leverReach","pedalStack"];   // gekoppelte Maße der Teile nicht im Bericht
     for(const r of SU_ROWS) if(r[0]==="c"&&!PDF_SKIP.includes(r[1])){ const a=fmtSu(ci[r[1]]), b=(co[r[1]]===0||co[r[1]]==="0")?"wie Ist":(fmtSu(co[r[1]])||"wie Ist"); if(!a&&b==="wie Ist") continue; cmp(r[2],a||"-",b); }
   }
 
@@ -3803,7 +4016,7 @@ async function makePdf(){
     gauge("Rücken",J.back,20,70,sr[0],sr[1],"°",null,P.style);
     if(cur.R.armOver>0){ T("Ellbogen: Griff nicht erreichbar",9.5,true,C.bad); } else gauge("Ellbogen",J.elbow,120,180,145,165,"°",null,"");
     gauge("Knielot (3 Uhr)",kops.dx,-60,60,(T2.kops||0)-10,(T2.kops||0)+10," mm",null,"+ vor / - hinter Pedalachse"); }
-  if(pdfOn("sug")) try{
+  if(pdfOn("sug")&&personReady()) try{
     const r=suggest(), p=r.parts; H2("Vorschlag optimale Sitzposition");
     const sY=Math.round(Math.sqrt(Math.max(0,p.saddleH**2-p.setback**2)));
     tiles([["Sattelhöhe",p.saddleH+" mm"],["Sattelposition X / Y",`${Math.round(p.setback)} / ${sY} mm`,"ab Tretlager"],["Vorbau",p.stemLen+" mm",`Winkel ${p.stemAngle}°`],["Spacer",p.spacer+" mm"]]);
@@ -3847,7 +4060,7 @@ async function makePdf(){
     else doc.text(pdfTxt(`${Bf.name||""} · Seite ${i}/${n}`),210-M,292,{align:"right"});
     doc.setTextColor(0); }
   if(BR){ doc.addPage(); doc.addImage(BR.back,"JPEG",0,0,210,297); }
-  const fname=`${S.basic?"WiFitBasic":"Bikefitting"+(tier[1]?"_"+tier[1].replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_"):"")}_Report_${(Bf.name||"Auswertung").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_${Bf.date||""}.pdf`;
+  const fname=`${S.basic?"WiFitBasic":(tier[1]||"WiFitPro").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_Report_${(Bf.name||"Auswertung").replace(/[^A-Za-z0-9ÄÖÜäöüß_-]+/g,"_")}_${Bf.date||""}.pdf`;
   const blob=doc.output("blob");
   let dl=null; try{ dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null; }catch(e){}
   if(dl){
@@ -4012,20 +4225,21 @@ const STYLE_FACTORY=JSON.parse(JSON.stringify(STYLE_STD));
 function applyStyleStd(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
   for(const st of Object.keys(STYLE_FACTORY)){
     const o=(S.styleOv&&S.styleOv[st])||{}, d=(S.modelStd&&S.modelStd.styleStd&&S.modelStd.styleStd[st])||{};
-    for(const k of ["back","shoulder"]) STYLE_STD[st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:STYLE_FACTORY[st][k];
+    for(const k of ["back","shoulder","elbow"]) STYLE_STD[st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:STYLE_FACTORY[st][k];
     STYLE_BACK[st]=[STYLE_STD[st].back-5,STYLE_STD[st].back+5];
   }
 }
 function renderStyleStd(){
+  try{ renderFitModel(); }catch(e){}   // Werkseinstellung kann auch das Bewertungsmodell enthalten (Cache-Schlüssel enthalten das Modell)
   const box=$("styleStdBox"); if(!box) return;
   applyStyleStd();
   const tag=(st,k)=>S.styleOv&&S.styleOv[st]&&isFinite(S.styleOv[st][k])?'<small class="src edit">geändert</small>'
-    :S.modelStd&&S.modelStd.styleStd&&S.modelStd.styleStd[st]&&isFinite(S.modelStd.styleStd[st][k])?'<small class="src">Standard</small>':"";
-  box.innerHTML=`<h3 style="margin:14px 0 4px">Richtwerte je Fahrstil</h3><div class="bfg"><span></span><b>Rücken (°)</b><b>Schulter (°)</b>`+
-    ["comfort","endurance","sportlich","ambitioniert","professional"].map(st=>`<span>${st}</span>${["back","shoulder"].map(k=>`<div><input class="bfi" type="number" step="0.5" data-stylestd="${st}|${k}" value="${STYLE_STD[st][k]}" aria-label="${k==="back"?"Rücken":"Schulter"} ${st}">${tag(st,k)}</div>`).join("")}`).join("")+
-    `</div><p class="note">Rücken: Rückenwinkel und Ziel im Vorschlag, Bereich ±5°. Schulter: Ziel im Vorschlag, Bereich ±10°. Mit „Modellwerte als Standard speichern“ (ganz unten) als Werkseinstellung sichern.</p>`;
+    :S.modelStd&&S.modelStd.styleStd&&S.modelStd.styleStd[st]&&isFinite(S.modelStd.styleStd[st][k])?'<small class="src">Standard</small>':'<small class="src">&nbsp;</small>';
+  box.innerHTML=`<h3 style="margin:14px 0 4px">Richtwerte je Fahrstil</h3><div class="bfg styleGrid"><span></span><b>Rücken (°)</b><b>Schulter (°)</b><b>Ellbogen (°)</b>`+
+    ["comfort","endurance","sportlich","ambitioniert","professional"].map(st=>`<span>${st}</span>${["back","shoulder","elbow"].map(k=>`<div><input class="bfi" type="number" step="${k==="elbow"?1:0.5}" data-stylestd="${st}|${k}" value="${STYLE_STD[st][k]}" aria-label="${k==="back"?"Rücken":k==="shoulder"?"Schulter":"Ellbogen"} ${st}">${tag(st,k)}</div>`).join("")}`).join("")+
+    `</div><p class="note">Rücken: Rückenwinkel und Ziel im Vorschlag, Bereich ±5°. Schulter: Ziel im Vorschlag, Bereich ±10°. Ellbogen: Ziel im Vorschlag und Armhaltung der Figur (180° = gestreckt). Mit „Modellwerte als Standard speichern“ (ganz unten) als Werkseinstellung sichern.</p>`;
   box.querySelectorAll("[data-stylestd]").forEach(el=>el.onchange=()=>{
-    const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value); if(!(x>=20&&x<=130)){ renderStyleStd(); return; }
+    const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value); if(!(k==="elbow"?(x>=120&&x<=180):(x>=20&&x<=130))){ renderStyleStd(); return; }
     S.styleOv=S.styleOv||{}; (S.styleOv[st]=S.styleOv[st]||{})[k]=x;
     applyStyleStd(); delete S.person.ov.backAngle; sugCache.key="";
     setTimeout(()=>{ syncPerson(); render(); renderStyleStd(); save(); },0);
