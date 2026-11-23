@@ -189,6 +189,9 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .frow>input,.frow>select,.frow>textarea{flex:0 1 auto;margin-left:auto}
 .frow>textarea{flex:1 1 auto;max-width:560px}
 .two:has(>div>.frow){grid-template-columns:1fr;gap:0}
+/* mehr Abstand zwischen Beschreibung und den Feldern darunter */
+aside section>p.note,aside details>p.note,aside details>div>p.note:first-child{margin-bottom:18px}
+#brandBox>.bfg{row-gap:10px}
 .ptools .note:not(:empty){background:var(--panel);padding:5px 9px;border-radius:6px;box-shadow:0 2px 10px rgba(0,30,50,.12);margin-top:6px}
 .param.manParam input[type=number]{width:90px!important;max-width:90px;flex:none}
 #pp_vas{max-width:120px} #pp_when{max-width:260px} #pp_text{max-width:560px}
@@ -616,11 +619,10 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
           <div><label class="f" for="pwNew2">Wiederholen</label><input class="bfi" id="pwNew2" type="password" autocomplete="new-password"></div></div>
         <div class="row" style="margin-top:8px"><button class="btn small" id="pwSet">Passwort festlegen</button><button class="btn ghost small" id="pwRemove">Sperre aufheben</button></div>
       </section>
-      <section>
-        <h2>Bericht: Logo und Kontaktdaten</h2>
+      <details class="acc"><summary>Bericht: Logo und Kontaktdaten</summary>
         <p class="note" style="margin-top:0">Gilt für dein Konto: Die Kontaktdaten und dein Logo erscheinen im PDF in der Fußzeile jeder Seite und auf der letzten Seite. Leere Zeilen und kein Logo = Standard (wimove / Wildrad).</p>
         <div id="brandBox"></div>
-      </section>
+      </details>
       <section>
         <h2>Datensicherung</h2>
         <p class="note" style="margin-top:0">Alle Daten liegen in diesem Browser. Mit einer Sicherung kannst du sie archivieren oder auf einem anderen Gerät weiterarbeiten.</p>
