@@ -3846,6 +3846,16 @@ async function makePdf(){
   const PC=pdfCover(), tier=[0,PC.name];   // Paketname für Titel und Dateiname
   let BR=null; try{ BR={cover:S.basic?await brandImg("brand/cover_basic.jpg"):PC.file?await brandImg(PC.file):await customCover(await brandImg("brand/cover_custom.jpg"),PC.custom),back:await brandImg(S.basic?"brand/back_basic.jpg":"brand/back.jpg"),foot:await brandImg(S.basic?"brand/footer_basic.png":"brand/footer.png")}; if(brandActive()){ try{ const f=await brandFooter(BR.foot,MYBRAND), b=await brandBack(BR.back,MYBRAND); BR.foot=f; BR.back=b; }catch(e){} }   /* Logo und Kontaktdaten des Kontos */ /* WiFitBasic: eigenes Deckblatt, Fußzeile mit Ladenadresse */ }catch(e){ BR=null; }
   const {jsPDF}=window.jspdf, doc=new jsPDF({unit:"mm",format:"a4"}), Bf=bf(), Bd=body(), P=S.person;
+  /* Testbilder des Befunds für ausgefüllte Tests vorab laden (verkleinert) */
+  const TI={};
+  { const keys=[], has=x=>x&&x!=="–";
+    if(pdfOn("statik")) for(const [k,,t,o] of BF_STATIK){ if(t==="lr"||(t==="one"&&has(Bf["s_"+k]||o[0]))) keys.push("s_"+k); }   // wie im Bericht gedruckt
+    if(pdfOn("mob")) for(const [k] of BF_MOB) if(has(Bf[`m_${k}_l`])||has(Bf[`m_${k}_r`])) keys.push("m_"+k);
+    if(pdfOn("kraft")) for(const [k] of BF_KRAFT) if(has(Bf[`k_${k}_l`])||has(Bf[`k_${k}_r`])) keys.push("k_"+k);
+    await Promise.all(keys.map(async k=>{ const src=BF_IMG_FILE[k]?`brand/tests/${BF_IMG_FILE[k][0]}.jpg`:""; if(!src) return;
+      try{ const i=await loadImgEl(src), sc=Math.min(1,520/i.naturalWidth,360/i.naturalHeight), c=document.createElement("canvas");
+        c.width=Math.round(i.naturalWidth*sc); c.height=Math.round(i.naturalHeight*sc); const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(i,0,0,c.width,c.height);
+        TI[k]={url:c.toDataURL("image/jpeg",0.82),w:c.width,h:c.height}; }catch(e){} })); }
   const FOOT_H=23.3;   // Höhe der Fußzeile bei voller Seitenbreite
   const M=16, PW=210-2*M, BOT=BR?297-FOOT_H-8:282; let y=M;
   if(BR){ doc.addImage(BR.cover,"JPEG",0,0,210,297); doc.addPage(); }
@@ -3859,7 +3869,7 @@ async function makePdf(){
   let lastSec="";   // zuletzt gedruckter Abschnitt (Richtwerte dürfen direkt unter den Vorschlag)
   const H1=(t,keep=false)=>{ if(!keep&&y>(doc.getNumberOfPages()===(BR?2:1)?firstTop:M)+0.5){ doc.addPage(); y=M; }   /* jede Hauptüberschrift auf neuer Seite */
     need(22); y+=4; col(C.pri,"Fill"); doc.rect(M,y,2.2,7,"F"); font(15,true); col(C.ink); doc.text(pdfTxt(t),M+5,y+5.6); y+=10; col(C.line,"Draw"); doc.setLineWidth(0.3); doc.line(M,y,M+PW,y); y+=5; };
-  const H2=t=>{ need(14); y+=1; font(10.5,true); col(C.pri); doc.text(pdfTxt(t),M,y+3.6); col(C.ink); y+=7; };
+  const H2=t=>{ need(24); y+=1;   /* genug Platz für Überschrift plus erste Zeile (mit Testbild) */ font(10.5,true); col(C.pri); doc.text(pdfTxt(t),M,y+3.6); col(C.ink); y+=7; };
   const newPage=()=>{ if(y>M+40){ doc.addPage(); y=M; } };
   const tiles=(items,per=4)=>{   // Kennzahlen als Kacheln: großer Wert, kleine Beschriftung
     const g=3, w=(PW-g*(per-1))/per, hh=17;
@@ -3913,19 +3923,22 @@ async function makePdf(){
   };
   /* Ampel für Befunde: grün unauffällig, gelb leicht, rot deutlich */
   const lvl=(v,opts)=>{ const i=opts?opts.indexOf(v):-1; return i>=3?C.bad:i===2?C.mid:i===1?C.ok:null; };
-  const lrLine=(lab,l,r,opts,note)=>{   // eine Zeile links/rechts mit farbigen Punkten; ohne rechten Wert als Einzelwert
+  const lrLine=(lab,l,r,opts,note,ik)=>{   // eine Zeile links/rechts mit farbigen Punkten; ohne rechten Wert als Einzelwert; ik = Testbild rechts
     const show=x=>x&&x!=="–"&&x!=="-"; if(!show(l)&&!show(r)) return;
+    const im=ik&&TI[ik], tw=im?Math.min(30,15*im.w/im.h):0, th=im?tw*im.h/im.w:0, tg=im?tw+3:0;
     const single=r===""&&!opts; font(9.5,true); const ll=doc.splitTextToSize(pdfTxt(lab),55);
-    const nl=note?(font(8),doc.splitTextToSize(pdfTxt(note),PW-58)):[];
-    need(ll.length*4+nl.length*3.4+4); const y0=y, w=(PW-58)/2;
+    const nl=note?(font(8),doc.splitTextToSize(pdfTxt(note),PW-58-tg)):[];
+    need(Math.max(ll.length*4+nl.length*3.4+4,th+4)); const y0=y, w=(PW-58-tg)/2;
+    if(im){ try{ doc.addImage(im.url,"JPEG",M+PW-tw,y+0.5,tw,th); col(C.line,"Draw"); doc.setLineWidth(0.15); doc.rect(M+PW-tw,y+0.5,tw,th); }catch(e){} }
     font(9.5,true); col(C.ink); doc.text(ll,M,y+3.5);
-    if(single){ font(9); doc.text(doc.splitTextToSize(pdfTxt(l),PW-60)[0],M+58,y+3.5); }
+    if(single){ font(9); doc.text(doc.splitTextToSize(pdfTxt(l),PW-60-tg)[0],M+58,y+3.5); }
     else [[l,"L"],[r,"R"]].forEach(([v,s],k)=>{ const x=M+58+k*w;
       font(7,true); col(C.mute); doc.text(s,x,y+3.5);
       const c=typeof opts==="function"?opts(s==="L"?"l":"r"):lvl(v,opts); if(c) dot(x+5,y+2.4,c);
       font(9); col(C.ink); doc.text(doc.splitTextToSize(pdfTxt(show(v)?v:"-"),w-12)[0],x+(c?8:5),y+3.5); });
     y+=Math.max(5.5,ll.length*4+1.5);
     if(nl.length){ font(8); col(C.mute); doc.text(nl,M+58,y+1.2); y+=nl.length*3.4; }
+    if(im&&y<y0+th+1.5) y=y0+th+1.5;
     col(C.line,"Draw"); doc.setLineWidth(0.2); doc.line(M,y+0.5,M+PW,y+0.5); y+=2.2; col(C.ink);
   };
   const mm=x=>isFinite(x)?Math.round(x)+" mm":"-", dgv=x=>isFinite(x)?Math.round(x)+"°":"-";
@@ -3979,8 +3992,8 @@ async function makePdf(){
   if(pdfOn("statik")||pdfOn("dyn")||pdfOn("mob")||pdfOn("kraft")) H1("Körperliche Funktionsuntersuchung");
   if(pdfOn("statik")){ migrateStatik(); H2("Statikbefund (im Stand)");
     for(const [k,l,t,o] of BF_STATIK){
-      if(t==="lr") lrLine(l,Bf[`s_${k}_l`]||o[0],Bf[`s_${k}_r`]||o[0]);
-      else if(t==="one"){ const v=Bf["s_"+k]||o[0]; if(v&&v!=="–") lrLine(l,v,"",null); }
+      if(t==="lr") lrLine(l,Bf[`s_${k}_l`]||o[0],Bf[`s_${k}_r`]||o[0],undefined,undefined,"s_"+k);
+      else if(t==="one"){ const v=Bf["s_"+k]||o[0]; if(v&&v!=="–") lrLine(l,v,"",null,undefined,"s_"+k); }
       else if(statikDepOn(o)&&String(Bf["s_"+k]||"").trim()) lrLine(l,Bf["s_"+k]+" mm","",null); } }
   if(pdfOn("dyn")){ H2("Dynamischer Befund (auf dem Rad)"); let grp=null, any=false; const ok=x=>x!=null&&String(x).trim()!==""&&x!=="–";
     for(const [k,l,t] of BF_DYN){
@@ -3990,12 +4003,12 @@ async function makePdf(){
       any=true; if(t==="lr") lrLine(l,Bf[`s_${k}_l`],Bf[`s_${k}_r`]); else lrLine(l,t==="num"?Bf["s_"+k]+" U/min":Bf["s_"+k],"",null); }
     if(!any) T("Keine Angaben.",9.5,false,C.mute); }
   if(pdfOn("mob")){ H2("Mobilitätstests");
-    let n=0; for(const [k,l] of BF_MOB){ const a=Bf[`m_${k}_l`], b=Bf[`m_${k}_r`]; if((a&&a!=="–")||(b&&b!=="–")){ n++; lrLine(l,a,b,MOB_OPTS,bfAbn("m_"+k,MOB_OPTS)?(Bf[`m_${k}_n`]||""):""); } }
+    let n=0; for(const [k,l] of BF_MOB){ const a=Bf[`m_${k}_l`], b=Bf[`m_${k}_r`]; if((a&&a!=="–")||(b&&b!=="–")){ n++; lrLine(l,a,b,MOB_OPTS,bfAbn("m_"+k,MOB_OPTS)?(Bf[`m_${k}_n`]||""):"","m_"+k); } }
     if(!n) T("Keine Tests eingetragen.",9.5,false,C.mute); }
   if(pdfOn("kraft")){ H2("Muskelfunktion / Krafttests");
     let n=0; for(const [k,l,mode,unit] of BF_KRAFT){ const a=Bf[`k_${k}_l`], b=Bf[`k_${k}_r`]; if(!((a&&a!=="–")||(b&&b!=="–"))) continue; n++;
       const note=bfAbn("k_"+k,KRAFT_OPTS)?(Bf[`k_${k}_n`]||""):"";
-      lrLine(l,kraftVal(Bf,k,"l",unit),mode==="lr"?kraftVal(Bf,k,"r",unit):"",sd=>lvl(Bf[`k_${k}_${sd}`],KRAFT_OPTS),note); }
+      lrLine(l,kraftVal(Bf,k,"l",unit),mode==="lr"?kraftVal(Bf,k,"r",unit):"",sd=>lvl(Bf[`k_${k}_${sd}`],KRAFT_OPTS),note,"k_"+k); }
     if(!n) T("Keine Tests eingetragen.",9.5,false,C.mute); }
 
   if(pdfOn("setup")){
