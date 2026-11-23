@@ -3099,19 +3099,19 @@ const ANAM=[
 ];
 /* Statikbefund: lr = links/rechts getrennt, one = eine Auswahl, mm = Maß in mm */
 const BF_STATIK=[
-  ["fuss","Fußlängsgewölbe","lr",["physiologisch","Hohlfuß","Senkfuß","Plattfuß","Spreizfuß","Senk-Spreizfuß"]],
-  ["fussrot","Fußrotation im Stand","lr",["neutral","Außenrotation","Innenrotation"]],
-  ["beinachse","Beinachsenstellung","lr",["physiologisch","leichtes Valgus (X-Bein)","deutliches Valgus (X-Bein)","leichtes Varus (O-Bein)","deutliches Varus (O-Bein)"]],
-  ["beinlaenge","Beinlängendifferenz","one",["keine","links kürzer","rechts kürzer"]],
+  ["fuss","Fußlängsgewölbe","lr",["–","physiologisch","Hohlfuß","Senkfuß","Plattfuß","Spreizfuß","Senk-Spreizfuß"]],
+  ["fussrot","Fußrotation im Stand","lr",["–","neutral","Außenrotation","Innenrotation"]],
+  ["beinachse","Beinachsenstellung","lr",["–","physiologisch","leichtes Valgus (X-Bein)","deutliches Valgus (X-Bein)","leichtes Varus (O-Bein)","deutliches Varus (O-Bein)"]],
+  ["beinlaenge","Beinlängendifferenz","one",["–","keine","links kürzer","rechts kürzer"]],
   ["beinlaenge_mm","Beinlängendifferenz (mm)","mm","beinlaenge"],
-  ["becken","Beckenstellung","one",["physiologisch","Schiefstand links hoch","Schiefstand rechts hoch"]],
+  ["becken","Beckenstellung","one",["–","physiologisch","Schiefstand links hoch","Schiefstand rechts hoch"]],
   ["becken_mm","Beckenschiefstand (mm)","mm","becken"],
-  ["beckenrot","Beckenrotation (Verwringung)","one",["keine","links vorn","rechts vorn"]],
-  ["schulter","Schulterstellung","one",["physiologisch","Schiefstand links hoch","Schiefstand rechts hoch"]],
-  ["ws","Wirbelsäule","one",["physiologisch","Hyperkyphose BWS","Hyperlordose LWS","Skoliose"]]
+  ["beckenrot","Beckenrotation (Verwringung)","one",["–","keine","links vorn","rechts vorn"]],
+  ["schulter","Schulterstellung","one",["–","physiologisch","Schiefstand links hoch","Schiefstand rechts hoch"]],
+  ["ws","Wirbelsäule","one",["–","physiologisch","Hyperkyphose BWS","Hyperlordose LWS","Skoliose"]]
 ];
 /* mm-Feld nur, wenn das zugehörige Merkmal nicht auf dem ersten Wert (keine/physiologisch) steht */
-const statikDepOn=dep=>{ const d=BF_STATIK.find(x=>x[0]===dep); const v=bf()["s_"+dep]; return !!v&&d&&v!==d[3][0]; };
+const statikDepOn=dep=>{ const d=BF_STATIK.find(x=>x[0]===dep); const v=bf()["s_"+dep]; return !!v&&d&&v!=="–"&&v!==d[3][1]; };   // „–“ = nicht ausgefüllt, [1] = keine/physiologisch
 function migrateStatik(){ // frühere Einzelauswahl auf beide Seiten verteilen
   const B=bf(); if(B.statikV2) return;
   const map={"Genu valgum (X-Bein)":"leichtes Valgus (X-Bein)","Genu varum (O-Bein)":"leichtes Varus (O-Bein)"};
@@ -3853,7 +3853,7 @@ async function makePdf(){
   /* Testbilder des Befunds für ausgefüllte Tests vorab laden (verkleinert) */
   const TI={};
   { const keys=[], has=x=>x&&x!=="–";
-    if(pdfOn("statik")) for(const [k,,t,o] of BF_STATIK){ if(t==="lr"||(t==="one"&&has(Bf["s_"+k]||o[0]))) keys.push("s_"+k); }   // wie im Bericht gedruckt
+    if(pdfOn("statik")) for(const [k,,t] of BF_STATIK){ if((t==="lr"&&(has(Bf[`s_${k}_l`])||has(Bf[`s_${k}_r`])))||(t==="one"&&has(Bf["s_"+k]))) keys.push("s_"+k); }   // nur ausgefüllte
     if(pdfOn("mob")) for(const [k] of BF_MOB) if(has(Bf[`m_${k}_l`])||has(Bf[`m_${k}_r`])) keys.push("m_"+k);
     if(pdfOn("kraft")) for(const [k] of BF_KRAFT) if(has(Bf[`k_${k}_l`])||has(Bf[`k_${k}_r`])) keys.push("k_"+k);
     await Promise.all(keys.map(async k=>{ const src=BF_IMG_FILE[k]?`brand/tests/${BF_IMG_FILE[k][0]}.jpg`:""; if(!src) return;
@@ -3998,7 +3998,8 @@ async function makePdf(){
     for(const [k,l,t,o] of BF_STATIK){
       if(t==="lr") lrLine(l,Bf[`s_${k}_l`]||o[0],Bf[`s_${k}_r`]||o[0],undefined,undefined,"s_"+k);
       else if(t==="one"){ const v=Bf["s_"+k]||o[0]; if(v&&v!=="–") lrLine(l,v,"",null,undefined,"s_"+k); }
-      else if(statikDepOn(o)&&String(Bf["s_"+k]||"").trim()) lrLine(l,Bf["s_"+k]+" mm","",null); } }
+      else if(statikDepOn(o)&&String(Bf["s_"+k]||"").trim()) lrLine(l,Bf["s_"+k]+" mm","",null); }
+    const fill=x=>x&&x!=="–"; if(!BF_STATIK.some(([k,,t])=>t==="lr"?fill(Bf[`s_${k}_l`])||fill(Bf[`s_${k}_r`]):t==="one"&&fill(Bf["s_"+k]))) T("Keine Angaben.",9.5,false,C.mute); }
   if(pdfOn("dyn")){ H2("Dynamischer Befund (auf dem Rad)"); let grp=null, any=false; const ok=x=>x!=null&&String(x).trim()!==""&&x!=="–";
     for(const [k,l,t] of BF_DYN){
       if(k==="h"){ grp=l; continue; }
