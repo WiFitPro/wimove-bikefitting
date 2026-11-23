@@ -429,6 +429,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
 
     <div class="panel" id="tab-fit">
+      <div class="ptools"><button class="btn ghost small" id="fitClear">Sitzposition leeren</button></div>
       <section>
         <h2>Zielposition</h2>
         <p class="note" style="margin-top:0">Vorschlag für eine optimale Sitzposition aus Körpermaßen, Bauteilen und gewähltem Rad. Sattel: Knie gestreckt und Knielot treffen die Zielwerte. Cockpit: Vorbau und Spacer, bei denen Rücken- und Schulterwinkel am besten passen.</p>
@@ -480,6 +481,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
 
     <div class="panel" id="tab-comp" hidden>
+      <div class="ptools"><button class="btn ghost small" id="compClear">Bauteile leeren</button></div>
       <section>
         <h2>Ausgangswerte aus „Bike Set Up“</h2>
         <div class="row">
@@ -540,6 +542,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
 
     <div class="panel" id="tab-bike" hidden>
+      <div class="ptools"><button class="btn ghost small" id="bikeClear">Rad leeren</button></div>
       <section>
         <h2>Fahrrad</h2>
         <p class="src-line" id="srcLine"></p>
@@ -632,6 +635,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
 
     <div class="panel" id="tab-pdf" hidden>
+      <div class="ptools"><button class="btn ghost small" id="pdfClear">PDF-Auswahl leeren</button></div>
       <section>
         <h2>PDF erstellen</h2>
         <p class="src-line" id="pdfWho"></p>
@@ -4172,6 +4176,21 @@ $("pDate").oninput=e=>{ bf().date=e.target.value; $("bfDate").value=e.target.val
 function syncPName(){ const B=bf(); if(document.activeElement!==$("pName")) $("pName").value=B.name||""; if(document.activeElement!==$("pDate")) $("pDate").value=B.date||""; }
 $("bfDate").oninput=e=>{ bf().date=e.target.value; $("pDate").value=e.target.value; save(); };
 $("bfClear").onclick=()=>{ S.befund={}; renderBefund(); save(); };
+/* Leeren-Buttons der übrigen Tabs: Eingaben des Tabs auf Grundwerte */
+const clearDone=b=>{ const t=b.textContent; b.textContent="Geleert ✓"; setTimeout(()=>{ b.textContent=t; },1600); };
+const stdSize=()=>{ const h=body().height; return h<1650?"XS":h<1720?"S":h<1790?"M":h<1860?"L":"XL"; };
+$("bikeClear").onclick=e=>{   // Standardrad in passender Größe, kein Vergleich, Rahmenwerte zurück, passende Position
+  S.cmp=EMPTY_CMP(); S.cmpX=[]; cmpRowsN=null; S.edits={};
+  if(findBike({b:STD_BIKE.b,m:STD_BIKE.m,s:stdSize()})) selectMain(STD_BIKE.b,STD_BIKE.m,stdSize());
+  sugCache.key=""; $("sugApply").click(); fillCmp(); render(); save(); clearDone(e.target); };
+$("compClear").onclick=e=>{   // Bauteile auf Grundwerte, keine Teile ausgewählt
+  for(const p of COMP) if(!p.virt&&isFinite(p.def)) S.comp[p.key]=p.def;
+  S.comp.cap=CAP; if(S.modelStd&&isFinite(S.modelStd.cleat)) S.comp.cleat=S.modelStd.cleat;
+  S.compSel={}; sugCache.key=""; fillCompSelects(); syncComp(); render(); save(); clearDone(e.target); };
+$("fitClear").onclick=e=>{   // Zielwerte auf Standard, kein Vergleich, Position nach Vorschlag
+  S.sugT={}; S.sugCmp="none"; const sc=$("sugCmp"); if(sc) sc.value="none"; sugCache.key="";
+  $("sugApply").click(); renderBikeResults(); render(); save(); clearDone(e.target); };
+$("pdfClear").onclick=e=>{ S.pdfTier=""; S.pdfSel={}; renderPdfTab(); save(); clearDone(e.target); };
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{ if(b.dataset.tab==="setup") renderSetup(); if(b.dataset.tab==="befund") renderBefund(); if(b.dataset.tab==="pdf"){ renderPdfTab(); renderCP(); renderEV(); } }));
 
 /* ================= Vorgemerkte Person (einmalig je Browser übernommen) ================= */
