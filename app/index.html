@@ -212,7 +212,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .savebar .note{margin:0;flex:1;min-width:140px}
 .savebar.dirty .note{color:var(--dim);font-weight:600}
 /* Startbildschirm: Deckblatt mit Auswahl WiFitPro / WiFitBasic */
-#startScr{position:fixed;inset:0;z-index:48;background:#03a0d6 url("brand/start_full.jpg") center/cover no-repeat;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#startScr{position:fixed;inset:0;z-index:48;background:url("brand/start_full.jpg") center/cover no-repeat;   /* ohne Hintergrundfarbe: Safari 26 färbt sonst Adressleiste und Tabs blau */display:flex;align-items:center;justify-content:center;overflow:hidden}
 #startScr[hidden]{display:none}
 .startCard{position:relative;height:min(100vh,141.45vw);aspect-ratio:1240/1754;container-type:inline-size}
 .startCard::before{content:"";position:absolute;left:33.5%;top:82.9%;width:33.1%;aspect-ratio:410/83;background:url("brand/start_logo.png") center/contain no-repeat;}   /* Foto füllt den ganzen Bildschirm, Logo an alter Stelle */   /* Blau etwas zurückgenommen */
