@@ -610,12 +610,11 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="row" style="margin-top:8px"><button class="btn small" id="acPwBtn" type="button">Passwort ändern</button><button class="btn ghost small wfOut" type="button">Abmelden</button></div>
         <p class="note" id="acNote"></p>
       </section>
-      <section class="adminOnly">
-        <h2>Benutzerverwaltung</h2>
+      <details class="acc adminOnly"><summary>Benutzerverwaltung</summary>
         <p class="note" style="margin-top:0">Neue Konten registrieren sich selbst und können erst arbeiten, wenn du sie freischaltest. Unter „Zugang“ legst du fest, ob jemand WiFitPro und WiFitBasic oder nur WiFitBasic nutzen darf. Admins haben immer beides und dürfen zusätzlich Teile, Räder und Standardwerte ändern und Benutzer verwalten. Gesperrte Konten kommen nicht mehr in die App; ganz löschen kannst du ein Konto in Supabase unter „Authentication → Users“.</p>
         <div class="row"><button class="btn ghost small" id="userReload" type="button">Liste aktualisieren</button></div>
         <div id="userAdmin"></div>
-      </section>
+      </details>
       <section hidden>
         <h2>Passwort für WiFitPro</h2>
         <p class="note" id="pwNote" style="margin-top:0"></p>
@@ -627,12 +626,11 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <p class="note" style="margin-top:0">Gilt für dein Konto: Die Kontaktdaten und dein Logo erscheinen im PDF in der Fußzeile jeder Seite und auf der letzten Seite. Leere Zeilen und kein Logo = Standard (wimove / Wildrad).</p>
         <div id="brandBox"></div>
       </details>
-      <section>
-        <h2>Datensicherung</h2>
+      <details class="acc"><summary>Datensicherung</summary>
         <p class="note" style="margin-top:0">Alle Daten liegen in diesem Browser. Mit einer Sicherung kannst du sie archivieren oder auf einem anderen Gerät weiterarbeiten.</p>
         <div class="row"><button class="btn small" id="exportBtn">Daten sichern (.json)</button><button class="btn ghost small" id="importBtn">Sicherung laden</button><input type="file" id="importIn" accept=".json,application/json" hidden></div>
         <p class="note" id="dataNote"></p>
-      </section>
+      </details>
     </div>
 
     <div class="panel" id="tab-pdf" hidden>
@@ -641,27 +639,25 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <h2>PDF erstellen</h2>
         <p class="src-line" id="pdfWho"></p>
         <details class="acc adv" id="pkgDetails"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
-        <div class="adv" id="pdfTierBox"><label class="f" style="margin-top:0">Paket</label><div class="chips" id="pdfTiers"></div><p class="note" id="pdfTierNote"></p></div>
         <details class="acc" id="pdfSecsBox" style="margin-top:12px"><summary>Inhalte auswählen <span class="note" id="pdfSecsCount" style="margin:0 auto 0 10px;font-weight:400"></span></summary>
           <div class="row" style="margin-top:4px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
           <div id="pdfSecs"></div>
         </details>
       </section>
-      <section>
-        <h2>Videoanalyse (Contemplas)</h2>
+      <details class="acc"><summary>Videoanalyse (Contemplas)</summary>
         <p class="note" style="margin-top:0">PDF aus Contemplas hinzufügen – übernommen werden nur die großen Vergleichsbilder (links vorher, rechts nachher).</p>
         <button class="btn ghost small" id="cpBtn">Contemplas-PDF hinzufügen</button><input type="file" id="cpIn" accept=".pdf,application/pdf" hidden>
         <p class="note" id="cpNote"></p>
         <div id="cpList"></div>
-      </section>
-      <section>
-        <h2>Satteldruckmessung (Everve)</h2>
+      </details>
+      <details class="acc"><summary>Satteldruckmessung (Everve)</summary>
         <p class="note" style="margin-top:0">PDF aus Everve hinzufügen – übernommen werden nur die Bilder der Druckmessung.</p>
         <button class="btn ghost small" id="evBtn">Everve-PDF hinzufügen</button><input type="file" id="evIn" accept=".pdf,application/pdf" hidden>
         <p class="note" id="evNote"></p>
         <div id="evList"></div>
-      </section>
+      </details>
       <section>
+        <div class="adv" id="pdfTierBox" style="margin-bottom:12px"><label class="f" style="margin-top:0">Paket</label><div class="chips" id="pdfTiers"></div><p class="note" id="pdfTierNote"></p></div>
         <button class="btn" id="pdfBtn">PDF erstellen</button>
         <p class="note" id="pdfNote"></p>
       </section>
@@ -2333,12 +2329,12 @@ $("crank6").onclick=()=>setCrank(180,true);
 /* ================= WiFitBasic: abgespeckte Ansicht ================= */
 const BASIC_PDF=["person","bikedims","drawing","angles","sug","rw"];
 function markBasic(){
-  const adv=[$("stdBox"),$("pSeg").closest("details"),$("pHalt").closest("details"),$("pmDetails"),$("calibList").closest("details"),$("cpBtn").closest("section"),$("evBtn").closest("section"),...document.querySelectorAll("#tab-bike details")];
+  const adv=[$("stdBox"),$("pSeg").closest("details"),$("pHalt").closest("details"),$("pmDetails"),$("calibList").closest("details"),$("cpBtn").closest("details,section"),$("evBtn").closest("details,section"),...document.querySelectorAll("#tab-bike details")];
   adv.push($("cmpOptBike").closest(".row"));   // Rahmenvergleich bleibt, nur die Knöpfe zum Bike Set Up entfallen
   adv.push($("loadOptFit"),$("loadIstFit"),$("fitBtn"),$("loadIst").closest("section"),$("loadBtnT"));   // Laden aus Set-up / Excel und Bauteile anpassen
   document.querySelectorAll('.tab[data-tab="befund"],.tab[data-tab="setup"]').forEach(t=>adv.push(t));
   /* Tab „Daten“ in WiFitBasic nur mit Konto (Passwort, Abmelden) und – für Admins – Benutzerverwaltung */
-  $("exportBtn").closest("section").classList.add("adv");
+  $("exportBtn").closest("details,section").classList.add("adv");
   adv.forEach(e=>e&&e.classList.add("adv"));
 }
 /* Weiter-Button am Ende jedes Tabs: springt zum nächsten sichtbaren Tab */
