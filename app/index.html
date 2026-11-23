@@ -88,7 +88,7 @@ aside{background:var(--panel);border-left:1px solid var(--rule);overflow-y:auto;
 .good{color:var(--ok)} .bad{color:var(--dim)}
 .tabs{display:flex;flex-wrap:wrap;gap:4px;margin:14px 0 16px;border-bottom:1px solid var(--rule)}
 .su{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:4px 6px;align-items:center;font-size:13px}
-.su b{font-size:12px;color:var(--muted);font-weight:600}
+.su b{font-size:13px;color:var(--ink);font-weight:700}
 .su input,.su select,.bfg select,.bfi{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink);width:100%;min-width:0}
 .suh{grid-column:1/-1;font-weight:600;color:var(--muted);margin-top:10px;font-size:12px;border-bottom:1px solid var(--rule);padding-bottom:3px}
 .suv{font:500 15px "Barlow Condensed","Arial Narrow",sans-serif;text-align:right}
@@ -148,6 +148,11 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .su{grid-template-columns:minmax(110px,240px) minmax(0,260px) minmax(0,260px);justify-content:start;column-gap:14px}
 .su .suv{text-align:left;padding-left:7px}
 /* Beschwerdebild */
+/* Überschriften der Eingabefelder präsenter */
+.param .lbl{font-weight:600;color:var(--ink)}
+.bfg>label,.bfg>span:not(.src){font-size:14px;font-weight:600;color:var(--ink)}
+.su>span:not(.suv){font-size:14px;font-weight:600;color:var(--ink)}
+.su>span small,.param .lbl .src,.param .lbl small{font-weight:400}
 .param.manParam{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
 .param.manParam input[type=number]{width:90px!important;max-width:90px;flex:none}
 #pp_vas{max-width:120px} #pp_when{max-width:260px} #pp_text{max-width:560px}
@@ -266,7 +271,7 @@ body.basic .basic-only{display:block}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .note{font-size:13px;color:var(--muted);margin:8px 0 0}
 .warn{font-size:13px;color:var(--dim);margin:6px 0 0}
-label.f{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+label.f{display:block;font-size:14px;font-weight:600;color:var(--ink);margin:12px 0 5px}
 select{font:inherit;width:100%;padding:7px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .three{display:grid;grid-template-columns:1fr 1fr 84px;gap:8px}
