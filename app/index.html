@@ -2,9 +2,11 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
+<link rel="preload" as="image" href="brand/start_bg.jpg">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>WiFitPro</title>
-<meta name="theme-color" content="#03A3DA">
+<meta name="theme-color" content="#F7FAFC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#182027" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -16,9 +18,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;1,600;1,700&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 [hidden]:not([hidden=until-found i]){display:none!important}   /* wie in der Claude-Ansicht: hidden blendet immer aus */
 :root{
@@ -78,7 +80,13 @@ h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:600;font
 body.dragging .drop-hint{display:flex}
 
 aside{background:var(--panel);border-left:1px solid var(--rule);overflow-y:auto;padding:0 20px 32px;position:relative}
+/* Hintergrundbild der Eingabeseite, stark aufgehellt (bleibt beim Scrollen stehen) */
+aside{background-image:linear-gradient(color-mix(in srgb,var(--panel) 95%,transparent),color-mix(in srgb,var(--panel) 95%,transparent)),url(brand/panel_bg.jpg);background-size:cover;background-position:center;background-repeat:no-repeat}
 .stage{container-type:inline-size}
+/* wimove-Logo vom Deckblatt als dezenter Hintergrund der Raddarstellung */
+.stage{position:relative;isolation:isolate}
+.stage::before{content:"";position:absolute;left:50%;top:50%;width:min(56%,620px);aspect-ratio:900/510;transform:translate(-50%,-50%);background:var(--frame);opacity:.11;pointer-events:none;z-index:-1;
+  -webkit-mask:url(brand/logo_stack.png) center/contain no-repeat;mask:url(brand/logo_stack.png) center/contain no-repeat}
 .summary{flex:1 1 0;min-width:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px 1.6cqi;align-self:flex-start;margin-top:4px;margin-left:clamp(16px,5cqi,64px)}   /* Gelenkwinkel über die ganze obere Zeile, mit der Fensterbreite skaliert */
 @container (max-width:760px){ .summary{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .tile{min-width:0}
@@ -135,17 +143,20 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .bfg textarea.bfi{max-width:560px}
 #pp_region{max-width:360px}
 .su input[data-t=num]{max-width:110px;justify-self:start}
-.su select{max-width:260px}
-#styleSel,#sexSel{max-width:260px}
-#pName{max-width:360px} #pDate{max-width:200px}
+.su select{max-width:300px}
+
+#pName,#pDate,#styleSel,#sexSel{width:min(300px,58vw);max-width:100%;height:34px;box-sizing:border-box;font-size:14px}   /* Kopfzeilen bei Person gleich breit */
 #selBar,#selStem,#selLever,#selPedal,#selShoe{max-width:380px}
 #sugCmp{max-width:300px}
 #calKnee,#calAnkle{max-width:140px} #calLabel{max-width:360px}
 #pkgDef{max-width:340px}
-#pwNew,#pwNew2{max-width:280px}
+#pwNew,#pwNew2,#acPw,#acPw2{width:min(300px,58vw);max-width:100%;height:34px;box-sizing:border-box;min-width:0}
+.frow>input,.frow>select{min-width:0}
+.ptools .row{flex-wrap:wrap}
+@media (min-width:700px){.frow>label.f{white-space:nowrap}}
 #brandBox .bfi{max-width:420px}
 /* Bike Set Up: Spalten so breit wie die Felder, berechnete Werte direkt unter den Feldern */
-.su{grid-template-columns:minmax(110px,240px) minmax(0,260px) minmax(0,260px);justify-content:start;column-gap:14px}
+.su{grid-template-columns:minmax(110px,1fr) minmax(0,300px) minmax(0,300px);justify-content:stretch;column-gap:14px}
 .su .suv{text-align:left;padding-left:7px}
 /* Beschwerdebild */
 /* Überschriften der Eingabefelder präsenter */
@@ -158,7 +169,30 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .fitmGrid>label small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
 .fitmGrid .suh{grid-column:1/-1}
 .fitmIn{display:flex;align-items:center;gap:6px}
-.param.manParam{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+/* Eingabefelder rechtsbündig am Zeilenende */
+.bfg .bfi[inputmode=decimal],.bfg .bfi[inputmode=numeric],.bfg select,.bfg input.bfi,.bfg textarea.bfi{justify-self:end}
+.bfg select,.bfg .bfi{width:100%;min-width:0;box-sizing:border-box}
+.bfg:not(.styleGrid){grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr)}
+.bfg>*{min-width:0}
+.bfg>div[style*="grid-column:2/4"]{display:flex;justify-content:flex-end}
+.bfg.styleGrid{grid-template-columns:minmax(90px,1fr) repeat(3,minmax(64px,92px));justify-content:stretch}
+.bfg.styleGrid>div{align-items:flex-end}
+.su input[data-t=num],.su select{justify-self:end}
+.su .suv{text-align:right;padding-left:0;padding-right:7px}
+.su b{text-align:right}
+.fitmGrid{grid-template-columns:minmax(160px,1fr) auto;justify-content:stretch}
+.fitmIn{justify-self:end}
+.param.manParam{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+/* Bezeichnung links, Feld rechts (automatisch für Bezeichnung + Feld untereinander) */
+.frow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+.frow>label.f{margin:0;flex:0 1 auto}
+.frow>input,.frow>select,.frow>textarea{flex:0 1 auto;margin-left:auto}
+.frow>textarea{flex:1 1 auto;max-width:560px}
+.two:has(>div>.frow){grid-template-columns:1fr;gap:0}
+/* mehr Abstand zwischen Beschreibung und den Feldern darunter */
+aside section>p.note,aside details>p.note,aside details>div>p.note:first-child{margin-bottom:18px}
+#brandBox>.bfg{row-gap:10px}
+.ptools .note:not(:empty){background:var(--panel);padding:5px 9px;border-radius:6px;box-shadow:0 2px 10px rgba(0,30,50,.12);margin-top:6px}
 .param.manParam input[type=number]{width:90px!important;max-width:90px;flex:none}
 #pp_vas{max-width:120px} #pp_when{max-width:260px} #pp_text{max-width:560px}
 .bfg b{font-size:12px;color:var(--muted)}
@@ -190,10 +224,12 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .savebar .note{margin:0;flex:1;min-width:140px}
 .savebar.dirty .note{color:var(--dim);font-weight:600}
 /* Startbildschirm: Deckblatt mit Auswahl WiFitPro / WiFitBasic */
-#startScr{position:fixed;inset:0;z-index:48;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#startScr{position:fixed;inset:0;z-index:48;background:#fff;   /* weiß: Safari 26 übernimmt die Farbe für Adressleiste und Tabs */display:flex;align-items:center;justify-content:center;overflow:hidden}
 #startScr[hidden]{display:none}
+#startScr::before{content:"";position:absolute;inset:0;background:#0BA2D6 url("brand/start_bg.jpg") center/100% auto no-repeat}   /* winziges Vorschaubild, bis das Foto geladen ist */   /* Foto etwas transparenter */
+#startScr>.startCard{z-index:1}
 .startCard{position:relative;height:min(100vh,141.45vw);aspect-ratio:1240/1754;container-type:inline-size}
-.startCard::before{content:"";position:absolute;inset:0;background:url("brand/start.jpg") center/cover no-repeat;}   /* Blau etwas zurückgenommen */
+.startCard::before{content:"";position:absolute;left:35%;top:75.5%;width:30%;aspect-ratio:900/510;background:url("brand/logo_stack.png") center/contain no-repeat;}   /* Foto füllt den ganzen Bildschirm, Logo an alter Stelle */   /* Blau etwas zurückgenommen */
 .startIn{position:absolute;z-index:1;left:0;right:0;top:27%;display:flex;flex-direction:column;align-items:center;gap:3.5cqi;color:#fff;text-align:center;padding:0 6cqi}
 .startIn h2{font:italic 700 12.5cqi/1 "Barlow",system-ui,sans-serif;margin:0;letter-spacing:-.005em}
 .startIn p{font:400 3.6cqi/1.3 "Barlow",system-ui,sans-serif;margin:0}
@@ -207,7 +243,8 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 /* Anmeldung (über dem Startbildschirm) */
 #authScr{position:fixed;inset:0;z-index:49;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #authScr[hidden]{display:none}
-#authScr .startCard::before{content:"";position:absolute;inset:0;background:url("brand/start.jpg") center/cover no-repeat}
+#authScr::before{content:"";position:absolute;inset:0;background:#0BA2D6 url("brand/start_bg.jpg") center/100% auto no-repeat}   /* wie die Titelseite */
+#authScr>.startCard{z-index:1}
 .authIn{position:absolute;z-index:1;left:0;right:0;top:24%;display:flex;flex-direction:column;align-items:center;gap:2.6cqi;color:#fff;text-align:center;padding:0 9cqi}
 .authIn h2{font:italic 700 11cqi/1 "Barlow",system-ui,sans-serif;margin:0}
 .authSub{font:400 3.6cqi/1.35 "Barlow",system-ui,sans-serif;margin:0}
@@ -293,7 +330,7 @@ select{font:inherit;width:100%;padding:7px 8px;border:1px solid var(--rule);bord
 .param .lbl{font-size:14px;display:flex;gap:6px;align-items:baseline;min-width:0;flex-wrap:wrap}
 .param .src{font-size:11px;color:var(--muted)}
 .param .src.edit{color:var(--dim)}
-.param input[type=number]{font:500 16px "Barlow Condensed","Arial Narrow",sans-serif;width:100%;padding:3px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink);text-align:right}
+.param input[type=number]{font:500 16px "Barlow Condensed","Arial Narrow",sans-serif;width:100%;box-sizing:border-box;padding:3px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink);text-align:right}
 .param input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--frame);margin:0}
 table.t{width:100%;border-collapse:collapse;font-size:14px}
 table.t th{font-size:12px;font-weight:500;color:var(--muted);text-align:right;padding:4px 0 4px 8px}
@@ -307,6 +344,7 @@ table.t td.r{font-size:14px;color:var(--muted)}
 .res .x{grid-column:1/-1;font-size:12px;color:var(--dim);margin-top:-2px}
 .tg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 10px;margin:6px 0 4px}
 details.acc{border-bottom:1px solid var(--rule);padding:2px 0 12px;margin-bottom:14px}
+section>details.acc:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}   /* kein doppelter Trennstrich am Abschnittsende */
 details.acc>summary{list-style:none;cursor:pointer;font-size:16px;font-weight:600;padding:6px 0;display:flex;justify-content:space-between;align-items:center}
 details.acc>summary::-webkit-details-marker{display:none}
 details.acc>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-right:4px;transition:transform .15s}
@@ -392,6 +430,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
 
     <div class="panel" id="tab-fit">
+      <div class="ptools"><button class="btn ghost small" id="fitClear">Sitzposition leeren</button></div>
       <section>
         <h2>Zielposition</h2>
         <p class="note" style="margin-top:0">Vorschlag für eine optimale Sitzposition aus Körpermaßen, Bauteilen und gewähltem Rad. Sattel: Knie gestreckt und Knielot treffen die Zielwerte. Cockpit: Vorbau und Spacer, bei denen Rücken- und Schulterwinkel am besten passen.</p>
@@ -443,6 +482,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
 
     <div class="panel" id="tab-comp" hidden>
+      <div class="ptools"><button class="btn ghost small" id="compClear">Bauteile leeren</button></div>
       <section>
         <h2>Ausgangswerte aus „Bike Set Up“</h2>
         <div class="row">
@@ -472,7 +512,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
 
     <div class="panel" id="tab-person" hidden>
-      <div class="ptools"><button class="btn ghost small" id="basicClear">Personendaten leeren</button><p class="note" id="basicClearNote"></p></div>
+      <div class="ptools"><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn small" id="basicClear" title="Name, Datum, Messwerte, Befund und Bike Set Up werden geleert. Eigene Teile, Räder, Pakete und Logo bleiben erhalten.">Personendaten leeren</button></div><p class="note" id="basicClearNote"></p></div>
       <section>
         <h2>Person</h2>
         <p class="src-line" id="personSrc"></p>
@@ -503,6 +543,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
 
     <div class="panel" id="tab-bike" hidden>
+      <div class="ptools"><button class="btn ghost small" id="bikeClear">Rad leeren</button></div>
       <section>
         <h2>Fahrrad</h2>
         <p class="src-line" id="srcLine"></p>
@@ -569,17 +610,11 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="row" style="margin-top:8px"><button class="btn small" id="acPwBtn" type="button">Passwort ändern</button><button class="btn ghost small wfOut" type="button">Abmelden</button></div>
         <p class="note" id="acNote"></p>
       </section>
-      <section class="adminOnly">
-        <h2>Benutzerverwaltung</h2>
+      <details class="acc adminOnly"><summary>Benutzerverwaltung</summary>
         <p class="note" style="margin-top:0">Neue Konten registrieren sich selbst und können erst arbeiten, wenn du sie freischaltest. Unter „Zugang“ legst du fest, ob jemand WiFitPro und WiFitBasic oder nur WiFitBasic nutzen darf. Admins haben immer beides und dürfen zusätzlich Teile, Räder und Standardwerte ändern und Benutzer verwalten. Gesperrte Konten kommen nicht mehr in die App; ganz löschen kannst du ein Konto in Supabase unter „Authentication → Users“.</p>
         <div class="row"><button class="btn ghost small" id="userReload" type="button">Liste aktualisieren</button></div>
         <div id="userAdmin"></div>
-      </section>
-      <section>
-        <h2>Neue Person</h2>
-        <p class="note" style="margin-top:0">Startet mit Standardwerten. Rad, Bauteile und eigene Teile bleiben erhalten.</p>
-        <button class="btn small" id="newPersonBtn">Neue Person anlegen</button>
-      </section>
+      </details>
       <section hidden>
         <h2>Passwort für WiFitPro</h2>
         <p class="note" id="pwNote" style="margin-top:0"></p>
@@ -587,45 +622,42 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
           <div><label class="f" for="pwNew2">Wiederholen</label><input class="bfi" id="pwNew2" type="password" autocomplete="new-password"></div></div>
         <div class="row" style="margin-top:8px"><button class="btn small" id="pwSet">Passwort festlegen</button><button class="btn ghost small" id="pwRemove">Sperre aufheben</button></div>
       </section>
-      <section>
-        <h2>Bericht: Logo und Kontaktdaten</h2>
+      <details class="acc"><summary>Bericht: Logo und Kontaktdaten</summary>
         <p class="note" style="margin-top:0">Gilt für dein Konto: Die Kontaktdaten und dein Logo erscheinen im PDF in der Fußzeile jeder Seite und auf der letzten Seite. Leere Zeilen und kein Logo = Standard (wimove / Wildrad).</p>
         <div id="brandBox"></div>
-      </section>
-      <section>
-        <h2>Datensicherung</h2>
+      </details>
+      <details class="acc"><summary>Datensicherung</summary>
         <p class="note" style="margin-top:0">Alle Daten liegen in diesem Browser. Mit einer Sicherung kannst du sie archivieren oder auf einem anderen Gerät weiterarbeiten.</p>
         <div class="row"><button class="btn small" id="exportBtn">Daten sichern (.json)</button><button class="btn ghost small" id="importBtn">Sicherung laden</button><input type="file" id="importIn" accept=".json,application/json" hidden></div>
         <p class="note" id="dataNote"></p>
-      </section>
+      </details>
     </div>
 
     <div class="panel" id="tab-pdf" hidden>
+      <div class="ptools"><button class="btn ghost small" id="pdfClear">PDF-Auswahl leeren</button></div>
       <section>
         <h2>PDF erstellen</h2>
         <p class="src-line" id="pdfWho"></p>
         <details class="acc adv" id="pkgDetails"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
-        <div class="adv" id="pdfTierBox"><label class="f" style="margin-top:0">Paket</label><div class="chips" id="pdfTiers"></div><p class="note" id="pdfTierNote"></p></div>
         <details class="acc" id="pdfSecsBox" style="margin-top:12px"><summary>Inhalte auswählen <span class="note" id="pdfSecsCount" style="margin:0 auto 0 10px;font-weight:400"></span></summary>
           <div class="row" style="margin-top:4px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
           <div id="pdfSecs"></div>
         </details>
       </section>
-      <section>
-        <h2>Videoanalyse (Contemplas)</h2>
+      <details class="acc"><summary>Videoanalyse (Contemplas)</summary>
         <p class="note" style="margin-top:0">PDF aus Contemplas hinzufügen – übernommen werden nur die großen Vergleichsbilder (links vorher, rechts nachher).</p>
         <button class="btn ghost small" id="cpBtn">Contemplas-PDF hinzufügen</button><input type="file" id="cpIn" accept=".pdf,application/pdf" hidden>
         <p class="note" id="cpNote"></p>
         <div id="cpList"></div>
-      </section>
-      <section>
-        <h2>Satteldruckmessung (Everve)</h2>
+      </details>
+      <details class="acc"><summary>Satteldruckmessung (Everve)</summary>
         <p class="note" style="margin-top:0">PDF aus Everve hinzufügen – übernommen werden nur die Bilder der Druckmessung.</p>
         <button class="btn ghost small" id="evBtn">Everve-PDF hinzufügen</button><input type="file" id="evIn" accept=".pdf,application/pdf" hidden>
         <p class="note" id="evNote"></p>
         <div id="evList"></div>
-      </section>
+      </details>
       <section>
+        <div class="adv" id="pdfTierBox" style="margin-bottom:12px"><label class="f" style="margin-top:0">Paket</label><div class="chips" id="pdfTiers"></div><p class="note" id="pdfTierNote"></p></div>
         <button class="btn" id="pdfBtn">PDF erstellen</button>
         <p class="note" id="pdfNote"></p>
       </section>
@@ -640,8 +672,8 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
           <div><label class="f" for="bfDate">Datum</label><input class="bfi" id="bfDate" type="date"></div>
         </div>
       </section>
-      <details class="acc"><summary>Beschwerden</summary><div id="bfPainPick"></div><div id="bfPain" hidden></div></details>
       <details class="acc"><summary>Anamnese</summary><div id="bfText"></div></details>
+      <details class="acc"><summary>Beschwerden</summary><div id="bfPainPick"></div><div id="bfPain" hidden></div></details>
       <details class="acc"><summary>Statikbefund</summary><div id="bfStatik"></div></details>
       <details class="acc"><summary>Dynamischer Befund</summary><div id="bfDyn"></div></details>
       <details class="acc"><summary>Mobilitätstests</summary><div id="bfMob"></div><p class="note">BAM = Bewegungsausmaß</p></details>
@@ -2297,12 +2329,12 @@ $("crank6").onclick=()=>setCrank(180,true);
 /* ================= WiFitBasic: abgespeckte Ansicht ================= */
 const BASIC_PDF=["person","bikedims","drawing","angles","sug","rw"];
 function markBasic(){
-  const adv=[$("stdBox"),$("pSeg").closest("details"),$("pHalt").closest("details"),$("pmDetails"),$("calibList").closest("details"),$("cpBtn").closest("section"),$("evBtn").closest("section"),...document.querySelectorAll("#tab-bike details")];
+  const adv=[$("stdBox"),$("pSeg").closest("details"),$("pHalt").closest("details"),$("pmDetails"),$("calibList").closest("details"),$("cpBtn").closest("details,section"),$("evBtn").closest("details,section"),...document.querySelectorAll("#tab-bike details")];
   adv.push($("cmpOptBike").closest(".row"));   // Rahmenvergleich bleibt, nur die Knöpfe zum Bike Set Up entfallen
   adv.push($("loadOptFit"),$("loadIstFit"),$("fitBtn"),$("loadIst").closest("section"),$("loadBtnT"));   // Laden aus Set-up / Excel und Bauteile anpassen
   document.querySelectorAll('.tab[data-tab="befund"],.tab[data-tab="setup"]').forEach(t=>adv.push(t));
   /* Tab „Daten“ in WiFitBasic nur mit Konto (Passwort, Abmelden) und – für Admins – Benutzerverwaltung */
-  $("newPersonBtn").closest("section").classList.add("adv"); $("exportBtn").closest("section").classList.add("adv");
+  $("exportBtn").closest("details,section").classList.add("adv");
   adv.forEach(e=>e&&e.classList.add("adv"));
 }
 /* Weiter-Button am Ende jedes Tabs: springt zum nächsten sichtbaren Tab */
@@ -2366,11 +2398,11 @@ $("pwRemove").onclick=async()=>{ S.proHash=""; S.proAt=Date.now(); S.proShared=f
 let clearArm=0;
 $("basicClear").onclick=()=>{
   const b=$("basicClear");
-  if(Date.now()-clearArm>4000){ clearArm=Date.now(); b.textContent="Wirklich leeren? Nochmal klicken"; $("basicClearNote").textContent="Name, Datum, Messwerte und Befund werden gelöscht.";
+  if(Date.now()-clearArm>4000){ clearArm=Date.now(); b.textContent="Wirklich? Nochmal klicken"; $("basicClearNote").textContent="Name, Datum, Messwerte, Befund und Bike Set Up der aktuellen Person werden gelöscht.";
     setTimeout(()=>{ if(Date.now()-clearArm>=4000){ b.textContent="Personendaten leeren"; $("basicClearNote").textContent=""; } },4100); return; }
   clearArm=0; b.textContent="Personendaten leeren";
   newPerson(); syncPName(); const cb=findBike(S.sel);
-  $("basicClearNote").textContent=`Personendaten geleert: Standardwerte, Standardrad${cb?` ${cb.s}`:""} und eine passende Position.`; };
+  const nn=$("basicClearNote"); nn.textContent=`Personendaten geleert: Standardwerte, Standardrad${cb?` ${cb.s}`:""} und eine passende Position.`; clearTimeout(newPerson.t); newPerson.t=setTimeout(()=>{ if(nn.textContent.startsWith("Personendaten")) nn.textContent=""; },4000); };
 
 const swBox=$("swatches");
 swBox.innerHTML=COLORS.map((c,i)=>`<button class="sw" style="background:${c}" aria-label="Rahmenfarbe ${COLOR_NAMES[i]}" title="${COLOR_NAMES[i]}" data-i="${i}"></button>`).join("");
@@ -2662,7 +2694,6 @@ function newPerson(){
   for(const d of PERS) if(d.g==="Messwerte"&&!d.f&&isFinite(d.def)) p[d.key]=d.def;
   S.person=p; S.noExcelPerson=true; S.befund={date:new Date().toISOString().slice(0,10)}; FIT.person=null;
   sugCache.key=""; syncPerson(); renderBefund(); $("suClear").click(); render(); save();   // Standardrad und passende Position
-  $("dataNote").textContent="Neue Person mit Standardwerten angelegt. Trag die Messwerte im Tab „Person“ und den Befund im Tab „Befund“ ein.";
 }
 async function exportData(){
   const blob=new Blob([JSON.stringify({app:"geometrie-werkbank",version:1,saved:new Date().toISOString(),state:S,cp:CP,ev:EV})],{type:"application/json"});
@@ -3068,19 +3099,19 @@ const ANAM=[
 ];
 /* Statikbefund: lr = links/rechts getrennt, one = eine Auswahl, mm = Maß in mm */
 const BF_STATIK=[
-  ["fuss","Fußlängsgewölbe","lr",["physiologisch","Hohlfuß","Senkfuß","Plattfuß","Spreizfuß","Senk-Spreizfuß"]],
-  ["fussrot","Fußrotation im Stand","lr",["neutral","Außenrotation","Innenrotation"]],
-  ["beinachse","Beinachsenstellung","lr",["physiologisch","leichtes Valgus (X-Bein)","deutliches Valgus (X-Bein)","leichtes Varus (O-Bein)","deutliches Varus (O-Bein)"]],
-  ["beinlaenge","Beinlängendifferenz","one",["keine","links kürzer","rechts kürzer"]],
+  ["fuss","Fußlängsgewölbe","lr",["–","physiologisch","Hohlfuß","Senkfuß","Plattfuß","Spreizfuß","Senk-Spreizfuß"]],
+  ["fussrot","Fußrotation im Stand","lr",["–","neutral","Außenrotation","Innenrotation"]],
+  ["beinachse","Beinachsenstellung","lr",["–","physiologisch","leichtes Valgus (X-Bein)","deutliches Valgus (X-Bein)","leichtes Varus (O-Bein)","deutliches Varus (O-Bein)"]],
+  ["beinlaenge","Beinlängendifferenz","one",["–","keine","links kürzer","rechts kürzer"]],
   ["beinlaenge_mm","Beinlängendifferenz (mm)","mm","beinlaenge"],
-  ["becken","Beckenstellung","one",["physiologisch","Schiefstand links hoch","Schiefstand rechts hoch"]],
+  ["becken","Beckenstellung","one",["–","physiologisch","Schiefstand links hoch","Schiefstand rechts hoch"]],
   ["becken_mm","Beckenschiefstand (mm)","mm","becken"],
-  ["beckenrot","Beckenrotation (Verwringung)","one",["keine","links vorn","rechts vorn"]],
-  ["schulter","Schulterstellung","one",["physiologisch","Schiefstand links hoch","Schiefstand rechts hoch"]],
-  ["ws","Wirbelsäule","one",["physiologisch","Hyperkyphose BWS","Hyperlordose LWS","Skoliose"]]
+  ["beckenrot","Beckenrotation (Verwringung)","one",["–","keine","links vorn","rechts vorn"]],
+  ["schulter","Schulterstellung","one",["–","physiologisch","Schiefstand links hoch","Schiefstand rechts hoch"]],
+  ["ws","Wirbelsäule","one",["–","physiologisch","Hyperkyphose BWS","Hyperlordose LWS","Skoliose"]]
 ];
 /* mm-Feld nur, wenn das zugehörige Merkmal nicht auf dem ersten Wert (keine/physiologisch) steht */
-const statikDepOn=dep=>{ const d=BF_STATIK.find(x=>x[0]===dep); const v=bf()["s_"+dep]; return !!v&&d&&v!==d[3][0]; };
+const statikDepOn=dep=>{ const d=BF_STATIK.find(x=>x[0]===dep); const v=bf()["s_"+dep]; return !!v&&d&&v!=="–"&&v!==d[3][1]; };   // „–“ = nicht ausgefüllt, [1] = keine/physiologisch
 function migrateStatik(){ // frühere Einzelauswahl auf beide Seiten verteilen
   const B=bf(); if(B.statikV2) return;
   const map={"Genu valgum (X-Bein)":"leichtes Valgus (X-Bein)","Genu varum (O-Bein)":"leichtes Varus (O-Bein)"};
@@ -3427,7 +3458,8 @@ function renderBefund(){
       return s; }).join("")+`</div>`; }
   if(!B.date) B.date=new Date().toISOString().slice(0,10);
   $("bfName").value=B.name||""; $("bfDate").value=B.date; syncPName();
-  document.querySelectorAll("[data-bf]").forEach(el=>{ el.oninput=el.onchange=()=>{ bf()[el.dataset.bf]=el.value; save(); if(el.dataset.bf==="s_beinlaenge"||el.dataset.bf==="s_becken"||/^[mk]_.+_[lr]$/.test(el.dataset.bf)) setTimeout(renderBefund,0); }; });
+  document.querySelectorAll("[data-bf]").forEach(el=>{ el.oninput=el.onchange=()=>{ bf()[el.dataset.bf]=el.value; save(); if(el.dataset.bf==="s_beinlaenge"||el.dataset.bf==="s_becken"||/^[mk]_.+_[lr]$/.test(el.dataset.bf)) setTimeout(()=>{ const k=el.dataset.bf; renderBefund();   // Fokus nach dem Neuaufbau zurück aufs Feld, damit Tab zum nächsten Feld springt
+      const n=document.querySelector(`[data-bf="${k}"]`); if(n) try{ n.focus({preventScroll:true}); }catch(e){} },0); }; });
 }
 
 /* ================= Contemplas-Videoanalyse: große Vergleichsbilder aus dem PDF ================= */
@@ -3582,7 +3614,7 @@ async function drawingPng(){
   const cx=cv.getContext("2d"); cx.fillStyle="#ffffff"; cx.fillRect(0,0,W,H); cx.drawImage(img,0,0,W,H);
   return {url:cv.toDataURL("image/jpeg",0.9),ratio:H/W};
 }
-const PDF_SECS=[["person","Personendaten & Abmessungen"],["seg","Segmentlängen (Modell)"],["pain","Beschwerden"],["anam","Anamnese"],["statik","Statikbefund"],["dyn","Dynamischer Befund"],["mob","Mobilitätstests"],["kraft","Muskelfunktion / Krafttests"],["setup","Bike Set Up"],["bikedims","Rad mit Maßen der Sitzposition"],["drawing","Zeichnung der Sitzposition"],["angles","Gelenkwinkel"],["sug","Vorschlag optimale Sitzposition"],["rw","Empfohlene Richtwerte"],["video","Videoanalyse (Contemplas)"],["ev","Satteldruckmessung (Everve)"]];
+const PDF_SECS=[["person","Personendaten & Abmessungen"],["seg","Segmentlängen (Modell)"],["anam","Anamnese"],["pain","Beschwerden"],["statik","Statikbefund"],["dyn","Dynamischer Befund"],["mob","Mobilitätstests"],["kraft","Muskelfunktion / Krafttests"],["setup","Bike Set Up"],["bikedims","Rad mit Maßen der Sitzposition"],["drawing","Zeichnung der Sitzposition"],["angles","Gelenkwinkel"],["sug","Vorschlag optimale Sitzposition"],["rw","Empfohlene Richtwerte"],["video","Videoanalyse (Contemplas)"],["ev","Satteldruckmessung (Everve)"]];
 /* Pakete für den Report (WiFitPro): Plus, Advanced, Professional – bestimmen Inhalt und Deckblatt */
 const PDF_TIERS=[["plus","Plus",["person","pain","anam","setup","bikedims","rw"]],
   ["advanced","Advanced",["person","pain","anam","setup","bikedims","rw","video"]],
@@ -3818,6 +3850,16 @@ async function makePdf(){
   const PC=pdfCover(), tier=[0,PC.name];   // Paketname für Titel und Dateiname
   let BR=null; try{ BR={cover:S.basic?await brandImg("brand/cover_basic.jpg"):PC.file?await brandImg(PC.file):await customCover(await brandImg("brand/cover_custom.jpg"),PC.custom),back:await brandImg(S.basic?"brand/back_basic.jpg":"brand/back.jpg"),foot:await brandImg(S.basic?"brand/footer_basic.png":"brand/footer.png")}; if(brandActive()){ try{ const f=await brandFooter(BR.foot,MYBRAND), b=await brandBack(BR.back,MYBRAND); BR.foot=f; BR.back=b; }catch(e){} }   /* Logo und Kontaktdaten des Kontos */ /* WiFitBasic: eigenes Deckblatt, Fußzeile mit Ladenadresse */ }catch(e){ BR=null; }
   const {jsPDF}=window.jspdf, doc=new jsPDF({unit:"mm",format:"a4"}), Bf=bf(), Bd=body(), P=S.person;
+  /* Testbilder des Befunds für ausgefüllte Tests vorab laden (verkleinert) */
+  const TI={};
+  { const keys=[], has=x=>x&&x!=="–";
+    if(pdfOn("statik")) for(const [k,,t] of BF_STATIK){ if((t==="lr"&&(has(Bf[`s_${k}_l`])||has(Bf[`s_${k}_r`])))||(t==="one"&&has(Bf["s_"+k]))) keys.push("s_"+k); }   // nur ausgefüllte
+    if(pdfOn("mob")) for(const [k] of BF_MOB) if(has(Bf[`m_${k}_l`])||has(Bf[`m_${k}_r`])) keys.push("m_"+k);
+    if(pdfOn("kraft")) for(const [k] of BF_KRAFT) if(has(Bf[`k_${k}_l`])||has(Bf[`k_${k}_r`])) keys.push("k_"+k);
+    await Promise.all(keys.map(async k=>{ const src=BF_IMG_FILE[k]?`brand/tests/${BF_IMG_FILE[k][0]}.jpg`:""; if(!src) return;
+      try{ const i=await loadImgEl(src), sc=Math.min(1,520/i.naturalWidth,360/i.naturalHeight), c=document.createElement("canvas");
+        c.width=Math.round(i.naturalWidth*sc); c.height=Math.round(i.naturalHeight*sc); const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(i,0,0,c.width,c.height);
+        TI[k]={url:c.toDataURL("image/jpeg",0.82),w:c.width,h:c.height}; }catch(e){} })); }
   const FOOT_H=23.3;   // Höhe der Fußzeile bei voller Seitenbreite
   const M=16, PW=210-2*M, BOT=BR?297-FOOT_H-8:282; let y=M;
   if(BR){ doc.addImage(BR.cover,"JPEG",0,0,210,297); doc.addPage(); }
@@ -3831,7 +3873,7 @@ async function makePdf(){
   let lastSec="";   // zuletzt gedruckter Abschnitt (Richtwerte dürfen direkt unter den Vorschlag)
   const H1=(t,keep=false)=>{ if(!keep&&y>(doc.getNumberOfPages()===(BR?2:1)?firstTop:M)+0.5){ doc.addPage(); y=M; }   /* jede Hauptüberschrift auf neuer Seite */
     need(22); y+=4; col(C.pri,"Fill"); doc.rect(M,y,2.2,7,"F"); font(15,true); col(C.ink); doc.text(pdfTxt(t),M+5,y+5.6); y+=10; col(C.line,"Draw"); doc.setLineWidth(0.3); doc.line(M,y,M+PW,y); y+=5; };
-  const H2=t=>{ need(14); y+=1; font(10.5,true); col(C.pri); doc.text(pdfTxt(t),M,y+3.6); col(C.ink); y+=7; };
+  const H2=t=>{ need(24); y+=1;   /* genug Platz für Überschrift plus erste Zeile (mit Testbild) */ font(10.5,true); col(C.pri); doc.text(pdfTxt(t),M,y+3.6); col(C.ink); y+=7; };
   const newPage=()=>{ if(y>M+40){ doc.addPage(); y=M; } };
   const tiles=(items,per=4)=>{   // Kennzahlen als Kacheln: großer Wert, kleine Beschriftung
     const g=3, w=(PW-g*(per-1))/per, hh=17;
@@ -3885,19 +3927,22 @@ async function makePdf(){
   };
   /* Ampel für Befunde: grün unauffällig, gelb leicht, rot deutlich */
   const lvl=(v,opts)=>{ const i=opts?opts.indexOf(v):-1; return i>=3?C.bad:i===2?C.mid:i===1?C.ok:null; };
-  const lrLine=(lab,l,r,opts,note)=>{   // eine Zeile links/rechts mit farbigen Punkten; ohne rechten Wert als Einzelwert
+  const lrLine=(lab,l,r,opts,note,ik)=>{   // eine Zeile links/rechts mit farbigen Punkten; ohne rechten Wert als Einzelwert; ik = Testbild rechts
     const show=x=>x&&x!=="–"&&x!=="-"; if(!show(l)&&!show(r)) return;
+    const im=ik&&TI[ik], tw=im?Math.min(30,15*im.w/im.h):0, th=im?tw*im.h/im.w:0, tg=im?tw+3:0;
     const single=r===""&&!opts; font(9.5,true); const ll=doc.splitTextToSize(pdfTxt(lab),55);
-    const nl=note?(font(8),doc.splitTextToSize(pdfTxt(note),PW-58)):[];
-    need(ll.length*4+nl.length*3.4+4); const y0=y, w=(PW-58)/2;
+    const nl=note?(font(8),doc.splitTextToSize(pdfTxt(note),PW-58-tg)):[];
+    need(Math.max(ll.length*4+nl.length*3.4+4,th+4)); const y0=y, w=(PW-58-tg)/2;
+    if(im){ try{ doc.addImage(im.url,"JPEG",M+PW-tw,y+0.5,tw,th); col(C.line,"Draw"); doc.setLineWidth(0.15); doc.rect(M+PW-tw,y+0.5,tw,th); }catch(e){} }
     font(9.5,true); col(C.ink); doc.text(ll,M,y+3.5);
-    if(single){ font(9); doc.text(doc.splitTextToSize(pdfTxt(l),PW-60)[0],M+58,y+3.5); }
+    if(single){ font(9); doc.text(doc.splitTextToSize(pdfTxt(l),PW-60-tg)[0],M+58,y+3.5); }
     else [[l,"L"],[r,"R"]].forEach(([v,s],k)=>{ const x=M+58+k*w;
       font(7,true); col(C.mute); doc.text(s,x,y+3.5);
       const c=typeof opts==="function"?opts(s==="L"?"l":"r"):lvl(v,opts); if(c) dot(x+5,y+2.4,c);
       font(9); col(C.ink); doc.text(doc.splitTextToSize(pdfTxt(show(v)?v:"-"),w-12)[0],x+(c?8:5),y+3.5); });
     y+=Math.max(5.5,ll.length*4+1.5);
     if(nl.length){ font(8); col(C.mute); doc.text(nl,M+58,y+1.2); y+=nl.length*3.4; }
+    if(im&&y<y0+th+1.5) y=y0+th+1.5;
     col(C.line,"Draw"); doc.setLineWidth(0.2); doc.line(M,y+0.5,M+PW,y+0.5); y+=2.2; col(C.ink);
   };
   const mm=x=>isFinite(x)?Math.round(x)+" mm":"-", dgv=x=>isFinite(x)?Math.round(x)+"°":"-";
@@ -3926,6 +3971,13 @@ async function makePdf(){
     kv([["Cleatposition",S.comp.cleat+" % ab Ferse"]],2); }
 
   if(pdfOn("pain")||pdfOn("anam")) H1("Körperliche Voraussetzungen");
+  if(pdfOn("anam")){ H2("Anamnese"); let any=false;
+    for(const [grp,list] of ANAM){ const r=list.filter(([k])=>{ const x=String(Bf[k]??"").trim(); return x&&x!=="–"; }).map(([k,l])=>[l,String(Bf[k])]);
+      if(!r.length) continue; any=true;
+      font(8.5,true); col(C.mute); need(8); doc.text(pdfTxt(grp.toUpperCase()),M,y+3); y+=5;
+      kv(r,2); }
+    if(!any) T("Keine Angaben.",9.5,false,C.mute); }
+
   if(pdfOn("pain")){ migratePain(); H2("Beschwerden");
     const L=[...(Bf.painList||[])]; for(const [k,l] of painRegions()) if(String(Bf["p_"+k]||"").trim()&&!L.some(e=>e.region===k)) L.push({regionLabel:l,region:k,items:[],qual:[],vas:"",when:""});
     if(!L.length) T(Bf.noPain!==false?"Keine Beschwerden.":"Keine Beschwerden angegeben.",9.5,false,C.mute);
@@ -3941,19 +3993,13 @@ async function makePdf(){
       font(9); col(C.ink); doc.text(wrap,M+56,y+5.5);
       y+=hh+3; }
   }
-  if(pdfOn("anam")){ H2("Anamnese"); let any=false;
-    for(const [grp,list] of ANAM){ const r=list.filter(([k])=>{ const x=String(Bf[k]??"").trim(); return x&&x!=="–"; }).map(([k,l])=>[l,String(Bf[k])]);
-      if(!r.length) continue; any=true;
-      font(8.5,true); col(C.mute); need(8); doc.text(pdfTxt(grp.toUpperCase()),M,y+3); y+=5;
-      kv(r,2); }
-    if(!any) T("Keine Angaben.",9.5,false,C.mute); }
-
   if(pdfOn("statik")||pdfOn("dyn")||pdfOn("mob")||pdfOn("kraft")) H1("Körperliche Funktionsuntersuchung");
   if(pdfOn("statik")){ migrateStatik(); H2("Statikbefund (im Stand)");
     for(const [k,l,t,o] of BF_STATIK){
-      if(t==="lr") lrLine(l,Bf[`s_${k}_l`]||o[0],Bf[`s_${k}_r`]||o[0]);
-      else if(t==="one"){ const v=Bf["s_"+k]||o[0]; if(v&&v!=="–") lrLine(l,v,"",null); }
-      else if(statikDepOn(o)&&String(Bf["s_"+k]||"").trim()) lrLine(l,Bf["s_"+k]+" mm","",null); } }
+      if(t==="lr") lrLine(l,Bf[`s_${k}_l`]||o[0],Bf[`s_${k}_r`]||o[0],undefined,undefined,"s_"+k);
+      else if(t==="one"){ const v=Bf["s_"+k]||o[0]; if(v&&v!=="–") lrLine(l,v,"",null,undefined,"s_"+k); }
+      else if(statikDepOn(o)&&String(Bf["s_"+k]||"").trim()) lrLine(l,Bf["s_"+k]+" mm","",null); }
+    const fill=x=>x&&x!=="–"; if(!BF_STATIK.some(([k,,t])=>t==="lr"?fill(Bf[`s_${k}_l`])||fill(Bf[`s_${k}_r`]):t==="one"&&fill(Bf["s_"+k]))) T("Keine Angaben.",9.5,false,C.mute); }
   if(pdfOn("dyn")){ H2("Dynamischer Befund (auf dem Rad)"); let grp=null, any=false; const ok=x=>x!=null&&String(x).trim()!==""&&x!=="–";
     for(const [k,l,t] of BF_DYN){
       if(k==="h"){ grp=l; continue; }
@@ -3962,12 +4008,12 @@ async function makePdf(){
       any=true; if(t==="lr") lrLine(l,Bf[`s_${k}_l`],Bf[`s_${k}_r`]); else lrLine(l,t==="num"?Bf["s_"+k]+" U/min":Bf["s_"+k],"",null); }
     if(!any) T("Keine Angaben.",9.5,false,C.mute); }
   if(pdfOn("mob")){ H2("Mobilitätstests");
-    let n=0; for(const [k,l] of BF_MOB){ const a=Bf[`m_${k}_l`], b=Bf[`m_${k}_r`]; if((a&&a!=="–")||(b&&b!=="–")){ n++; lrLine(l,a,b,MOB_OPTS,bfAbn("m_"+k,MOB_OPTS)?(Bf[`m_${k}_n`]||""):""); } }
+    let n=0; for(const [k,l] of BF_MOB){ const a=Bf[`m_${k}_l`], b=Bf[`m_${k}_r`]; if((a&&a!=="–")||(b&&b!=="–")){ n++; lrLine(l,a,b,MOB_OPTS,bfAbn("m_"+k,MOB_OPTS)?(Bf[`m_${k}_n`]||""):"","m_"+k); } }
     if(!n) T("Keine Tests eingetragen.",9.5,false,C.mute); }
   if(pdfOn("kraft")){ H2("Muskelfunktion / Krafttests");
     let n=0; for(const [k,l,mode,unit] of BF_KRAFT){ const a=Bf[`k_${k}_l`], b=Bf[`k_${k}_r`]; if(!((a&&a!=="–")||(b&&b!=="–"))) continue; n++;
       const note=bfAbn("k_"+k,KRAFT_OPTS)?(Bf[`k_${k}_n`]||""):"";
-      lrLine(l,kraftVal(Bf,k,"l",unit),mode==="lr"?kraftVal(Bf,k,"r",unit):"",sd=>lvl(Bf[`k_${k}_${sd}`],KRAFT_OPTS),note); }
+      lrLine(l,kraftVal(Bf,k,"l",unit),mode==="lr"?kraftVal(Bf,k,"r",unit):"",sd=>lvl(Bf[`k_${k}_${sd}`],KRAFT_OPTS),note,"k_"+k); }
     if(!n) T("Keine Tests eingetragen.",9.5,false,C.mute); }
 
   if(pdfOn("setup")){
@@ -4114,7 +4160,6 @@ $("evIn").onchange=e=>{ const f=e.target.files[0]; if(f) evImport(f); e.target.v
 $("cpIn").onchange=e=>{ const f=e.target.files[0]; if(f) cpImport(f); e.target.value=""; };
 $("newBikeBtn").onclick=()=>renderBikeForm();
 $("bmDetails").addEventListener("toggle",()=>{ if($("bmDetails").open) renderBikeManager(); });
-$("newPersonBtn").onclick=newPerson;
 $("exportBtn").onclick=exportData;
 $("importBtn").onclick=()=>$("importIn").click();
 $("importIn").onchange=e=>{ const f=e.target.files[0]; if(f) importData(f); e.target.value=""; };
@@ -4128,6 +4173,21 @@ $("pDate").oninput=e=>{ bf().date=e.target.value; $("bfDate").value=e.target.val
 function syncPName(){ const B=bf(); if(document.activeElement!==$("pName")) $("pName").value=B.name||""; if(document.activeElement!==$("pDate")) $("pDate").value=B.date||""; }
 $("bfDate").oninput=e=>{ bf().date=e.target.value; $("pDate").value=e.target.value; save(); };
 $("bfClear").onclick=()=>{ S.befund={}; renderBefund(); save(); };
+/* Leeren-Buttons der übrigen Tabs: Eingaben des Tabs auf Grundwerte */
+const clearDone=b=>{ const t=b.textContent; b.textContent="Geleert ✓"; setTimeout(()=>{ b.textContent=t; },1600); };
+const stdSize=()=>{ const h=body().height; return h<1650?"XS":h<1720?"S":h<1790?"M":h<1860?"L":"XL"; };
+$("bikeClear").onclick=e=>{   // Standardrad in passender Größe, kein Vergleich, Rahmenwerte zurück, passende Position
+  S.cmp=EMPTY_CMP(); S.cmpX=[]; cmpRowsN=null; S.edits={};
+  if(findBike({b:STD_BIKE.b,m:STD_BIKE.m,s:stdSize()})) selectMain(STD_BIKE.b,STD_BIKE.m,stdSize());
+  sugCache.key=""; $("sugApply").click(); fillCmp(); render(); save(); clearDone(e.target); };
+$("compClear").onclick=e=>{   // Bauteile auf Grundwerte, keine Teile ausgewählt
+  for(const p of COMP) if(!p.virt&&isFinite(p.def)) S.comp[p.key]=p.def;
+  S.comp.cap=CAP; if(S.modelStd&&isFinite(S.modelStd.cleat)) S.comp.cleat=S.modelStd.cleat;
+  S.compSel={}; sugCache.key=""; fillCompSelects(); syncComp(); render(); save(); clearDone(e.target); };
+$("fitClear").onclick=e=>{   // Zielwerte auf Standard, kein Vergleich, Position nach Vorschlag
+  S.sugT={}; S.sugCmp="none"; const sc=$("sugCmp"); if(sc) sc.value="none"; sugCache.key="";
+  $("sugApply").click(); renderBikeResults(); render(); save(); clearDone(e.target); };
+$("pdfClear").onclick=e=>{ S.pdfTier=""; S.pdfSel={}; renderPdfTab(); save(); clearDone(e.target); };
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{ if(b.dataset.tab==="setup") renderSetup(); if(b.dataset.tab==="befund") renderBefund(); if(b.dataset.tab==="pdf"){ renderPdfTab(); renderCP(); renderEV(); } }));
 
 /* ================= Vorgemerkte Person (einmalig je Browser übernommen) ================= */
@@ -4598,6 +4658,16 @@ const FRESH=!S.stdStart1;   // erster Start in diesem Browser
 if(!S.stdStart1){ S.stdStart1=true; setTimeout(()=>{ $("suClear").click(); },0); }
 syncPerson(); render(true);
 if(S.proAt===undefined) S.basic=true;   // Gerät kennt den Passwortstand noch nicht: sicherheitshalber in WiFitBasic starten
+/* Bezeichnung und Feld in eine Zeile setzen: Feld rechtsbündig */
+function wrapFieldRows(root){
+  (root||document).querySelectorAll("aside label.f").forEach(l=>{
+    const f=l.nextElementSibling; if(!f||l.parentElement.classList.contains("frow")) return;
+    if(!/^(INPUT|SELECT|TEXTAREA)$/.test(f.tagName)||f.type==="checkbox"||f.type==="file"||f.hidden) return;
+    const w=document.createElement("div"); w.className="frow"; l.parentNode.insertBefore(w,l); w.appendChild(l); w.appendChild(f);
+  });
+}
+wrapFieldRows();
+try{ let t=null; new MutationObserver(()=>{ clearTimeout(t); t=setTimeout(()=>wrapFieldRows(),30); }).observe(document.querySelector("aside"),{childList:true,subtree:true}); }catch(e){}
 markBasic(); applyBasic(); enforceLock(); showTab("person"); renderPwBox(); applyStyleStd(); renderStyleStd(); syncPerson(); render(true);   // App startet immer im Tab „Person“
 factoryLoad(); brandLoad(); pdfPrefsLoad(); renderBefund(); renderOwnBikes(); applyPendingCalib(); renderCalib(); if(S.tab==="setup") renderSetup(); if(S.tab==="pdf"){ renderPdfTab(); renderCP(); renderEV(); }
 </script>
