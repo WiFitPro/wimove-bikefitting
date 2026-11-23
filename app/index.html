@@ -2118,7 +2118,7 @@ function tick(now){
 /* ================= Ereignisse ================= */
 const $=id=>document.getElementById(id);
 /* Aufteilung Darstellung / Eingabe je Tab (Anteil der Eingabe): Befund, Bike Set Up, Person 30/70 – ab Rad 60/40 – PDF, Daten 40/60 */
-const TAB_SPLIT={befund:0.7,setup:0.7,person:0.7,bike:0.4,comp:0.4,fit:0.4,pdf:0.6,data:0.6};
+const TAB_SPLIT={befund:0.6,setup:0.6,person:0.7,bike:0.4,comp:0.4,fit:0.4,pdf:0.6,data:0.6};
 function showTab(t){ S.tab=t; document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t)); document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="tab-"+t);
   if(window.setPanelShare&&TAB_SPLIT[t]) window.setPanelShare(TAB_SPLIT[t]);
   if(t==="bike"){ try{ if(sizeFitCache.key!==sizeFitKey()) updateSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp(); }catch(e){} }   /* Größenempfehlung nach Änderungen an Person, Fahrstil oder Bauteilen neu rechnen */
