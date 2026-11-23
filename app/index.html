@@ -509,7 +509,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
 
     <div class="panel" id="tab-person" hidden>
-      <div class="ptools"><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn small" id="newPersonBtn" title="Startet mit Standardwerten. Rad, Bauteile und eigene Teile bleiben erhalten.">Neue Person anlegen</button><button class="btn ghost small" id="basicClear">Personendaten leeren</button></div><p class="note" id="basicClearNote"></p></div>
+      <div class="ptools"><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn small" id="basicClear" title="Name, Datum, Messwerte, Befund und Bike Set Up werden geleert. Eigene Teile, Räder, Pakete und Logo bleiben erhalten.">Neue Person anlegen</button></div><p class="note" id="basicClearNote"></p></div>
       <section>
         <h2>Person</h2>
         <p class="src-line" id="personSrc"></p>
@@ -2333,7 +2333,7 @@ function markBasic(){
   adv.push($("loadOptFit"),$("loadIstFit"),$("fitBtn"),$("loadIst").closest("section"),$("loadBtnT"));   // Laden aus Set-up / Excel und Bauteile anpassen
   document.querySelectorAll('.tab[data-tab="befund"],.tab[data-tab="setup"]').forEach(t=>adv.push(t));
   /* Tab „Daten“ in WiFitBasic nur mit Konto (Passwort, Abmelden) und – für Admins – Benutzerverwaltung */
-  $("newPersonBtn").classList.add("adv"); $("exportBtn").closest("section").classList.add("adv");
+  $("exportBtn").closest("section").classList.add("adv");
   adv.forEach(e=>e&&e.classList.add("adv"));
 }
 /* Weiter-Button am Ende jedes Tabs: springt zum nächsten sichtbaren Tab */
@@ -2397,11 +2397,11 @@ $("pwRemove").onclick=async()=>{ S.proHash=""; S.proAt=Date.now(); S.proShared=f
 let clearArm=0;
 $("basicClear").onclick=()=>{
   const b=$("basicClear");
-  if(Date.now()-clearArm>4000){ clearArm=Date.now(); b.textContent="Wirklich leeren? Nochmal klicken"; $("basicClearNote").textContent="Name, Datum, Messwerte und Befund werden gelöscht.";
-    setTimeout(()=>{ if(Date.now()-clearArm>=4000){ b.textContent="Personendaten leeren"; $("basicClearNote").textContent=""; } },4100); return; }
-  clearArm=0; b.textContent="Personendaten leeren";
+  if(Date.now()-clearArm>4000){ clearArm=Date.now(); b.textContent="Wirklich? Nochmal klicken"; $("basicClearNote").textContent="Name, Datum, Messwerte, Befund und Bike Set Up der aktuellen Person werden gelöscht.";
+    setTimeout(()=>{ if(Date.now()-clearArm>=4000){ b.textContent="Neue Person anlegen"; $("basicClearNote").textContent=""; } },4100); return; }
+  clearArm=0; b.textContent="Neue Person anlegen";
   newPerson(); syncPName(); const cb=findBike(S.sel);
-  $("basicClearNote").textContent=`Personendaten geleert: Standardwerte, Standardrad${cb?` ${cb.s}`:""} und eine passende Position.`; };
+  const nn=$("basicClearNote"); nn.textContent=`Neue Person angelegt: Standardwerte, Standardrad${cb?` ${cb.s}`:""} und eine passende Position.`; clearTimeout(newPerson.t); newPerson.t=setTimeout(()=>{ if(nn.textContent.startsWith("Neue Person")) nn.textContent=""; },4000); };
 
 const swBox=$("swatches");
 swBox.innerHTML=COLORS.map((c,i)=>`<button class="sw" style="background:${c}" aria-label="Rahmenfarbe ${COLOR_NAMES[i]}" title="${COLOR_NAMES[i]}" data-i="${i}"></button>`).join("");
@@ -2693,7 +2693,6 @@ function newPerson(){
   for(const d of PERS) if(d.g==="Messwerte"&&!d.f&&isFinite(d.def)) p[d.key]=d.def;
   S.person=p; S.noExcelPerson=true; S.befund={date:new Date().toISOString().slice(0,10)}; FIT.person=null;
   sugCache.key=""; syncPerson(); renderBefund(); $("suClear").click(); render(); save();   // Standardrad und passende Position
-  const nn=$("basicClearNote"); nn.textContent="Neue Person mit Standardwerten angelegt."; clearTimeout(newPerson.t); newPerson.t=setTimeout(()=>{ if(nn.textContent.startsWith("Neue Person")) nn.textContent=""; },3500);
 }
 async function exportData(){
   const blob=new Blob([JSON.stringify({app:"geometrie-werkbank",version:1,saved:new Date().toISOString(),state:S,cp:CP,ev:EV})],{type:"application/json"});
@@ -4160,7 +4159,6 @@ $("evIn").onchange=e=>{ const f=e.target.files[0]; if(f) evImport(f); e.target.v
 $("cpIn").onchange=e=>{ const f=e.target.files[0]; if(f) cpImport(f); e.target.value=""; };
 $("newBikeBtn").onclick=()=>renderBikeForm();
 $("bmDetails").addEventListener("toggle",()=>{ if($("bmDetails").open) renderBikeManager(); });
-$("newPersonBtn").onclick=newPerson;
 $("exportBtn").onclick=exportData;
 $("importBtn").onclick=()=>$("importIn").click();
 $("importIn").onchange=e=>{ const f=e.target.files[0]; if(f) importData(f); e.target.value=""; };
