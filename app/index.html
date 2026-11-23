@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
+<link rel="preload" as="image" href="brand/start_full.jpg">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>WiFitPro</title>
 <meta name="theme-color" content="#F7FAFC" media="(prefers-color-scheme: light)">
@@ -17,9 +18,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;1,600;1,700&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 [hidden]:not([hidden=until-found i]){display:none!important}   /* wie in der Claude-Ansicht: hidden blendet immer aus */
 :root{
@@ -218,7 +219,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 /* Startbildschirm: Deckblatt mit Auswahl WiFitPro / WiFitBasic */
 #startScr{position:fixed;inset:0;z-index:48;background:#fff;   /* weiß: Safari 26 übernimmt die Farbe für Adressleiste und Tabs */display:flex;align-items:center;justify-content:center;overflow:hidden}
 #startScr[hidden]{display:none}
-#startScr::before{content:"";position:absolute;inset:0;background:url("brand/start_full.jpg") center/cover no-repeat;opacity:.7}   /* Foto etwas transparenter */
+#startScr::before{content:"";position:absolute;inset:0;background:url("brand/start_full.jpg") center/cover no-repeat,url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAkABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDVKzLK0mwk47c8elVy7hFHBONxXGMVYnuo2t2ZZAcYyB1xTIYkS2LIxZj1x2zXrLbU+eersmUIYg7s8xAA7k4yTRVoRJJG7yRFI2+6QBx25oq73MeWy2KwVjNITGcYPXjj61PaySh4AsbEYwW7EVUz23DGehzira3IRTsYqSMcdRRJaBBq9xL6V4k+zEYGc5B6iioZf3xyG3bR0J5/+vRVR0RE7t3I7hBHMyLnA9ajoopol7hiiiimI//Z") center/cover no-repeat;opacity:.7}   /* winziges Vorschaubild, bis das Foto geladen ist */   /* Foto etwas transparenter */
 #startScr>.startCard{z-index:1}
 .startCard{position:relative;height:min(100vh,141.45vw);aspect-ratio:1240/1754;container-type:inline-size}
 .startCard::before{content:"";position:absolute;left:33.5%;top:82.9%;width:33.1%;aspect-ratio:410/83;background:url("brand/start_logo.png") center/contain no-repeat;}   /* Foto füllt den ganzen Bildschirm, Logo an alter Stelle */   /* Blau etwas zurückgenommen */
