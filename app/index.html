@@ -834,7 +834,10 @@ const BAR_ROWS={barReach:["drop"],leverName:["drop"],leverReach:["drop"],leverAn
 const barRowOn=k=>!BAR_ROWS[k]||BAR_ROWS[k].includes(S.bar);
 const gripLbl=()=>S.bar==="aero"?"Armauflage":"Griff";
 const SETBACK_T={road:200,tri:110,mtb:200};   // Sattelversatz-Grundwert je Radart (Triathlon weit vorn)
-const typeCompDef=c=>{ const bt=btype(); c.stemAngle=STEM_ANGLE_T[bt]; c.barRise=bt==="mtb"?20:0; c.setback=SETBACK_T[bt]; if(bt!=="road"){ c.stemLen=stemIdeal(); c.spacer=spacerIdeal(); } return c; };   // Cockpit-Grundwerte je Radart
+/* Sattelversatz, bei dem der Sattel mittig über der Stützenachse sitzt – folgt dem Sitzwinkel des Rads */
+function centeredSetback(sh){ let sta=NaN; try{ sta=vals&&vals.sta; }catch(e){} if(!isFinite(sta)) return NaN; sh=isFinite(sh)?sh:760;
+  let sb=200; for(let i=0;i<8;i++){ const y=Math.sqrt(Math.max(sh*sh-sb*sb,1)); sb=(y-45)/Math.tan(rad(sta)); } return Math.round(sb); }
+const typeCompDef=c=>{ const bt=btype(); c.stemAngle=STEM_ANGLE_T[bt]; c.barRise=bt==="mtb"?20:0; { const cs=centeredSetback(c.saddleH); c.setback=isFinite(cs)?cs:SETBACK_T[bt]; } if(bt!=="road"){ c.stemLen=stemIdeal(); c.spacer=spacerIdeal(); } return c; };   // Cockpit-Grundwerte je Radart
 const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v.back-5,v.back+5]]));
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
 const styleElbow=()=>{ const v=(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).elbow; return isFinite(v)?v:160; };   // Ellbogen-Ziel je Fahrstil (sportlicher = stärker angewinkelt)
@@ -2408,7 +2411,7 @@ function setBtype(bt){
   if(wb&&wb.t===bt&&wb.hasData) selectMain(w.b,w.m,w.s); else selectMain(stdBike().b,stdBike().m,stdSize());
   if(old!==bt){   // Sattel auf die neue Radart einstellen: Triathlon sitzt weit vorn, Rennrad und MTB weiter hinten
     let done=false; try{ if(personReady()){ sugCache.key=""; const p=suggest().parts; if(isFinite(p.setback)&&isFinite(p.saddleH)){ S.comp.setback=p.setback; S.comp.saddleH=p.saddleH; done=true; } } }catch(e){}
-    if(!done){ S.comp.setback=SETBACK_T[bt]; const d=COMP.find(x=>x.key==="saddleH"); if(d) S.comp.saddleH=d.def; }
+    if(!done){ const d=COMP.find(x=>x.key==="saddleH"); if(d) S.comp.saddleH=d.def; const cs=centeredSetback(S.comp.saddleH); S.comp.setback=isFinite(cs)?cs:SETBACK_T[bt]; }   // ohne Messwerte: Sattel mittig nach Sitzwinkel
     sugCache.key=""; }
   applyBtypeUI();
   try{ fillCmp(); syncComp(); syncPerson(); renderStyleStd(); renderSetup(); renderBikeResults(); }catch(e){}
