@@ -2402,6 +2402,10 @@ function setBtype(bt){
   delete S.person.ov.backAngle;   // Rückenwinkel folgt den Richtwerten der Radart
   const w=S.selT[bt], wb=w&&findBike(w);
   if(wb&&wb.t===bt&&wb.hasData) selectMain(w.b,w.m,w.s); else selectMain(stdBike().b,stdBike().m,stdSize());
+  if(old!==bt){   // Sattel auf die neue Radart einstellen: Triathlon sitzt weit vorn, Rennrad und MTB weiter hinten
+    let done=false; try{ if(personReady()){ sugCache.key=""; const p=suggest().parts; if(isFinite(p.setback)&&isFinite(p.saddleH)){ S.comp.setback=p.setback; S.comp.saddleH=p.saddleH; done=true; } } }catch(e){}
+    if(!done) for(const k of ["setback","saddleH"]){ const d=COMP.find(x=>x.key===k); if(d) S.comp[k]=d.def; }
+    sugCache.key=""; }
   applyBtypeUI();
   try{ fillCmp(); syncComp(); syncPerson(); renderStyleStd(); renderSetup(); renderBikeResults(); }catch(e){}
   render(); save();
