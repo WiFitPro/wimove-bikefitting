@@ -54,7 +54,7 @@ body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:"
 .splitter:hover,.splitter.drag{background:var(--frame)}
 .splitter:focus-visible{outline:2px solid var(--frame);outline-offset:-2px}
 .stage{display:flex;flex-direction:column;min-width:0;min-height:0;padding:20px 24px 14px}
-.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .kicker{color:var(--muted);font-size:14px;margin:0 0 2px}
 h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:600;font-size:38px;line-height:1.02;margin:0;letter-spacing:-.01em}
 .size-big{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:600;font-size:18px;color:var(--muted);white-space:nowrap;margin-top:2px}
@@ -254,6 +254,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .btGroup button:focus-visible{outline:2px solid var(--frame);outline-offset:-2px}
 .barHide{display:none!important}
 .viewMenu{position:relative;display:inline-block;margin-bottom:10px}
+.bikeTag{text-align:right;line-height:1.05}.bikeTag h1{font-size:28px}.bikeTag .kicker{font-size:13px;margin:0}.bikeTag .size-big{margin-top:0}
 .viewMenu>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:10px;font-size:17px;font-weight:600;padding:9px 16px;border:1px solid var(--rule);border-radius:8px;background:var(--field);color:var(--ink);letter-spacing:.02em;user-select:none}
 .viewMenu>summary::-webkit-details-marker{display:none}
 .viewMenu>summary:hover{border-color:var(--frame)}
@@ -440,7 +441,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
             <label class="toggle"><input type="checkbox" id="tPlumb"> Knielot</label>
             <label class="toggle"><input type="checkbox" id="tTargets"> Fadenkreuze</label>
           </div>
-        </div></details><p class="kicker" id="brandBig"></p><h1 id="modelBig"></h1><div class="size-big" id="sizeBig"></div></div>
+        </div></details></div>
       <div class="summary" id="summary"></div>
       <div id="riderHint" class="riderHint" hidden>Die Person wird gezeichnet, sobald alle Messwerte eingegeben sind.<button type="button" class="btn small" onclick="document.querySelector('[data-tab=person]').click()">Zu den Messwerten</button></div>
     </div>
@@ -457,7 +458,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <span id="crankV" style="min-width:3em"></span></span>
       <button class="btn ghost small" id="crank3" title="Kurbel auf 3 Uhr stellen">3 Uhr</button>
       <button class="btn ghost small" id="crank6" title="Kurbel auf 6 Uhr stellen">6 Uhr</button>
-      <span style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="note" id="loadNoteT" style="margin:0"></span><button class="btn small" id="loadBtnT" hidden>Excel-Datei wählen</button></span>
+      <span style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end"><span class="note" id="loadNoteT" style="margin:0"></span><button class="btn small" id="loadBtnT" hidden>Excel-Datei wählen</button><span class="bikeTag"><p class="kicker" id="brandBig"></p><h1 id="modelBig"></h1><div class="size-big" id="sizeBig"></div></span></span>
     </div>
     <div class="legend" id="legend"></div>
   </main>
