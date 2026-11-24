@@ -1297,7 +1297,8 @@ function bikeSVG(v,g,c){
   { /* Spacer und Vorbauklemmung enden bündig oben am Vorbau, kein Gabelschaft darüber */
     const bl=(a,b,w)=>`<line x1="${r1(a.x)}" y1="${r1(-a.y)}" x2="${r1(b.x)}" y2="${r1(-b.y)}" stroke="${Pt}" stroke-width="${w}" stroke-linecap="butt"/>`;
     const spTop=add(g.htTop,mul(g.u,capOf(c)+c.spacer));
-    s+=bl(g.htTop,spTop,30)+bl(spTop,add(spTop,mul(g.u,c.stemHeight)),32);   // Klemmung eckig, bündig
+    const sr=Math.min(16,c.stemHeight*0.4), nT=g.sd.x<=0?{x:g.sd.y,y:-g.sd.x}:{x:-g.sd.y,y:g.sd.x}, clTop=Math.max(0,(g.stemC.x-spTop.x)*g.u.x+(g.stemC.y-spTop.y)*g.u.y)+sr*Math.abs(nT.x*g.u.x+nT.y*g.u.y)-3;   // Klemmung endet bündig mit der Oberkante des Vorbaus
+    s+=bl(g.htTop,spTop,30)+bl(spTop,add(spTop,mul(g.u,Math.min(c.stemHeight,clTop))),32);   // Klemmung eckig, bündig
     s+=limbShape(g.stemC,S.bar==="drop"?sub(g.barC,mul(g.sd,31)):g.barC,Math.min(16,c.stemHeight*0.4),11,"band",0,0,Pt);   // Vorbau ohne runde Kappe an der Klemmung
   }
   const b=g.barC;
