@@ -833,7 +833,8 @@ const PAD_STACKS=[30,50,70,90,110,130];      // Armpad-Höhen im Vorschlag (Tria
 const BAR_ROWS={barReach:["drop"],leverName:["drop"],leverReach:["drop"],leverAngle:["drop"],barRise:["flat"],padStack:["aero"],padReach:["aero"],extAngle:["aero"],extLen:["aero"]};
 const barRowOn=k=>!BAR_ROWS[k]||BAR_ROWS[k].includes(S.bar);
 const gripLbl=()=>S.bar==="aero"?"Armauflage":"Griff";
-const typeCompDef=c=>{ const bt=btype(); c.stemAngle=STEM_ANGLE_T[bt]; c.barRise=bt==="mtb"?20:0; if(bt!=="road"){ c.stemLen=stemIdeal(); c.spacer=spacerIdeal(); } return c; };   // Cockpit-Grundwerte je Radart
+const SETBACK_T={road:200,tri:110,mtb:200};   // Sattelversatz-Grundwert je Radart (Triathlon weit vorn)
+const typeCompDef=c=>{ const bt=btype(); c.stemAngle=STEM_ANGLE_T[bt]; c.barRise=bt==="mtb"?20:0; c.setback=SETBACK_T[bt]; if(bt!=="road"){ c.stemLen=stemIdeal(); c.spacer=spacerIdeal(); } return c; };   // Cockpit-Grundwerte je Radart
 const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v.back-5,v.back+5]]));
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
 const styleElbow=()=>{ const v=(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).elbow; return isFinite(v)?v:160; };   // Ellbogen-Ziel je Fahrstil (sportlicher = stärker angewinkelt)
@@ -2404,7 +2405,7 @@ function setBtype(bt){
   if(wb&&wb.t===bt&&wb.hasData) selectMain(w.b,w.m,w.s); else selectMain(stdBike().b,stdBike().m,stdSize());
   if(old!==bt){   // Sattel auf die neue Radart einstellen: Triathlon sitzt weit vorn, Rennrad und MTB weiter hinten
     let done=false; try{ if(personReady()){ sugCache.key=""; const p=suggest().parts; if(isFinite(p.setback)&&isFinite(p.saddleH)){ S.comp.setback=p.setback; S.comp.saddleH=p.saddleH; done=true; } } }catch(e){}
-    if(!done) for(const k of ["setback","saddleH"]){ const d=COMP.find(x=>x.key===k); if(d) S.comp[k]=d.def; }
+    if(!done){ S.comp.setback=SETBACK_T[bt]; const d=COMP.find(x=>x.key==="saddleH"); if(d) S.comp.saddleH=d.def; }
     sugCache.key=""; }
   applyBtypeUI();
   try{ fillCmp(); syncComp(); syncPerson(); renderStyleStd(); renderSetup(); renderBikeResults(); }catch(e){}
