@@ -1561,16 +1561,17 @@ function arc(c,r,a1,a2,text){
   const p1=add(c,mul(dir(a1),r)),p2=add(c,mul(dir(a2),r)),lp=add(c,mul(dir((a1+a2)/2),r+34));
   return `<path d="M${P(p1)} A${r} ${r} 0 0 0 ${P(p2)}" stroke="var(--dim)" stroke-width="2" fill="none"/>`+label(lp,text);
 }
-function dims(v,g){
-  let s=""; const O={x:0,y:0};
-  s+=ext({x:g.rAxle.x-60,y:g.rAxle.y},{x:g.fAxle.x+60,y:g.fAxle.y})+ext({x:v.reach,y:0},g.htTop);
-  s+=dimLine(O,{x:v.reach,y:0},"Reach "+mm(v.reach),-1)+dimLine({x:v.reach,y:0},g.htTop,"Stack "+mm(v.stack),1);
-  const wy=g.ground-75;
+function dims(v,g,k=0,col,rMax){   // k>0: Vergleichsrad k, versetzt und in seiner Farbe
+  let s=""; const o=48*k, ry=-o, sx=k?Math.max(rMax||0,v.reach)+62*k:v.reach;
+  if(!k) s+=ext({x:g.rAxle.x-60,y:g.rAxle.y},{x:g.fAxle.x+60,y:g.fAxle.y});
+  s+=ext({x:v.reach,y:0},{x:v.reach,y:ry})+ext(g.htTop,{x:sx,y:g.htTop.y});
+  s+=dimLine({x:0,y:ry},{x:v.reach,y:ry},"Reach "+mm(v.reach),-1)+dimLine({x:sx,y:0},{x:sx,y:g.htTop.y},"Stack "+mm(v.stack),1);
+  const wy=g.ground-75-o;
   s+=ext(g.rAxle,{x:g.rAxle.x,y:wy-18})+ext(g.fAxle,{x:g.fAxle.x,y:wy-18})+dimLine({x:g.rAxle.x,y:wy},{x:g.fAxle.x,y:wy},"Radstand "+mm(g.wheelbase),-1);
-  s+=ext(g.steererTop,g.G)+ext(g.G,{x:g.G.x-170,y:g.ground})+arc(g.G,120,180-v.hta,180,(Math.round(v.hta*10)/10).toLocaleString("de-DE")+"°");
-  s+=dimLine({x:g.fAxle.x,y:g.ground-28},{x:g.G.x,y:g.ground-28},"Trail "+mm(g.trail),-1);
-  s+=ext(g.stTop,{x:g.stTop.x+170,y:g.stTop.y})+arc(g.stTop,115,-v.sta,0,(Math.round(v.sta*10)/10).toLocaleString("de-DE")+"°");
-  return s;
+  s+=ext(g.steererTop,g.G)+(k?"":ext(g.G,{x:g.G.x-170,y:g.ground}))+arc(g.G,120+o,180-v.hta,180,(Math.round(v.hta*10)/10).toLocaleString("de-DE")+"°");
+  if(!k) s+=dimLine({x:g.fAxle.x,y:g.ground-28},{x:g.G.x,y:g.ground-28},"Trail "+mm(g.trail),-1);
+  s+=(k?"":ext(g.stTop,{x:g.stTop.x+170,y:g.stTop.y}))+arc(g.stTop,115+o,-v.sta,0,(Math.round(v.sta*10)/10).toLocaleString("de-DE")+"°");
+  return k?`<g style="--dim:${col}">${s}</g>`:s;
 }
 
 /* ================= Hauptdarstellung ================= */
@@ -1695,7 +1696,7 @@ function render(full=true){
   for(const {g:cg} of cgs) pts.push({x:cg.rAxle.x-cg.R,y:0},{x:cg.fAxle.x+cg.R,y:0},cg.steererTop);
   if(t) pts.push({x:-t.sx,y:t.sy},{x:t.gx,y:t.gy});
   const minX=Math.min(...pts.map(p=>p.x))-50, maxX=Math.max(...pts.map(p=>p.x))+50;
-  const minY=g.ground-(S.show.dims?135:40), maxY=Math.max(...pts.map(p=>p.y))+60;
+  const minY=g.ground-(S.show.dims?135+48*cgs.length:40), maxY=Math.max(...pts.map(p=>p.y))+60;
   const svg=document.getElementById("svg");
   svg.setAttribute("viewBox",`${r1(minX)} ${r1(-maxY)} ${r1(maxX-minX)} ${r1(maxY-minY)}`);
   svg.style.setProperty("--frame",COLORS[S.color]||COLORS[0]);   // nur das Rad, nicht die Bedienelemente
@@ -1711,7 +1712,7 @@ function render(full=true){
   else s+=crankArm(c,S.crank,"var(--parts)")+circ({x:0,y:0},24,"var(--frame)",0,"var(--frame)");
   for(const x of cgs) s+=ghostSVG(x.g,.45,x.col);
   if(S.show.targets!==false) s+=targetSVG(t);
-  if(S.show.dims) s+=dims(vals,g);
+  if(S.show.dims){ s+=dims(vals,g); const rMax=Math.max(vals.reach,...cgs.map(x=>x.v.reach)); cgs.forEach((x,i)=>{ s+=dims(x.v,x.g,i+1,x.col,rMax); }); }   // Rahmenmaße auch für die Vergleichsräder
   if(showRider()&&S.show.angles) s+=anglesSVG(R,J);
   if(showRider()&&S.show.plumb!==false) s+=plumbSVG(cur.kops,g);
   svg.innerHTML=s;
@@ -2152,7 +2153,7 @@ const EMPTY_CMP=()=>({b:"",m:"",s:""});
 const CMP_MAX=2;   /* höchstens drei Räder insgesamt: das gewählte plus zwei Vergleiche */
 let cmpRowsN=null;   /* sichtbare Vergleichszeilen; wird nicht gespeichert */
 function cmpSlots(){ S.cmpX=(S.cmpX||[]).slice(0,CMP_MAX-1); return [S.cmp||EMPTY_CMP(),...S.cmpX]; }
-function cmpGhosts(c){ return cmpSlots().map((sl,i)=>{ const cb=sl&&sl.b?findBike(sl):null; return cb&&cb!==findBike(S.sel)?{g:compute(valuesFor(cb,true).v,c),col:CMP_COLORS[i],bike:cb}:null; }).filter(Boolean); }
+function cmpGhosts(c){ return cmpSlots().map((sl,i)=>{ const cb=sl&&sl.b?findBike(sl):null; const cv=cb&&cb!==findBike(S.sel)?valuesFor(cb,true).v:null; return cv?{g:compute(cv,c),v:cv,col:CMP_COLORS[i],bike:cb}:null; }).filter(Boolean); }
 let cmpFit={}, cmpFitT=null;
 const cmpFitKey=(b,m)=>JSON.stringify([b,m,fitModelKey(),body(),S.comp,sugT(),styleBack(),S.person.style,S.bar,S.compSel&&S.compSel.bar,S.bikeFix||null]);
 function updateCmpFit(){   // Größenempfehlung für die Vergleichsräder im Hintergrund rechnen
