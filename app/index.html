@@ -1292,6 +1292,7 @@ function bikeSVG(v,g,c){
   s+=line(g.crown,add(g.crown,mul(g.d,22)),Math.max(44,W.ht+2),F)+circ(g.fAxle,14,F,0,F)+circ(g.rAxle,14,F,0,F);
   s+=caliper(g.fAxle,g.crown,27)+caliper(g.rAxle,{x:0,y:0},12,0.82,76);   // vorn direkt hinten an der Gabel, hinten klein auf der Kettenstrebe
   s+=line({x:0,y:0},g.dtFront,W.dt,"#FFFFFF",`opacity=".07" transform="translate(0,-6)"`);   // Glanz auf dem Unterrohr
+  s+=circ({x:0,y:0},W.dt/2+16,F,0,F);   // größeres Tretlagergehäuse
   s+=rd.s+chainSVG(g,rd)+chainringSVG();   // ohne Trinkflasche
   { const st=unit(g.stTop), fd=add(mul(st,150),{x:14,y:0}); s+=limbShape(fd,add(fd,mul(st,-34)),9,7,"band",0,0,"var(--parts)"); }   // Umwerfer
   { /* Spacer und Vorbauklemmung enden bündig oben am Vorbau, kein Gabelschaft darüber */
