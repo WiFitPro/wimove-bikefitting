@@ -73,7 +73,8 @@ h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:600;font
 .legend span::before{content:"";display:inline-block;width:22px;height:0;border-top:4px solid var(--frame);vertical-align:middle;margin-right:7px}
 .legend span.g::before{border-top:3px dashed var(--gc,var(--ghost))}
 .cmpBlock{margin-top:10px;padding-top:6px;border-top:1px dashed var(--rule)}
-.cmpRow{display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:end}
+.cmpRow{display:grid;grid-template-columns:1fr 1fr 24px 32px;gap:8px;align-items:end}
+.cmpVis{display:flex;align-items:center;justify-content:center;height:34px;cursor:pointer}.cmpVis input{width:18px;height:18px;margin:0;accent-color:var(--cc,var(--frame))}
 .cmpDel{padding:5px 0;width:32px;font-size:16px;line-height:1}
 .legend span.t::before{width:12px;height:12px;border:2px solid var(--target);border-radius:50%}
 .drop-hint{position:absolute;inset:0;display:none;align-items:center;justify-content:center;border:2px dashed var(--frame);border-radius:14px;background:color-mix(in srgb,var(--paper) 85%,transparent);font-weight:600;font-size:18px}
@@ -2153,7 +2154,7 @@ const EMPTY_CMP=()=>({b:"",m:"",s:""});
 const CMP_MAX=2;   /* höchstens drei Räder insgesamt: das gewählte plus zwei Vergleiche */
 let cmpRowsN=null;   /* sichtbare Vergleichszeilen; wird nicht gespeichert */
 function cmpSlots(){ S.cmpX=(S.cmpX||[]).slice(0,CMP_MAX-1); return [S.cmp||EMPTY_CMP(),...S.cmpX]; }
-function cmpGhosts(c){ return cmpSlots().map((sl,i)=>{ const cb=sl&&sl.b?findBike(sl):null; const cv=cb&&cb!==findBike(S.sel)?valuesFor(cb,true).v:null; return cv?{g:compute(cv,c),v:cv,col:CMP_COLORS[i],bike:cb}:null; }).filter(Boolean); }
+function cmpGhosts(c){ return cmpSlots().map((sl,i)=>{ const cb=sl&&sl.b&&!sl.off?findBike(sl):null; const cv=cb&&cb!==findBike(S.sel)?valuesFor(cb,true).v:null; return cv?{g:compute(cv,c),v:cv,col:CMP_COLORS[i],bike:cb}:null; }).filter(Boolean); }
 let cmpFit={}, cmpFitT=null;
 const cmpFitKey=(b,m)=>JSON.stringify([b,m,fitModelKey(),body(),S.comp,sugT(),styleBack(),S.person.style,S.bar,S.compSel&&S.compSel.bar,S.bikeFix||null]);
 function updateCmpFit(){   // Größenempfehlung für die Vergleichsräder im Hintergrund rechnen
@@ -2178,6 +2179,7 @@ function fillCmp(){
     h+=`<div class="cmpBlock"><div class="cmpRow">
       <div><label class="f">Marke</label><select data-cmp="${i}" data-f="b">${opt("","Bitte wählen",!sl.b)+DB.brands.map(x=>opt(x,x,x===sl.b)).join("")}</select></div>
       <div><label class="f">Modell</label><select data-cmp="${i}" data-f="m"${sl.b?"":" disabled"}>${sl.b?DB.models[sl.b].map(x=>opt(x,x,x===sl.m)).join(""):""}</select></div>
+      ${sl.b?`<label class="cmpVis" style="--cc:${CMP_COLORS[i]}" title="In der Zeichnung ein-/ausblenden"><input type="checkbox" data-cmpvis="${i}"${sl.off?"":" checked"} aria-label="Vergleich ${i+1} in der Zeichnung zeigen"></label>`:"<span></span>"}
       <button type="button" class="btn ghost small cmpDel" data-cmpdel="${i}" title="Vergleich entfernen" aria-label="Vergleich ${i+1} entfernen">×</button></div>`;
     if(sl.b){ h+=`<label class="f">Größe</label><div class="chips">${sizesOf(sl.b,sl.m).map(x=>{ const f=F&&F.res[x.s];
         return `<button type="button" class="chip${f?" "+f.cls:""}${F&&x.s===F.best?" fit-best":""}" data-cmpsize="${i}" data-s="${esc(x.s)}" aria-pressed="${x.s===sl.s}"${x.hasData?"":` disabled title="Keine Geometriedaten"`}${f&&f.pen<99?` title="Vorbau ${f.stem} mm · Spacer ${f.spacer} mm"`:""}>${esc(x.s)}</button>`; }).join("")}</div>
@@ -2190,6 +2192,7 @@ function fillCmp(){
   box.querySelectorAll("[data-cmp]").forEach(el=>el.onchange=()=>{ const i=+el.dataset.cmp, f=el.dataset.f, sl=cmpSlots()[i]||EMPTY_CMP();
     if(f==="b") selectCmp(el.value,"",sl.s,i); else selectCmp(sl.b,el.value,sl.s,i); });
   box.querySelectorAll("[data-cmpsize]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.cmpsize, sl=cmpSlots()[i]; selectCmp(sl.b,sl.m,b.dataset.s,i); });
+  box.querySelectorAll("[data-cmpvis]").forEach(el=>el.onchange=()=>{ const sl=cmpSlots()[+el.dataset.cmpvis]; if(!sl) return; if(el.checked) delete sl.off; else sl.off=true; render(); save(); });   // Vergleichsrad ein-/ausblenden
   box.querySelectorAll("[data-cmpdel]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.cmpdel, all=cmpSlots(); all.splice(i,1); all.push(EMPTY_CMP());
     S.cmp=all[0]; S.cmpX=all.slice(1,CMP_MAX); cmpRowsN=Math.max(0,cmpRowsN-1); fillCmp(); renderBikeResults(); render(); save(); });
   if($("cmpAdd")) $("cmpAdd").onclick=()=>{ cmpRowsN=Math.min(CMP_MAX,(cmpRowsN||0)+1); fillCmp(); };
@@ -2203,7 +2206,7 @@ function selectMain(b,m,s){
 }
 function selectCmp(b,m,s,i=0){
   let v=EMPTY_CMP();
-  if(b){ if(!DB.models[b].includes(m)) m=DB.models[b][0]; if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s); v={b,m,s}; }
+  if(b){ if(!DB.models[b].includes(m)) m=DB.models[b][0]; if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s); v={b,m,s}; const o=cmpSlots()[i]; if(o&&o.off) v.off=true; }
   cmpSlots(); if(i===0) S.cmp=v; else S.cmpX[i-1]=v;
   fillCmp(); renderBikeResults(); render(); save();
 }
