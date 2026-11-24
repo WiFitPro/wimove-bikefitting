@@ -3001,9 +3001,7 @@ function renderBikeForm(boxId="newBikeBox",onSaved=null){
 }
 function renderOwnBikes(){
   const box=$("ownBikes"); if(!box) return;
-  const B=S.customBikes||[];
-  box.innerHTML=B.length?`<h3>Eigene Räder</h3>`+B.map((o,i)=>`<div class="row" style="justify-content:space-between;margin:4px 0"><span>${esc(`${o.marke} ${o.modell} ${o.grosse}`)}</span><button class="btn ghost small" data-delbike="${i}">Entfernen</button></div>`).join(""):"";
-  box.querySelectorAll("[data-delbike]").forEach(b=>b.onclick=()=>{ S.customBikes.splice(+b.dataset.delbike,1); reloadData(); renderOwnBikes(); });
+  box.innerHTML="";   /* eigene Räder stehen in der Tabelle „Räder verwalten“ und werden dort bearbeitet oder gelöscht */
 }
 /* Daten neu aufbauen (gleiche Quelle, Einstellungen bleiben) */
 function reloadData(){
