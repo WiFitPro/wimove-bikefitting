@@ -1658,8 +1658,28 @@ function evalPos(seat,grip,back){
   const gF={seat,grip};
   const R=riderPose(gF,c,Bx,90); Bx._back=R.back;
   const J=jointAngles(R), cy=cycle(gF,c,Bx), k=legAt(gF,c,Bx,hipOf(gF,c,Bx),90);
-  return {kneeMax:cy.kneeMax,kops:k.knee.x-k.pedal.x,hipMin:cy.hipMin,back:J.back,shoulder:J.shoulder,elbow:J.elbow,armOver:R.armOver};
+  return {kneeMax:cy.kneeMax,kneeMin:cy.kneeMin,kops:k.knee.x-k.pedal.x,hipMin:cy.hipMin,back:J.back,shoulder:J.shoulder,elbow:J.elbow,armOver:R.armOver};
 }
+/* Kurbellänge: alle Längen an der Vorschlagsposition durchrechnen (Sattel um die Längendifferenz höher/tiefer, damit das Knie unten gleich gestreckt bleibt)
+   und die längste wählen, bei der Hüfte und Knie im oberen Totpunkt offen genug bleiben. Kontrolle: Schrittlänge × Faktor. */
+let crankCache={key:"",val:null};
+function crankAdvice(){
+  if(!personReady()) return null;
+  const r=suggest(), p=r.parts, c0=S.comp.crank, bt=btype(), M=FITM;
+  const hipT=bt==="tri"?M.crankHipTri:bt==="mtb"?M.crankHipMtb:M.crankHipRoad, kneeT=M.crankKnee;
+  const key=JSON.stringify([p,r.grip,r.back,c0,hipT,kneeT,M.crankMinL,M.crankMaxL,M.crankPct,M.crankBase,S.person.inseam,S.bar]);
+  if(crankCache.key===key) return crankCache.val;
+  const list=[]; for(let L=Math.max(140,M.crankMinL||160);L<=Math.min(190,M.crankMaxL||175)+0.01;L+=2.5) list.push(L);
+  const rows=list.map(L=>{ const sh=p.saddleH+(c0-L), sy=Math.sqrt(Math.max(0,sh*sh-p.setback*p.setback)); S.comp.crank=L;
+    let e=null; try{ e=evalPos({x:-p.setback,y:sy},r.grip,r.back); }catch(err){} S.comp.crank=c0;
+    return {L,hip:e?e.hipMin:NaN,knee:e?e.kneeMin:NaN,ok:!!e&&e.hipMin>=hipT&&e.kneeMin>=kneeT}; });
+  const ok=rows.filter(x=>x.ok), pick=ok.length?ok[ok.length-1]:rows[0];
+  const ins=isFinite(S.person.inseam)?Math.round(((M.crankBase??110)+S.person.inseam*(M.crankPct||0.0725))/2.5)*2.5:NaN;
+  const val={L:pick.L,hip:pick.hip,knee:pick.knee,hipT,kneeT,rows,anyOk:ok.length>0,inseamL:ins};
+  crankCache={key,val}; return val;
+}
+const shWithCrank=sh=>{ const a=crankAdvice(); return a&&isFinite(a.L)?Math.round(sh+(S.comp.crank-a.L)):sh; };   // Sattelhöhe passend zur empfohlenen Kurbel
+const crankTxt=a=>a?`Kurbel <b>${String(a.L).replace(".",",")} mm</b> (Hüfte ${Math.round(a.hip)}° / Knie ${Math.round(a.knee)}° oben${a.anyOk?"":" – auch die kürzeste Kurbel erreicht die Mindestwinkel nicht"}${isFinite(a.inseamL)?`; nach Schrittlänge ${String(a.inseamL).replace(".",",")} mm`:""})`:"";
 function renderSug(){
   const T=sugT();
   for(const [id,k] of [["tKnee","knee"],["tKops","kops"],["tBack","back"],["tShoulder","shoulder"],["tElbow","elbow"]]){ const el=$(id); if(document.activeElement!==el) el.value=isFinite(T[k])?T[k]:(k==="back"?styleBack():""); }
@@ -1686,7 +1706,7 @@ function renderSug(){
     const extra=`<br><span class="note">Vorschlag für <b>${esc(cb?`${cb.b} ${cb.m} ${cb.s}`:"–")}</b> (Stack ${Math.round(vals.stack)} / Reach ${Math.round(vals.reach)} mm, Sitzwinkel ${(Math.round(vals.sta*10)/10).toLocaleString("de-DE")}°). Sattelhöhe und -versatz hängen nur von Körper, Kurbel, Pedal und Schuh ab; der Rahmen bestimmt Vorbau und Spacer.</span>`+
       (Math.abs(rs)>35?`<br><span class="bad">Mit dem Sitzwinkel dieses Rahmens liegt der Sattel ${Math.round(Math.abs(rs))} mm ${rs<0?"hinter":"vor"} der Stützenachse – nur mit ${rs<0?"Versatzstütze (Setback)":"nach vorn versetzter Stütze oder einem Rahmen mit steilerem Sitzwinkel"} möglich.</span>`:"");
     var sugExtra=extra; }
-  $("sugParts").innerHTML=`Bauteile für den Vorschlag: Sattelhöhe <b>${P2.saddleH} mm</b>, Versatz <b>${P2.setback} mm</b>, Vorbau <b>${P2.stemLen} mm</b> mit <b>${P2.stemAngle}°</b>, Spacer <b>${P2.spacer} mm</b>${isFinite(P2.padStack)?`, Armpad-Höhe <b>${P2.padStack} mm</b>`:""}, Lenkerbreite <b>${barWidthIdeal()} mm</b>${btype()==="mtb"?" (nach Körpergröße)":" (nach Schulterbreite)"}. `+
+  $("sugParts").innerHTML=`Bauteile für den Vorschlag: Sattelhöhe <b>${shWithCrank(P2.saddleH)} mm</b>, Versatz <b>${P2.setback} mm</b>, Vorbau <b>${P2.stemLen} mm</b> mit <b>${P2.stemAngle}°</b>, Spacer <b>${P2.spacer} mm</b>${isFinite(P2.padStack)?`, Armpad-Höhe <b>${P2.padStack} mm</b>`:""}, Lenkerbreite <b>${barWidthIdeal()} mm</b>${btype()==="mtb"?" (nach Körpergröße)":" (nach Schulterbreite)"}, ${crankTxt(crankAdvice())}. `+
     `${S.bar==="aero"?"Mit dem Ellbogen auf dem Armpad":`Bei Ellbogen ${T.elbow}°`} ergibt das einen Rückenwinkel von ${Math.round(r.back)}° (Ziel ${Math.round(r.backTarget)}°) und einen Schulterwinkel von ${Math.round(r.ev.shoulder)}° (Ziel ${T.shoulder}°).`+
     (Math.abs(r.back-r.backTarget)>5||Math.abs(r.ev.shoulder-T.shoulder)>10?" Mit Vorbau und Spacern lässt sich beides nicht gleichzeitig erreichen – Lenker-Reach oder ein anderer Rahmen (Stack/Reach) wären nötig.":"");
   $("sugParts").innerHTML+=sugExtra;
@@ -2082,6 +2102,14 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["barFacRoad","Lenkerbreite","Rennrad/Gravel: Faktor × Schulterbreite","",0.945,0.005,"Lenkerbreite (Mitte–Mitte) = Schulterbreite × Faktor, gerundet auf 20 mm"],
   ["barFacTri","Lenkerbreite","Triathlon: Faktor × Schulterbreite","",1,0.005,"Basislenker = Schulterbreite × Faktor, gerundet auf 20 mm"],
   ["barFacMtb","Lenkerbreite","MTB: Faktor × Körpergröße","",0.42,0.005,"Lenkerbreite = Körpergröße × Faktor, gerundet auf 20 mm"],
+  ["crankHipRoad","Kurbellänge","Rennrad/Gravel: Hüfte geschlossen mindestens","°",48,1,"längste Kurbel, bei der der kleinste Hüftwinkel (oberer Totpunkt) nicht darunter fällt"],
+  ["crankHipTri","Kurbellänge","Triathlon: Hüfte geschlossen mindestens","°",45,1,"Aeroposition: Hüfte ist ohnehin geschlossener"],
+  ["crankHipMtb","Kurbellänge","MTB: Hüfte geschlossen mindestens","°",48,1,""],
+  ["crankKnee","Kurbellänge","Knie gebeugt mindestens","°",58,1,"kleinster Kniewinkel im oberen Totpunkt"],
+  ["crankMinL","Kurbellänge","Kürzeste Kurbel","mm",160,2.5,"Suchbereich in 2,5-mm-Schritten"],
+  ["crankMaxL","Kurbellänge","Längste Kurbel","mm",175,2.5,""],
+  ["crankBase","Kurbellänge","Kontrolle: Grundwert","mm",110,1,"Vergleichswert = Grundwert + Faktor × Schrittlänge (760 mm → 165, 895 mm → 175)"],
+  ["crankPct","Kurbellänge","Kontrolle: Faktor × Schrittlänge","",0.0725,0.0005,"gerundet auf 2,5 mm"],
   ["expoShiftMtb","Radart","MTB: Stützenauszug verschieben","mm",80,5,"kurze Sitzrohre (Dropper): Grenzen und Ziel des Auszugs liegen um diesen Wert höher"],
   ["green","Farben","Grün bis Score","",1.3,0.1,"darunter: passt"],
   ["orange","Farben","Orange bis Score","",3,0.1,"darunter: bedingt, ab hier rot; die beste Größe unter diesem Wert ist immer grün"]];
@@ -2384,7 +2412,8 @@ $("sugApply").onclick=()=>{
   const r=suggest(), p=r.parts, c=S.comp;
   if(p.stemAngle!==c.stemAngle) S.compSel.stem="";
   const keepAuto=!!S.person.autoBack;   // Haken „Rückenwinkel aus Griffposition ermitteln“: Rücken folgt dem eingestellten Griff
-  Object.assign(c,p); c.barWidth=barWidthIdeal();
+  const ca=crankAdvice(); Object.assign(c,p); c.barWidth=barWidthIdeal();
+  if(ca&&isFinite(ca.L)&&ca.L!==c.crank){ c.saddleH=Math.round(c.saddleH+(c.crank-ca.L)); c.crank=ca.L; }   // empfohlene Kurbel, Sattelhöhe um die Differenz angepasst
   if(keepAuto) delete S.person.ov.backAngle; else { S.person.ov.backAngle=Math.round(r.back); }
   syncComp(); syncPerson(); render(); save();
   $("sugNote").textContent=keepAuto?`Vorschlag übernommen: Sattel und Cockpit sind eingestellt, der Rückenwinkel ergibt sich aus der Griffposition (jetzt ${Math.round(cur.J.back)}°).`
@@ -4263,7 +4292,7 @@ async function makePdf(){
   if(pdfOn("sug")&&personReady()) try{
     const r=suggest(), p=r.parts; H2("Vorschlag optimale Sitzposition");
     const sY=Math.round(Math.sqrt(Math.max(0,p.saddleH**2-p.setback**2)));
-    tiles([["Sattelhöhe",p.saddleH+" mm"],["Sattelposition X / Y",`${Math.round(p.setback)} / ${sY} mm`,"ab Tretlager"],["Vorbau",p.stemLen+" mm",`Winkel ${p.stemAngle}°`],["Spacer",p.spacer+" mm"],["Lenkerbreite",barWidthIdeal()+" mm","Mitte–Mitte"]]);
+    tiles([["Sattelhöhe",shWithCrank(p.saddleH)+" mm"],["Sattelposition X / Y",`${Math.round(p.setback)} / ${sY} mm`,"ab Tretlager"],["Vorbau",p.stemLen+" mm",`Winkel ${p.stemAngle}°`],["Spacer",p.spacer+" mm"],["Lenkerbreite",barWidthIdeal()+" mm","Mitte–Mitte"],...(()=>{ const ca=crankAdvice(); return ca?[["Kurbellänge",String(ca.L).replace(".",",")+" mm",`Hüfte ${Math.round(ca.hip)}° · Knie ${Math.round(ca.knee)}°`]]:[]; })()]);
     T(`Griffposition X / Y: ${Math.round(r.grip.x)} / ${Math.round(r.grip.y)} mm · ergibt Knie gestreckt ${dgv(r.ev.kneeMax)}, Knielot ${Math.round(r.ev.kops)} mm, Rücken ${dgv(r.back)}, Ellbogen ${dgv(r.ev.elbow)}.`,9,false,C.mute);
     lastSec="sug";
   }catch(e){}
