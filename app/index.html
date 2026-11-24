@@ -4859,7 +4859,6 @@ S.pendingDone=[...new Set([...(S.pendingDone||[]),PENDING_PERSON.id,PENDING_SETU
 const FRESH=!S.stdStart1;   // erster Start in diesem Browser
 if(!S.stdStart1){ S.stdStart1=true; setTimeout(()=>{ $("suClear").click(); },0); }
 syncPerson(); render(true);
-if(S.proAt===undefined) S.basic=true;   // Gerät kennt den Passwortstand noch nicht: sicherheitshalber in WiFitBasic starten
 /* Bezeichnung und Feld in eine Zeile setzen: Feld rechtsbündig */
 function wrapFieldRows(root){
   (root||document).querySelectorAll("aside label.f").forEach(l=>{
