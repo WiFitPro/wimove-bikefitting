@@ -258,8 +258,9 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .viewMenu>summary::-webkit-details-marker{display:none}
 .viewMenu>summary:hover{border-color:var(--frame)}
 .viewMenu>summary:focus-visible{outline:2px solid var(--frame);outline-offset:2px}
-.viewMenu>summary svg{width:14px;height:14px;transition:transform .15s}
-.viewMenu[open]>summary svg{transform:rotate(180deg)}
+.viewMenu>summary{padding:0;width:44px;height:44px;box-sizing:border-box;justify-content:center}
+.viewMenu>summary svg{width:24px;height:24px}
+.viewMenu[open]>summary{background:var(--frame);border-color:var(--frame);color:#fff}
 .vmPanel{position:absolute;left:0;top:calc(100% + 6px);z-index:60;background:var(--panel);border:1px solid var(--rule);border-radius:10px;box-shadow:0 12px 32px rgba(0,30,50,.2);padding:12px 16px 16px;display:grid;gap:8px;width:max-content;max-width:calc(100vw - 32px);font-size:15px}
 .vmH{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:6px}
 .vmPanel .btGroup{display:flex}.vmPanel .btGroup button{flex:1 1 auto}
@@ -425,7 +426,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
 <div class="app">
   <main class="stage">
     <div class="head">
-      <div><details class="viewMenu" id="viewMenu"><summary title="Fitting, Radart und Anzeige wählen"><span id="vmTxt">WiFitPro · Rennrad/Gravel</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+      <div><details class="viewMenu" id="viewMenu"><summary title="Menü: Fitting, Radart und Anzeige" aria-label="Menü: Fitting, Radart und Anzeige"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></summary>
         <div class="vmPanel">
           <div class="vmFit"><div class="vmH">Fitting</div><div class="btGroup" id="wfGroup" role="group" aria-label="Fitting"><button type="button" data-wf="pro">WiFitPro</button><button type="button" data-wf="basic">WiFitBasic</button></div></div>
           <button class="btn ghost" id="basicBtn" hidden aria-pressed="false">WiFitBasic</button>
@@ -2379,8 +2380,6 @@ function applyBtypeUI(){
 }
 /* Aufklappmenü oben links: Fitting (WiFitPro/WiFitBasic), Radart und Anzeige */
 function updViewMenu(){
-  const t=document.getElementById("vmTxt"); if(!t) return;
-  t.textContent=(document.body.classList.contains("noPro")?"":(S.basic?"WiFitBasic":"WiFitPro")+" · ")+BTYPES[btype()];
   document.querySelectorAll("#wfGroup [data-wf]").forEach(b=>b.setAttribute("aria-pressed",String((b.dataset.wf==="basic")===!!S.basic)));
 }
 document.querySelectorAll("#wfGroup [data-wf]").forEach(b=>b.onclick=()=>{ if((b.dataset.wf==="basic")!==!!S.basic) $("basicBtn").click(); updViewMenu(); });
