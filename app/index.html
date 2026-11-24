@@ -840,9 +840,10 @@ function centeredSetback(sh){ let sta=NaN; try{ sta=vals&&vals.sta; }catch(e){} 
   let sb=200; for(let i=0;i<8;i++){ const y=Math.sqrt(Math.max(sh*sh-sb*sb,1)); sb=(y-45)/Math.tan(rad(sta)); } return Math.round(sb); }
 /* Lenkerbreite-Vorschlag: Rennrad/Gravel und Triathlon nach Schulterbreite (Mitte–Mitte), MTB nach Körpergröße */
 function barWidthIdeal(){ const bt=btype(), P=S.person||{}, r20=x=>Math.round(x/20)*20, cl=(x,a,b)=>Math.min(b,Math.max(a,x));
-  if(bt==="mtb") return isFinite(P.height)&&P.height>0?cl(r20(P.height*0.42),700,800):760;
-  if(bt==="tri") return isFinite(P.shoulderW)&&P.shoulderW>0?cl(r20(P.shoulderW),380,440):400;
-  return isFinite(P.shoulderW)&&P.shoulderW>0?cl(r20(P.shoulderW),360,460):420; }
+  const fM=FITM.barFacMtb>0?FITM.barFacMtb:0.42, fT=FITM.barFacTri>0?FITM.barFacTri:1, fR=FITM.barFacRoad>0?FITM.barFacRoad:0.945;   // Faktoren im Bewertungsmodell (Admin) einstellbar
+  if(bt==="mtb") return isFinite(P.height)&&P.height>0?cl(r20(P.height*fM),640,840):760;
+  if(bt==="tri") return isFinite(P.shoulderW)&&P.shoulderW>0?cl(r20(P.shoulderW*fT),340,480):400;
+  return isFinite(P.shoulderW)&&P.shoulderW>0?cl(r20(P.shoulderW*fR),320,480):420; }
 const typeCompDef=c=>{ const bt=btype(); c.barWidth=barWidthIdeal(); c.stemAngle=STEM_ANGLE_T[bt]; c.barRise=bt==="mtb"?20:0; { const cs=centeredSetback(c.saddleH); c.setback=isFinite(cs)?cs:SETBACK_T[bt]; } if(bt!=="road"){ c.stemLen=stemIdeal(); c.spacer=spacerIdeal(); } return c; };   // Cockpit-Grundwerte je Radart
 const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v.back-5,v.back+5]]));
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
@@ -2078,6 +2079,9 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["softBack","Feinabstimmung","Rückenwinkel: 1 Punkt je","°",5,0.5,"Abweichung vom Ziel"],
   ["expoTarget","Feinabstimmung","Typischer Stützenauszug","% der Sattelhöhe",26,1,"Bezug für die Feinabstimmung"],
   ["softExpo","Feinabstimmung","Stützenauszug: 1 Punkt je","mm",150,5,"Abstand zum typischen Auszug"],
+  ["barFacRoad","Lenkerbreite","Rennrad/Gravel: Faktor × Schulterbreite","",0.945,0.005,"Lenkerbreite (Mitte–Mitte) = Schulterbreite × Faktor, gerundet auf 20 mm"],
+  ["barFacTri","Lenkerbreite","Triathlon: Faktor × Schulterbreite","",1,0.005,"Basislenker = Schulterbreite × Faktor, gerundet auf 20 mm"],
+  ["barFacMtb","Lenkerbreite","MTB: Faktor × Körpergröße","",0.42,0.005,"Lenkerbreite = Körpergröße × Faktor, gerundet auf 20 mm"],
   ["expoShiftMtb","Radart","MTB: Stützenauszug verschieben","mm",80,5,"kurze Sitzrohre (Dropper): Grenzen und Ziel des Auszugs liegen um diesen Wert höher"],
   ["green","Farben","Grün bis Score","",1.3,0.1,"darunter: passt"],
   ["orange","Farben","Orange bis Score","",3,0.1,"darunter: bedingt, ab hier rot; die beste Größe unter diesem Wert ist immer grün"]];
@@ -2095,7 +2099,7 @@ function applyFitModel(){   // Reihenfolge: aktuelle Änderung > gespeicherte We
 }
 const fitModelKey=()=>JSON.stringify([FITM,STEM_BY_STYLE,SPACER_BY_STYLE,btype()]);
 function fitModelVals(){ const v={...FITM}; for(const bt of Object.keys(BTYPES)) for(const st of Object.keys(STEM_FACTORY)){ v[kpT(bt)+"stem_"+st]=STEM_T[bt][st]; v[kpT(bt)+"spacer_"+st]=SPACER_T[bt][st]; } return v; }
-function fitModelChanged(){ sugCache.key=""; cmpFit={}; sizeFitCache.key=""; try{ updateSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp(); }catch(e){} save(); }
+function fitModelChanged(){ sugCache.key=""; cmpFit={}; sizeFitCache.key=""; try{ updateSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp(); }catch(e){} try{ render(); }catch(e){} save(); }
 function renderFitModel(){
   const box=$("fitModelBox"); if(!box) return; applyFitModel();
   const tag=k=>S.fitOv&&isFinite(S.fitOv[k])?'<small class="src edit">geändert</small>':S.modelStd&&S.modelStd.fitModel&&isFinite(S.modelStd.fitModel[k])?'<small class="src">Standard</small>':'';
