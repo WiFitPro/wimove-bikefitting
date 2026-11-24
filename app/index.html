@@ -1714,7 +1714,7 @@ function render(full=true){
   else s+=crankArm(c,S.crank,"var(--parts)")+circ({x:0,y:0},24,"var(--frame)",0,"var(--frame)");
   for(const x of cgs) s+=ghostSVG(x.g,.45,x.col);
   if(S.show.targets!==false) s+=targetSVG(t);
-  if(S.show.dims){ s+=cgs.length?`<g style="--dim:${getComputedStyle(document.documentElement).getPropertyValue("--frame").trim()||"#03A3DA"}">${dims(vals,g)}</g>`:dims(vals,g); const rMax=Math.max(vals.reach,...cgs.map(x=>x.v.reach)); cgs.forEach((x,i)=>{ s+=dims(x.v,x.g,i+1,x.col,rMax); }); }   // Rahmenmaße auch für die Vergleichsräder
+  if(S.show.dims){ s+=`<g style="--dim:${getComputedStyle(document.documentElement).getPropertyValue("--frame").trim()||"#03A3DA"}">${dims(vals,g)}</g>`; const rMax=Math.max(vals.reach,...cgs.map(x=>x.v.reach)); cgs.forEach((x,i)=>{ s+=dims(x.v,x.g,i+1,x.col,rMax); }); }   // Rahmenmaße auch für die Vergleichsräder
   if(showRider()&&S.show.angles) s+=anglesSVG(R,J);
   if(showRider()&&S.show.plumb!==false) s+=plumbSVG(cur.kops,g);
   svg.innerHTML=s;
