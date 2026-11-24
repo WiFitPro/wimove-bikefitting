@@ -243,6 +243,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .startBtns[hidden]{display:none}
 .startBtns.types{gap:1.8cqi;margin-top:.5cqi}
 .startBtns.types .startBtn{padding:2cqi 3.5cqi;font-size:5.2cqi}
+.startBtns.types .startBtn:hover,.startBtns.types .startBtn:focus-visible{background:#fff;color:#0389B8}
 .modeRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 .modeRow #basicBtn{margin-bottom:0}
 .btGroup{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--field)}
@@ -399,7 +400,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <button class="startBtn basic" type="button" id="startBasic">WiFitBasic</button>
     </div>
     <div class="startBtns types" id="startTypes" hidden>
-      <button class="startBtn pro" type="button" data-bt="road">Rennrad/Gravel</button>
+      <button class="startBtn basic" type="button" data-bt="road">Rennrad/Gravel</button>
       <button class="startBtn basic" type="button" data-bt="tri">Triathlonrad</button>
       <button class="startBtn basic" type="button" data-bt="mtb">Mountainbike</button>
     </div>
@@ -2495,8 +2496,8 @@ window.addEventListener("beforeunload",e=>{
   const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; $("startTypes").hidden=true; scr.querySelector(".startBtns:not(.types)").hidden=false; $("startQ").textContent="Welches Fitting möchtest du machen?"; showTab(S.basic?"person":"befund"); try{ $("basicBtn").focus(); }catch(e){} };   /* WiFitPro startet bei Befund, Basic bei Person (je 30/70) */
   /* zweiter Schritt: Radart wählen (Rennrad/Gravel, Triathlonrad, Mountainbike) */
   const askType=()=>{ scr.querySelector(".startBtns:not(.types)").hidden=true; const t=$("startTypes"); t.hidden=false; $("startQ").textContent="Welches Rad wird gefittet?";
-    t.querySelectorAll("[data-bt]").forEach(b=>{ const on=b.dataset.bt===btype(); b.classList.toggle("pro",on); b.classList.toggle("basic",!on); b.onclick=()=>{ setBtype(b.dataset.bt); done(); }; });
-    try{ t.querySelector(".pro").focus(); }catch(e){} };
+    t.querySelectorAll("[data-bt]").forEach(b=>{ b.classList.remove("pro"); b.classList.add("basic"); b.onclick=()=>{ setBtype(b.dataset.bt); done(); }; });
+    };
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); askType(); };
   $("startPro").onclick=()=>{ if(!proAllowed()) return; if(proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); askType(); }); return; } S.basic=false; applyBasic(); save(); askType(); };
 }
