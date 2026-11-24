@@ -2868,12 +2868,13 @@ const GEO_RANGE={reach:[300,560],stack:[440,720],steuerwinkel:[60,80],sitzwinkel
 /* Zeilenbeschriftungen (deutsch/englisch) → Feld; Winkel vor Längen prüfen */
 const GEO_ALIAS=[
   ["grosse",/^(rahmen)?gr(ö|o|oe)(ß|ss|s)e|^size|^frame ?size/i],
-  ["steuerwinkel",/head ?(tube)? ?angle|steuer(rohr)?[ -]?winkel|lenk(kopf)?winkel|\bhta\b/i],
-  ["sitzwinkel",/seat ?(tube)? ?angle|sitz(rohr)?[ -]?winkel|\bsta\b/i],
+  ["steuerwinkel",/head ?(tube)? ?angle|\bht\.? ?angle|steuer(rohr)?[ -]?winkel|lenk(kopf)?winkel|\bhta\b/i],
+  ["sitzwinkel",/seat ?(tube)? ?angle|\bst\.? ?angle|sitz(rohr)?[ -]?winkel|\bsta\b/i],
+  ["frontcenter",/front ?cent(er|re)|vorderbau/i],
   ["reach",/reach/i],["stack",/stack/i],
-  ["oberrohr",/top ?tube|oberrohr|\bett\b/i],
-  ["steuerrohr",/head ?tube|steuerrohr/i],
-  ["sitzrohr",/seat ?tube|sitzrohr/i],
+  ["oberrohr",/top ?tube|oberrohr|\bett\b|^tt\b/i],
+  ["steuerrohr",/head ?tube|steuerrohr|^ht\b/i],
+  ["sitzrohr",/seat ?tube|sitzrohr|^st\b/i],
   ["kettenstrebe",/chain ?stay|kettenstrebe/i],
   ["radstand",/wheel ?base|radstand/i],
   ["tretlageroffset",/bb ?drop|bottom ?bracket ?drop|(tretlager|innenlager).{0,3}(absenkung|offset|drop|tiefe)/i]];
@@ -2882,37 +2883,42 @@ function geoNum(t){ t=String(t).replace(/[°˚º]|mm|cm/gi,"").trim(); if(/\d/.t
 function geoParseText(txt){
   const res={marke:"",modell:"",sizes:[],werte:{}}; let best={};
   for(const raw of String(txt).split(/\n/)){
-    const line=raw.replace(/[|\[\]{}]/g," ").replace(/\s+/g," ").trim(); if(!line) continue;
+    const line=raw.replace(/[|\[\]{}]/g," ").replace(/\s+/g," ").trim().replace(/^[A-Z]\.?\s+(?=[A-Za-zÄÖÜ]{2})/,""); if(!line) continue;   /* Kennbuchstaben (A Stack, B Reach …) entfernen */
     const toks=line.split(" "), i0=toks.findIndex(t=>isFinite(geoNum(t))&&!/^[A-Za-zÄÖÜäöüß]/.test(t));
-    const label=(i0<0?line:toks.slice(0,i0).join(" ")).replace(/\(.*?\)/g,"").trim();
+    const labelRaw=(i0<0?line:toks.slice(0,i0).join(" ")), label=labelRaw.replace(/\(.*?\)/g,"").trim();
     const hit=GEO_ALIAS.find(([,re])=>re.test(label)); if(!hit) continue; const k=hit[0];
     if(k==="grosse"){ const j=/^(frame|rahmen)$/i.test(toks[0])&&toks[1]?2:1; const sz=toks.slice(j).filter(t=>!/^\(?(cm|mm|zoll|inch)\)?$/i.test(t)).filter(t=>/^[A-Za-z0-9.,\/-]{1,6}$/.test(t)); if(sz.length>res.sizes.length) res.sizes=sz; continue; }
     if((k==="steuerrohr"||k==="sitzrohr"||k==="oberrohr")&&/angle|winkel/i.test(label)) continue;
-    const nums=(i0<0?[]:toks.slice(i0)).filter(t=>!/^(mm|cm|°|-|–)$/i.test(t)).map(geoNum); if(!nums.some(x=>isFinite(x))) continue;   /* unlesbare Zellen bleiben als Lücke stehen, damit die Spalten nicht verrutschen */
-    const prio=k==="oberrohr"?(/effective|eff|horizont|virtu|ett/i.test(label)?2:/actual|tatsächl|real/i.test(label)?0:1):1;   // effektives Oberrohr bevorzugen
+    const nums=(i0<0?[]:toks.slice(i0)).filter(t=>!/^(mm|cm|°|-|–)$/i.test(t)&&/[0-9A-Za-z]/.test(t)).map(geoNum); if(!nums.some(x=>isFinite(x))) continue;   /* unlesbare Zellen bleiben als Lücke stehen, damit die Spalten nicht verrutschen */
+    const prio=k==="oberrohr"?(/effective|eff|horizont|virtu|ett/i.test(labelRaw)?2:/actual|tatsächl|real/i.test(labelRaw)?0:1):1;   // effektives Oberrohr bevorzugen
     if(best[k]!==undefined&&best[k]>=prio) continue; best[k]=prio; res.werte[k]=nums;
   }
   return geoFix(res);
 }
 /* cm → mm, Spaltenzahl angleichen */
 function geoFix(r){
-  const n=Math.max(r.sizes.length,...Object.values(r.werte).map(a=>a.length),0);
+  const lens=Object.values(r.werte).map(a=>a.length).filter(x=>x>0), cnt={}; for(const x of lens) cnt[x]=(cnt[x]||0)+1;
+  const mode=+(Object.entries(cnt).sort((a,b)=>b[1]-a[1]||b[0]-a[0])[0]||[0])[0];   // häufigste Spaltenzahl der Wertezeilen
+  const n=Math.max(r.sizes.length,mode)||Math.max(0,...lens);
   if(r.sizes.length<n) r.sizes=[...r.sizes,...Array.from({length:n-r.sizes.length},(_,i)=>"Gr. "+(r.sizes.length+i+1))];
   for(const [k] of GEO_F){ const a=(r.werte[k]||[]).map(x=>x==null||x===""?NaN:Number(x));
     if(!/winkel/.test(k)&&a.length&&a.every(x=>!isFinite(x)||x<120)&&k!=="tretlageroffset") for(let i=0;i<a.length;i++) if(isFinite(a[i])) a[i]=Math.round(a[i]*10);
     if(/winkel/.test(k)) for(let i=0;i<a.length;i++) if(isFinite(a[i])&&a[i]>100&&a[i]<1000) a[i]=a[i]/10;   // 725 → 72,5 (Komma nicht erkannt)
     r.werte[k]=Array.from({length:n},(_,i)=>isFinite(a[i])?a[i]:NaN); }
+  /* Kettenstrebe fehlt, aber Front-Center, Radstand und Tretlagerabsenkung sind angegeben: aus dem Hinterbau berechnen */
+  const fc=(r.werte.frontcenter||[]).map(Number);
+  for(let i=0;i<n;i++){ const wb=r.werte.radstand[i], dr=r.werte.tretlageroffset[i]; if(!isFinite(r.werte.kettenstrebe[i])&&isFinite(fc[i])&&isFinite(wb)&&isFinite(dr)&&wb>fc[i]){ r.werte.kettenstrebe[i]=Math.round(Math.hypot(wb-fc[i],dr)); r.derived=true; } }
   r.sizes=r.sizes.slice(0,n).map(x=>/^(x{0,3}[sml]|x{1,3}l|m)$/i.test(x)?x.toUpperCase():String(x)); return r;
 }
 async function geoByClaude(blob){
   let sample=null; try{ sample=window.claude&&window.claude.use?await window.claude.use("sample"):null; }catch(e){}
   if(!sample) return null; try{ const lim=sample.limits?await sample.limits():null; if(lim&&!lim.images) return null; }catch(e){}
   const prompt=`Lies die Fahrrad-Geometrietabelle im Bild aus. Antworte NUR mit JSON in genau dieser Form:
-{"marke":"","modell":"","sizes":["S","M"],"werte":{"reach":[],"stack":[],"steuerwinkel":[],"sitzwinkel":[],"oberrohr":[],"steuerrohr":[],"sitzrohr":[],"kettenstrebe":[],"radstand":[],"tretlageroffset":[]}}
-Regeln: eine Zahl je Größe in derselben Reihenfolge wie "sizes"; Längen in mm (cm umrechnen), Winkel in Grad; oberrohr = effektives/horizontales Oberrohr; steuerrohr und sitzrohr = Rohrlängen (nicht Winkel); sitzwinkel = effektiver Sitzwinkel; tretlageroffset = Tretlagerabsenkung (BB drop) als positive Zahl in mm; fehlende Werte als null; marke/modell nur, wenn im Bild erkennbar, sonst "".`;
+{"marke":"","modell":"","sizes":["S","M"],"werte":{"frontcenter":[],"reach":[],"stack":[],"steuerwinkel":[],"sitzwinkel":[],"oberrohr":[],"steuerrohr":[],"sitzrohr":[],"kettenstrebe":[],"radstand":[],"tretlageroffset":[]}}
+Regeln: eine Zahl je Größe in derselben Reihenfolge wie "sizes"; Längen in mm (cm umrechnen), Winkel in Grad; oberrohr = effektives/horizontales Oberrohr; steuerrohr und sitzrohr = Rohrlängen (nicht Winkel); sitzwinkel = effektiver Sitzwinkel; tretlageroffset = Tretlagerabsenkung (BB drop) als positive Zahl in mm; frontcenter = Front Center (falls angegeben, sonst null); Kennbuchstaben vor den Zeilen (A, B, C …) und Abkürzungen beachten: TT = Oberrohr, HT angle = Steuerwinkel, HT = Steuerrohr, ST = Sitzrohr; Gabelvorlauf, Nachlauf und Gabellänge weglassen; fehlende Werte als null; marke/modell nur, wenn im Bild erkennbar, sonst "".`;
   const out=await sample.json(prompt,{images:[blob],modelTier:"default"});
   const r={marke:String(out&&out.marke||""),modell:String(out&&out.modell||""),sizes:(out&&Array.isArray(out.sizes)?out.sizes:[]).map(String),werte:{}};
-  for(const [k] of GEO_F) r.werte[k]=(out&&out.werte&&Array.isArray(out.werte[k])?out.werte[k]:[]).map(x=>x==null?NaN:geoNum(x));
+  for(const k of [...GEO_F.map(f=>f[0]),"frontcenter"]) r.werte[k]=(out&&out.werte&&Array.isArray(out.werte[k])?out.werte[k]:[]).map(x=>x==null?NaN:geoNum(x));
   return geoFix(r);
 }
 let tessP=null;
@@ -2922,8 +2928,12 @@ async function geoByOcr(blob,note){
   /* Bild vergrößern und in Graustufen mit hartem Kontrast umwandeln – Tabellen werden so deutlich besser gelesen */
   const img=await createImageBitmap(blob), sc=Math.min(4,Math.max(1,2400/Math.max(img.width,1))), cv=document.createElement("canvas");
   cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc); const cx=cv.getContext("2d"); cx.imageSmoothingQuality="high"; cx.drawImage(img,0,0,cv.width,cv.height);
-  const id=cx.getImageData(0,0,cv.width,cv.height), d=id.data; let sum=0; for(let i=0;i<d.length;i+=4){ const g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; d[i]=g; sum+=g; } const avg=sum/(d.length/4);
-  const dark=avg<128; for(let i=0;i<d.length;i+=4){ let g=d[i]; if(dark) g=255-g; g=g<(dark?255-avg:avg)*0.75?0:255; d[i]=d[i+1]=d[i+2]=g; }
+  const id=cx.getImageData(0,0,cv.width,cv.height), d=id.data; for(let i=0;i<d.length;i+=4) d[i]=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+  /* kachelweise: dunkle Bereiche (weiße Schrift auf dunklem Grund) umkehren, dann je Kachel schwarz/weiß trennen */
+  { const W0=cv.width, H0=cv.height, T=Math.max(32,Math.round(40*sc));
+    for(let ty=0;ty<H0;ty+=T) for(let tx=0;tx<W0;tx+=T){ let sm=0,c=0; const x1=Math.min(W0,tx+T), y1=Math.min(H0,ty+T);
+      for(let y=ty;y<y1;y++) for(let x=tx;x<x1;x++){ sm+=d[(y*W0+x)*4]; c++; } let m=sm/c; const inv=m<110; if(inv) m=255-m;
+      for(let y=ty;y<y1;y++) for(let x=tx;x<x1;x++){ const j=(y*W0+x)*4; let g=d[j]; if(inv) g=255-g; g=g<Math.min(m*0.8,170)?0:255; d[j]=d[j+1]=d[j+2]=g; } } }
   /* Tabellenlinien entfernen: Zeilen/Spalten, die überwiegend schwarz sind, weiß machen */
   const W=cv.width, Hh=cv.height, blk=(x,y)=>d[(y*W+x)*4]===0, wht=(x,y)=>{ const j=(y*W+x)*4; d[j]=d[j+1]=d[j+2]=255; };
   for(let y=0;y<Hh;y++){ let run=0,mx=0; for(let x=0;x<W;x++){ run=blk(x,y)?run+1:0; if(run>mx) mx=run; } if(mx>W*0.25) for(let x=0;x<W;x++) wht(x,y); }
@@ -2951,7 +2961,7 @@ async function geoRun(blob){
   try{ r=await geoByClaude(blob); if(r) how="von Claude gelesen"; }catch(e){ note("Claude konnte das Bild nicht lesen – versuche Texterkennung …"); }
   if(!r||!r.sizes.length){ try{ r=await geoByOcr(blob,note); how="per Texterkennung gelesen – bitte besonders sorgfältig prüfen"; }catch(e){ note("Auswertung fehlgeschlagen: "+(e&&e.message||e)); return; } }
   if(!r||!r.sizes.length||!Object.values(r.werte).some(a=>a.some(x=>isFinite(x)))){ note("In diesem Bild wurde keine Geometrietabelle erkannt. Tipp: nur die Tabelle ausschneiden, möglichst groß und scharf."); return; }
-  note(`${r.sizes.length} Größen erkannt (${how}). Werte prüfen, rot markierte Felder liegen außerhalb üblicher Bereiche.`);
+  note(`${r.sizes.length} Größen erkannt (${how}). Werte prüfen, rot markierte Felder liegen außerhalb üblicher Bereiche.${r.derived?" Kettenstrebe aus Front-Center, Radstand und Tretlagerabsenkung berechnet.":""}`);
   geoTable(r);
 }
 function geoTable(r){
