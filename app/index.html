@@ -252,6 +252,20 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .btGroup button[aria-pressed="true"]{background:var(--frame);color:#fff;font-weight:600}
 .btGroup button:focus-visible{outline:2px solid var(--frame);outline-offset:-2px}
 .barHide{display:none!important}
+.viewMenu{position:relative;display:inline-block;margin-bottom:10px}
+.viewMenu>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:10px;font-size:17px;font-weight:600;padding:9px 16px;border:1px solid var(--rule);border-radius:8px;background:var(--field);color:var(--ink);letter-spacing:.02em;user-select:none}
+.viewMenu>summary::-webkit-details-marker{display:none}
+.viewMenu>summary:hover{border-color:var(--frame)}
+.viewMenu>summary:focus-visible{outline:2px solid var(--frame);outline-offset:2px}
+.viewMenu>summary svg{width:14px;height:14px;transition:transform .15s}
+.viewMenu[open]>summary svg{transform:rotate(180deg)}
+.vmPanel{position:absolute;left:0;top:calc(100% + 6px);z-index:60;background:var(--panel);border:1px solid var(--rule);border-radius:10px;box-shadow:0 12px 32px rgba(0,30,50,.2);padding:12px 16px 16px;display:grid;gap:8px;width:max-content;max-width:calc(100vw - 32px);font-size:15px}
+.vmH{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:6px}
+.vmPanel .btGroup{display:flex}.vmPanel .btGroup button{flex:1 1 auto}
+.vmChecks{display:grid;grid-template-columns:repeat(2,max-content);gap:10px 24px}
+body.noPro .vmFit{display:none}
+#basicBtn[hidden]{display:none!important}
+@media (max-width:440px){.vmPanel .btGroup button{font-size:13.5px;padding:9px 8px}}
 body:not(.bar-drop) #man_lever,body:not(.bar-drop) #selLever,body:not(.bar-drop) label[for=selLever],body:not(.bar-drop) .manParam:has(#man_barReach){display:none!important}
 /* Anmeldung (über dem Startbildschirm) */
 #authScr{position:fixed;inset:0;z-index:49;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -410,7 +424,21 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
 <div class="app">
   <main class="stage">
     <div class="head">
-      <div><div class="modeRow"><button class="btn ghost" id="basicBtn" aria-pressed="false" title="Abgespeckte Ansicht ein- und ausschalten">WiFitBasic</button><span class="btGroup" id="btGroup" role="group" aria-label="Radart"><button type="button" data-bt="road" aria-pressed="true" title="Rennrad/Gravel">Rennrad/Gravel</button><button type="button" data-bt="tri" aria-pressed="false" title="Triathlonrad">Triathlon</button><button type="button" data-bt="mtb" aria-pressed="false" title="Mountainbike">MTB</button></span></div><p class="kicker" id="brandBig"></p><h1 id="modelBig"></h1><div class="size-big" id="sizeBig"></div></div>
+      <div><details class="viewMenu" id="viewMenu"><summary title="Fitting, Radart und Anzeige wählen"><span id="vmTxt">WiFitPro · Rennrad/Gravel</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+        <div class="vmPanel">
+          <div class="vmFit"><div class="vmH">Fitting</div><div class="btGroup" id="wfGroup" role="group" aria-label="Fitting"><button type="button" data-wf="pro">WiFitPro</button><button type="button" data-wf="basic">WiFitBasic</button></div></div>
+          <button class="btn ghost" id="basicBtn" hidden aria-pressed="false">WiFitBasic</button>
+          <div class="vmH">Radart</div>
+          <div class="btGroup" id="btGroup" role="group" aria-label="Radart"><button type="button" data-bt="road" aria-pressed="true">Rennrad/Gravel</button><button type="button" data-bt="tri" aria-pressed="false">Triathlonrad</button><button type="button" data-bt="mtb" aria-pressed="false">Mountainbike</button></div>
+          <div class="vmH">Anzeige</div>
+          <div class="vmChecks">
+            <label class="toggle"><input type="checkbox" id="tRider"> Person</label>
+            <label class="toggle"><input type="checkbox" id="tAngles"> Gelenkwinkel</label>
+            <label class="toggle"><input type="checkbox" id="tDims"> Rahmenmaße</label>
+            <label class="toggle"><input type="checkbox" id="tPlumb"> Knielot</label>
+            <label class="toggle"><input type="checkbox" id="tTargets"> Fadenkreuze</label>
+          </div>
+        </div></details><p class="kicker" id="brandBig"></p><h1 id="modelBig"></h1><div class="size-big" id="sizeBig"></div></div>
       <div class="summary" id="summary"></div>
       <div id="riderHint" class="riderHint" hidden>Die Person wird gezeichnet, sobald alle Messwerte eingegeben sind.<button type="button" class="btn small" onclick="document.querySelector('[data-tab=person]').click()">Zu den Messwerten</button></div>
     </div>
@@ -425,11 +453,6 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
           <line id="dialArm" x1="0" y1="0" x2="0" y2="-14" stroke="var(--parts)" stroke-width="3.5" stroke-linecap="round"/><circle id="dialPedal" cx="0" cy="-14" r="4" fill="var(--frame)"/><circle r="3" fill="var(--parts)"/></svg>
         </span>
         <span id="crankV" style="min-width:3em"></span></span>
-      <label class="toggle"><input type="checkbox" id="tRider"> Person</label>
-      <label class="toggle"><input type="checkbox" id="tAngles"> Gelenkwinkel</label>
-      <label class="toggle"><input type="checkbox" id="tDims"> Rahmenmaße</label>
-      <label class="toggle"><input type="checkbox" id="tPlumb"> Knielot</label>
-      <label class="toggle"><input type="checkbox" id="tTargets"> Fadenkreuze</label>
       <button class="btn ghost small" id="crank3" title="Kurbel auf 3 Uhr stellen">3 Uhr</button>
       <button class="btn ghost small" id="crank6" title="Kurbel auf 6 Uhr stellen">6 Uhr</button>
       <span style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="note" id="loadNoteT" style="margin:0"></span><button class="btn small" id="loadBtnT" hidden>Excel-Datei wählen</button></span>
@@ -2351,8 +2374,17 @@ function applyBarVis(){ for(const b of ["drop","flat","aero"]) document.body.cla
 function applyBtypeUI(){
   const bt=btype(); for(const t of Object.keys(BTYPES)) document.body.classList.toggle("bt-"+t,t===bt);
   document.querySelectorAll("#btGroup [data-bt]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.bt===bt)));
-  applyBarVis();
+  applyBarVis(); updViewMenu();
 }
+/* Aufklappmenü oben links: Fitting (WiFitPro/WiFitBasic), Radart und Anzeige */
+function updViewMenu(){
+  const t=document.getElementById("vmTxt"); if(!t) return;
+  t.textContent=(document.body.classList.contains("noPro")?"":(S.basic?"WiFitBasic":"WiFitPro")+" · ")+BTYPES[btype()];
+  document.querySelectorAll("#wfGroup [data-wf]").forEach(b=>b.setAttribute("aria-pressed",String((b.dataset.wf==="basic")===!!S.basic)));
+}
+document.querySelectorAll("#wfGroup [data-wf]").forEach(b=>b.onclick=()=>{ if((b.dataset.wf==="basic")!==!!S.basic) $("basicBtn").click(); updViewMenu(); });
+document.addEventListener("click",e=>{ const m=document.getElementById("viewMenu"); if(m&&m.open&&!m.contains(e.target)) m.open=false; });
+document.addEventListener("keydown",e=>{ const m=document.getElementById("viewMenu"); if(e.key==="Escape"&&m&&m.open){ m.open=false; m.querySelector("summary").focus(); } });
 function setBtype(bt){
   if(!BTYPES[bt]) bt="road"; const old=btype();
   S.selT=S.selT||{}; if(S.sel&&S.sel.b) S.selT[old]={...S.sel};
@@ -2464,6 +2496,7 @@ function applyBasic(){
   $("basicBtn").setAttribute("aria-pressed",on);
   $("basicBtn").textContent=on?"WiFitBasic":"WiFitPro";   // zeigt die aktive Ansicht; Klick wechselt
   $("basicBtn").title=on?"Abgespeckte Ansicht aktiv – klicken für WiFitPro":"Volle Ansicht aktiv – klicken für WiFitBasic";
+  try{ updViewMenu(); }catch(e){}
   if(on&&["befund","setup"].includes(S.tab)) showTab("person");
   /* Vorschlag vergleichen: Ist- und optimierte Position nur in WiFitPro */
   { const sc=$("sugCmp"); [...sc.options].forEach(o=>{ if(o.value==="ist"||o.value==="opt"){ o.hidden=on; o.disabled=on; } });
