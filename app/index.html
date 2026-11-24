@@ -556,6 +556,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <section><div id="compParams"></div></section>
       <div id="compCleatWrap"><h3>Cleats</h3><div id="compCleatPct"></div><div id="compCleat"></div></div>
       <details class="acc adminOnly" id="pmDetails"><summary>Teile verwalten</summary><p class="note" style="margin-top:0">Maße ändern, eigene Teile anlegen oder Teile entfernen. Änderungen gelten überall und bleiben dauerhaft gespeichert.</p><p class="note dbstat"></p><div id="pmBox"></div><div class="savebar" data-save="pm"><button class="btn" type="button">Speichern</button><p class="note"></p></div></details>
+      <details class="acc adminOnly" id="compModelDetails"><summary>Berechnung Lenkerbreite und Kurbellänge</summary><div id="compModelBox"></div></details>
       <div id="compExtra" hidden></div>
     </div>
 
@@ -2128,28 +2129,33 @@ function applyFitModel(){   // Reihenfolge: aktuelle Änderung > gespeicherte We
 const fitModelKey=()=>JSON.stringify([FITM,STEM_BY_STYLE,SPACER_BY_STYLE,btype()]);
 function fitModelVals(){ const v={...FITM}; for(const bt of Object.keys(BTYPES)) for(const st of Object.keys(STEM_FACTORY)){ v[kpT(bt)+"stem_"+st]=STEM_T[bt][st]; v[kpT(bt)+"spacer_"+st]=SPACER_T[bt][st]; } return v; }
 function fitModelChanged(){ sugCache.key=""; cmpFit={}; sizeFitCache.key=""; try{ updateSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp(); }catch(e){} try{ render(); }catch(e){} save(); }
-function renderFitModel(){
-  const box=$("fitModelBox"); if(!box) return; applyFitModel();
+const COMP_FITM=["Lenkerbreite","Kurbellänge"];   // diese Gruppen stehen im Tab Bauteile, der Rest unter Rad
+function renderFitModel(){ renderFitBox("fitModelBox","fm",g=>!COMP_FITM.includes(g),true); renderFitBox("compModelBox","cm",g=>COMP_FITM.includes(g),false); }
+function renderFitBox(boxId,pf,filt,full){
+  const box=$(boxId); if(!box) return; applyFitModel();
   const tag=k=>S.fitOv&&isFinite(S.fitOv[k])?'<small class="src edit">geändert</small>':S.modelStd&&S.modelStd.fitModel&&isFinite(S.modelStd.fitModel[k])?'<small class="src">Standard</small>':'';
   const inp=(k,v,st)=>`<input class="bfi" type="number" step="${st}" data-fitm="${k}" value="${v}" style="max-width:90px">`;
   const bt=btype(), kp=kpT(bt);
-  let h=`<p class="note" style="margin-top:0">Für jede Größe wird zuerst die beste Position berechnet (${BTYPES[bt]}: Vorbau ${STEM_RANGE_T[bt][0]}–${STEM_RANGE_T[bt][1]} mm, Spacer 0–40 mm, Vorbauwinkel ${STEM_ANGLES_T[bt].map(a=>(a>0?"+":a<0?"−":"")+Math.abs(a)).join("/")}°${bt==="tri"?", Armpad-Höhe 30–130 mm":""}). Score = Strafpunkte + Feinabstimmung; die Größe mit dem niedrigsten Score ist die Empfehlung.</p>`;
+  let h=!full?`<p class="note" style="margin-top:0">Grundlage für den Vorschlag von Lenkerbreite und Kurbellänge (Tab Sitzposition) und den Report.</p>`:`<p class="note" style="margin-top:0">Für jede Größe wird zuerst die beste Position berechnet (${BTYPES[bt]}: Vorbau ${STEM_RANGE_T[bt][0]}–${STEM_RANGE_T[bt][1]} mm, Spacer 0–40 mm, Vorbauwinkel ${STEM_ANGLES_T[bt].map(a=>(a>0?"+":a<0?"−":"")+Math.abs(a)).join("/")}°${bt==="tri"?", Armpad-Höhe 30–130 mm":""}). Score = Strafpunkte + Feinabstimmung; die Größe mit dem niedrigsten Score ist die Empfehlung.</p>`;
   let grp="";
   h+=`<div class="fitmGrid">`;
-  for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){
+  for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){ if(!filt(g)) continue;
     if(g!==grp){ grp=g; h+=`<div class="suh">${g}</div>`; }
-    h+=`<label for="fm_${k}">${esc(lab)}<small>${esc(expl)}</small></label><div class="fitmIn">${inp(k,FITM[k],step).replace('data-fitm','id="fm_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
+    h+=`<label for="${pf}_${k}">${esc(lab)}<small>${esc(expl)}</small></label><div class="fitmIn">${inp(k,FITM[k],step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
   }
-  h+=`</div><h3 style="margin:14px 0 4px">Vorlieben je Sitzposition – ${BTYPES[bt]}</h3><div class="bfg styleGrid" style="grid-template-columns:minmax(90px,120px) repeat(2,minmax(64px,92px))"><span></span><b>Vorbau (mm)</b><b>Spacer (mm)</b>`+
+  h+=`</div>`; if(full) h+=`<h3 style="margin:14px 0 4px">Vorlieben je Sitzposition – ${BTYPES[bt]}</h3><div class="bfg styleGrid" style="grid-template-columns:minmax(90px,120px) repeat(2,minmax(64px,92px))"><span></span><b>Vorbau (mm)</b><b>Spacer (mm)</b>`+
     Object.keys(STEM_FACTORY).map(st=>`<span>${st}</span><div>${inp(kp+"stem_"+st,STEM_BY_STYLE[st],5)}${tag(kp+"stem_"+st)||'<small class="src">&nbsp;</small>'}</div><div>${inp(kp+"spacer_"+st,SPACER_BY_STYLE[st],5)}${tag(kp+"spacer_"+st)||'<small class="src">&nbsp;</small>'}</div>`).join("")+`</div>`;
-  h+=`<div class="row" style="margin-top:10px"><button class="btn small" type="button" id="fmSave">Als Standard speichern</button><button class="btn ghost small" type="button" id="fmReset">Auf App-Grundwerte zurücksetzen</button></div><p class="note" id="fmNote">Änderungen wirken sofort auf die Größenempfehlung. „Als Standard speichern“ macht sie zur Werkseinstellung für alle Geräte.</p>`;
+  h+=`<div class="row" style="margin-top:10px"><button class="btn small" type="button" id="${pf}Save">Als Standard speichern</button><button class="btn ghost small" type="button" id="${pf}Reset">Auf App-Grundwerte zurücksetzen</button></div><p class="note" id="${pf}Note">Änderungen wirken sofort${full?" auf die Größenempfehlung":" auf den Vorschlag"}. „Als Standard speichern“ macht sie zur Werkseinstellung für alle Geräte.</p>`;
   box.innerHTML=h;
   box.querySelectorAll("[data-fitm]").forEach(el=>el.onchange=()=>{ const k=el.dataset.fitm, x=num(el.value); if(!isFinite(x)||x<0||(/Per$|^soft/.test(k)&&x<=0)){ renderFitModel(); return; }
     (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); renderFitModel(); });
-  $("fmSave").onclick=()=>{ applyFitModel(); S.modelStd=S.modelStd||{}; S.modelStd.fitModel=fitModelVals(); delete S.fitOv; S.modelStdAt=Date.now(); save(); renderFitModel(); $("fmNote").textContent="Speichere …";
-    factorySave().then(ok=>{ $("fmNote").textContent=ok?"Als Werkseinstellung gespeichert. Gilt ab jetzt überall, wo die App geöffnet wird.":"In diesem Browser gespeichert. Für alle Geräte die App über ihren Link öffnen und erneut speichern."; }); };
-  $("fmReset").onclick=()=>{ delete S.fitOv; if(S.modelStd) delete S.modelStd.fitModel; S.modelStdAt=Date.now(); applyFitModel(); fitModelChanged(); renderFitModel();
-    factorySave().then(ok=>{ $("fmNote").textContent=ok?"App-Grundwerte wiederhergestellt (auch als Werkseinstellung).":"App-Grundwerte wiederhergestellt (in diesem Browser)."; }); };
+  $(pf+"Save").onclick=()=>{ applyFitModel(); S.modelStd=S.modelStd||{}; S.modelStd.fitModel=fitModelVals(); delete S.fitOv; S.modelStdAt=Date.now(); save(); renderFitModel(); $(pf+"Note").textContent="Speichere …";
+    factorySave().then(ok=>{ $(pf+"Note").textContent=ok?"Als Werkseinstellung gespeichert. Gilt ab jetzt überall, wo die App geöffnet wird.":"In diesem Browser gespeichert. Für alle Geräte die App über ihren Link öffnen und erneut speichern."; }); };
+  $(pf+"Reset").onclick=()=>{ const ks=FITM_DEF.filter(d=>filt(d[1])).map(d=>d[0]);   // nur die Werte dieses Bereichs zurücksetzen
+    for(const k of ks){ if(S.fitOv) delete S.fitOv[k]; if(S.modelStd&&S.modelStd.fitModel) delete S.modelStd.fitModel[k]; }
+    if(full){ for(const k of Object.keys((S.modelStd&&S.modelStd.fitModel)||{})) if(/stem_|spacer_/.test(k)) delete S.modelStd.fitModel[k]; for(const k of Object.keys(S.fitOv||{})) if(/stem_|spacer_/.test(k)) delete S.fitOv[k]; }
+    S.modelStdAt=Date.now(); applyFitModel(); fitModelChanged(); renderFitModel();
+    factorySave().then(ok=>{ $(pf+"Note").textContent=ok?"App-Grundwerte wiederhergestellt (auch als Werkseinstellung).":"App-Grundwerte wiederhergestellt (in diesem Browser)."; }); };
 }
 function sizeFitFor(bike){   // Vorschlag für diese Größe; Bewertung nach Vorbau, Spacer, Sattelversatz zur Stütze und Haltung
   const keepV=vals, keepC=sugCache;
