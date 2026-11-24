@@ -976,6 +976,7 @@ function parseSetup(rows){
   for(const w of ["ist","opt"]){ const p=U.pos[w]; if(!["gx","gy","sx","sy"].every(k=>isFinite(p[k])&&p[k]!==0)) U.pos[w]=null; }
   return U.bike.b||U.pos.ist?U:null;
 }
+const EXTRA_PARTS={"bars": [{"angle": 0, "height": 28, "name": "Colnago Y1RS Cockpit", "reach": 55}, {"angle": -8, "height": 40, "name": "Lapierre Carbon Cockpit RB167", "reach": 50}, {"angle": -8, "height": 42, "name": "Megamo Carbon Gravel", "reach": 45}, {"angle": -8, "height": 34, "name": "Megamo Carbon Gravel Racing", "reach": 55}, {"angle": -8, "height": 34, "name": "Megamo Carbon Road", "reach": 60}], "stems": [{"angle": 8, "height": 39, "name": "LevelNine"}]};
 function parseLists(d){
   const L={bars:[],stems:[],levers:[],pedals:[],shoes:[],saddles:[]}, seen=new Set();
   for(const r of d.bars||[]){
@@ -988,6 +989,8 @@ function parseLists(d){
   for(const r of d.saddles||[]){ const n=clean(r[0]); if(n&&!L.saddles.includes(n)) L.saddles.push(n); }
   /* Vorlagen für Auswahllisten wie in der Excel (Datenüberprüfung im Blatt „Bike Set Up“) */
   const uniq=a=>[...new Set(a.filter(x=>isFinite(x)))].sort((x,y)=>x-y);
+  /* fest eingebaute Ergänzungen (aus den zentral angelegten Teilen des Artefakts übernommen) */
+  for(const [t,list] of Object.entries(EXTRA_PARTS)) for(const x of list) if(!L[t].some(y=>y.name===x.name)) L[t].push({...x});
   L.crankOpts=uniq((d.cranks||[]).map(r=>num(r[0])));
   L.barWidths=uniq((d.bars||[]).map(r=>num(r[0])));
   L.stemLens=uniq((d.bars||[]).map(r=>num(r[11])));
