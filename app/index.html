@@ -1281,12 +1281,15 @@ function bikeSVG(v,g,c){
   s+=wheel(g.rAxle,g,0.2)+wheel(g.fAxle,g,0.05);
   s+=rotor(g.rAxle,{x:0,y:0})+rotor(g.fAxle,g.crown)+bikeRear(g);
   const rd=derailleur(g);
-  s+=line({x:0,y:0},g.rAxle,18,F)+line(g.rAxle,g.ssTop,15,F)+line({x:0,y:0},g.dtFront,36,F)+line({x:0,y:0},g.stTop,28,F)+line(g.ttRear,g.ttFront,26,F)+line(g.htBot,g.htTop,42,F);
-  s+=`<path d="M${P(g.crown)} Q${P(add(g.crown,mul(g.d,g.t*0.72)))} ${P(g.fAxle)}" stroke="${F}" stroke-width="24" fill="none" stroke-linecap="round"/>`;
-  s+=line(g.crown,add(g.crown,mul(g.d,22)),44,F)+circ(g.fAxle,14,F,0,F)+circ(g.rAxle,14,F,0,F);
+  /* Rohrstärken: Triathlon mit tiefen Aero-Profilen, Rennrad mit etwas kräftigerer Gabel */
+  const bt=btype(), W=bt==="tri"?{dt:54,st:46,tt:32,ht:58,fk:36,ss:13}:{dt:36,st:28,tt:26,ht:42,fk:bt==="road"?31:24,ss:15};
+  s+=line({x:0,y:0},g.rAxle,18,F)+line(g.rAxle,g.ssTop,W.ss,F)+line({x:0,y:0},g.dtFront,W.dt,F)+line({x:0,y:0},g.stTop,W.st,F)+line(g.ttRear,g.ttFront,W.tt,F)+line(g.htBot,g.htTop,W.ht,F);
+  if(bt==="tri") s+=line({x:0,y:0},g.dtFront,W.dt*0.38,"#000",`opacity=".10" transform="translate(0,${r1(W.dt*0.28)})"`)+line({x:0,y:0},g.stTop,W.st*0.36,"#000",`opacity=".10" transform="translate(${r1(-W.st*0.27)},0)"`);   // Kamm-Hinterkante der Aero-Profile
+  s+=`<path d="M${P(g.crown)} Q${P(add(g.crown,mul(g.d,g.t*0.72)))} ${P(g.fAxle)}" stroke="${F}" stroke-width="${W.fk}" fill="none" stroke-linecap="round"/>`;
+  s+=line(g.crown,add(g.crown,mul(g.d,22)),Math.max(44,W.ht+2),F)+circ(g.fAxle,14,F,0,F)+circ(g.rAxle,14,F,0,F);
   s+=caliper(g.fAxle,g.crown,27)+caliper(g.rAxle,{x:0,y:0},12,0.82,76);   // vorn direkt hinten an der Gabel, hinten klein auf der Kettenstrebe
-  s+=line({x:0,y:0},g.dtFront,36,"#FFFFFF",`opacity=".07" transform="translate(0,-6)"`);   // Glanz auf dem Unterrohr
-  s+=bottleSVG(g)+rd.s+chainSVG(g,rd)+chainringSVG();
+  s+=line({x:0,y:0},g.dtFront,W.dt,"#FFFFFF",`opacity=".07" transform="translate(0,-6)"`);   // Glanz auf dem Unterrohr
+  s+=rd.s+chainSVG(g,rd)+chainringSVG();   // ohne Trinkflasche
   { const st=unit(g.stTop), fd=add(mul(st,150),{x:14,y:0}); s+=limbShape(fd,add(fd,mul(st,-34)),9,7,"band",0,0,"var(--parts)"); }   // Umwerfer
   { /* Spacer und Vorbauklemmung enden bündig oben am Vorbau, kein Gabelschaft darüber */
     const bl=(a,b,w)=>`<line x1="${r1(a.x)}" y1="${r1(-a.y)}" x2="${r1(b.x)}" y2="${r1(-b.y)}" stroke="${Pt}" stroke-width="${w}" stroke-linecap="butt"/>`;
