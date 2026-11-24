@@ -4280,13 +4280,19 @@ async function makePdf(){
     for(const r of SU_ROWS) if(r[0]==="c"&&!PDF_SKIP.includes(r[1])&&barRowOn(r[1])){ const a=fmtSu(ci[r[1]]), b=optSame(r[1],co[r[1]])?"wie Ist":(fmtSu(co[r[1]])||"wie Ist"); if(!a&&b==="wie Ist") continue; cmp(r[2],a||"-",b); }
   }
 
-  if(pdfOn("bikedims")){ let fd=null; try{ fd=await fitDimsPng(); }catch(e){}
+  if(pdfOn("bikedims")){
+    /* Sind im Bike Set Up Werte eingetragen, zeigt dieser Abschnitt Rad, Bauteile und Sattelposition aus dem Bike Set Up (optimierte Spalte, leere Felder wie Ist) */
+    const useSU=!setupEmpty(), keepSU=useSU?{c:S.comp,sel:S.compSel,v:vals,bar:S.bar}:null;
+    if(useSU){ try{ const r=compsFrom("opt"); S.comp=r.c; S.compSel=r.sel; const U=FIT.setup, bk=U.bikeOpt&&U.bikeOpt.b&&U.bikeOpt.m?U.bikeOpt:U.bike, hit=bk&&bk.b?matchSel(bk):null, fb=hit&&findBike(hit); if(fb) vals=valuesFor(fb,true).v; render(false); }catch(e){} }
+    try{
+    let fd=null; try{ fd=await fitDimsPng(); }catch(e){}
     const hh=fd?PW*fd.ratio:0; need(hh+60); H1("Sitzposition am Rad");
-    T("Maße in mm, gemessen ab Tretlagermitte. Sattel X: Sattel hinter dem Tretlager, Griff X: Griff vor dem Tretlager, Y: Höhe über dem Tretlager.",8.5,false,C.mute);
+    T("Maße in mm, gemessen ab Tretlagermitte. Sattel X: Sattel hinter dem Tretlager, Griff X: Griff vor dem Tretlager, Y: Höhe über dem Tretlager."+(useSU?" Werte aus Bike Set Up (optimierte Spalte, leere Felder wie Ist).":""),8.5,false,C.mute);
     if(fd){ doc.addImage(fd.url,"JPEG",M,y,PW,hh); y+=hh+3; } else T("Zeichnung konnte nicht eingefügt werden.",9);
     try{ const {g}=cur, Sd=g.seat, G=g.grip;
       tiles([["Sattelposition X / Y",`${Math.round(-Sd.x)} / ${Math.round(Sd.y)} mm`],[S.bar==="aero"?"Armauflage X / Y":"Griffposition X / Y",`${Math.round(G.x)} / ${Math.round(G.y)} mm`],["Sattelhöhe",`${Math.round(Math.hypot(Sd.x,Sd.y))} mm`,"Tretlager bis Sattel"],["Sattelüberhöhung",`${Math.round(Sd.y-G.y)} mm`,"Sattel über Griff"]]);
       tiles([[S.bar==="aero"?"Abstand Sattel - Armauflage":"Abstand Sattel - Griff",`${Math.round(Math.hypot(G.x-Sd.x,G.y-Sd.y))} mm`],S.bar==="aero"?["Armpad-Höhe",`${S.comp.padStack} mm`,"über Lenkermitte"]:["Kurbellänge",`${S.comp.crank} mm`],["Vorbau",`${S.comp.stemLen} mm`,`Winkel ${S.comp.stemAngle}°`],["Spacer",`${S.comp.spacer} mm`],["Lenkerbreite",`${S.comp.barWidth} mm`,"Mitte–Mitte"]]); }catch(e){}
+    } finally { if(keepSU){ S.comp=keepSU.c; S.compSel=keepSU.sel; vals=keepSU.v; S.bar=keepSU.bar; render(false); } }
   }
   let im=null; if(pdfOn("drawing")) try{ im=await drawingPng(); }catch(e){}
   if(pdfOn("drawing")||pdfOn("angles")||pdfOn("sug")){ need(im?PW*im.ratio+26:60); H1("Sitzposition"); }   // Überschrift und Zeichnung auf derselben Seite
