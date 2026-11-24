@@ -1003,6 +1003,9 @@ function buildFit(d){
   return {person:parsePerson(d.person||[]),setup:parseSetup(d.setup||[]),lists:parseLists(d)};
 }
 /* Bauteilwerte aus „Bike Set Up“ (Optimierte Spalte fällt auf Ist zurück, wenn leer) */
+/* In der optimierten Spalte bedeutet 0 „wie Ist“ (Excel-Konvention) – außer bei Maßen, für die 0 ein echter Wert ist */
+const ZERO_OK=new Set(["leverAngle","spacer","stemAngle","barRise","padReach","extAngle"]);
+const optSame=(k,v)=>(v===0||v==="0")&&!ZERO_OK.has(k);
 function compsFrom(which){
   const c=typeCompDef(Object.fromEntries(COMP.filter(p=>!p.virt).map(p=>[p.key,p.def]))), names={};
   const U=FIT.setup;
@@ -1011,7 +1014,7 @@ function compsFrom(which){
       const iv=U.ci[k], ov=U.co[k];
       if(k.endsWith("Name")){ const v=which==="opt"&&clean(ov)?clean(ov):clean(iv); if(v) names[k]=v; continue; }
       let x=num(iv);
-      if(which==="opt"){ const o=num(ov); if(isFinite(o)&&o!==0) x=o; }
+      if(which==="opt"){ const o=num(ov); if(isFinite(o)&&!optSame(k,o)) x=o; }
       if(isFinite(x)&&k in c) c[k]=x;
     }
     const pos=validPos(U.pos[which])?U.pos[which]:(validPos(U.pos.ist)?U.pos.ist:null);
@@ -3185,7 +3188,7 @@ function renderSetup(){
     h+=`<span>${lab}${SU_DESC[k]&&g==="c"?`<small>${SU_DESC[k]}</small>`:""}</span>`;
     for(const w of ["ist","opt"]){
       let val=g==="pos"?U.pos[w][k]:(w==="ist"?U.ci:U.co)[k];
-      if(w==="opt"&&g==="c"&&(val===0||val==="0")) val="";
+      if(w==="opt"&&g==="c"&&optSame(k,val)) val="";
       const ph=w==="opt"&&g==="c"?fmt(U.ci[k]):"";
       const lk=g==="c"?suLinked(w,k):null;
       const mp=!lk&&g==="c"?suMissingPart(w,k):null;
@@ -4274,7 +4277,7 @@ async function makePdf(){
     cmp("Reach / Stack (Rahmen)",`${mm(ca.reach)} / ${mm(ca.stack)}`,`${mm(cOpt.reach)} / ${mm(cOpt.stack)}`);
     H2("Komponenten");
     const PDF_SKIP=["barReach","stemHeight","sole","leverReach","pedalStack"];   // gekoppelte Maße der Teile nicht im Bericht
-    for(const r of SU_ROWS) if(r[0]==="c"&&!PDF_SKIP.includes(r[1])&&barRowOn(r[1])){ const a=fmtSu(ci[r[1]]), b=(co[r[1]]===0||co[r[1]]==="0")?"wie Ist":(fmtSu(co[r[1]])||"wie Ist"); if(!a&&b==="wie Ist") continue; cmp(r[2],a||"-",b); }
+    for(const r of SU_ROWS) if(r[0]==="c"&&!PDF_SKIP.includes(r[1])&&barRowOn(r[1])){ const a=fmtSu(ci[r[1]]), b=optSame(r[1],co[r[1]])?"wie Ist":(fmtSu(co[r[1]])||"wie Ist"); if(!a&&b==="wie Ist") continue; cmp(r[2],a||"-",b); }
   }
 
   if(pdfOn("bikedims")){ let fd=null; try{ fd=await fitDimsPng(); }catch(e){}
