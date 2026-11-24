@@ -775,6 +775,7 @@ const COMP = [
   {key:"stemLen", label:"Vorbaulänge", g:"Cockpit", min:40,max:150,step:5,def:100},
   {key:"stemAngle", label:"Vorbauwinkel", g:"Cockpit", unit:"°", min:-25,max:25,step:1,def:-6},
   {key:"stemHeight", label:"Vorbauhöhe (Klemmung)", g:"Cockpit", min:30,max:60,step:1,def:40},
+  {key:"barWidth", label:"Lenkerbreite (Mitte–Mitte)", g:"Cockpit", min:300,max:820,step:10,def:420},
   {key:"barReach", label:"Lenker-Reach (Mitte Oberlenker bis Bremsgriff)", g:"Cockpit", min:30,max:110,step:1,def:60, bars:["drop"]},
   {key:"leverReach", label:"Bremsgriff-Reach (Beginn Bremsgriff bis Griffpunkt)", g:"Cockpit", min:20,max:90,step:1,def:50, bars:["drop"]},
   {key:"leverAngle", label:"Bremsgriffwinkel", g:"Cockpit", unit:"°", min:-10,max:20,step:1,def:0, bars:["drop"]},
@@ -837,7 +838,12 @@ const SETBACK_T={road:200,tri:110,mtb:200};   // Sattelversatz-Grundwert je Rada
 /* Sattelversatz, bei dem der Sattel mittig über der Stützenachse sitzt – folgt dem Sitzwinkel des Rads */
 function centeredSetback(sh){ let sta=NaN; try{ sta=vals&&vals.sta; }catch(e){} if(!isFinite(sta)) return NaN; sh=isFinite(sh)?sh:760;
   let sb=200; for(let i=0;i<8;i++){ const y=Math.sqrt(Math.max(sh*sh-sb*sb,1)); sb=(y-45)/Math.tan(rad(sta)); } return Math.round(sb); }
-const typeCompDef=c=>{ const bt=btype(); c.stemAngle=STEM_ANGLE_T[bt]; c.barRise=bt==="mtb"?20:0; { const cs=centeredSetback(c.saddleH); c.setback=isFinite(cs)?cs:SETBACK_T[bt]; } if(bt!=="road"){ c.stemLen=stemIdeal(); c.spacer=spacerIdeal(); } return c; };   // Cockpit-Grundwerte je Radart
+/* Lenkerbreite-Vorschlag: Rennrad/Gravel und Triathlon nach Schulterbreite (Mitte–Mitte), MTB nach Körpergröße */
+function barWidthIdeal(){ const bt=btype(), P=S.person||{}, r20=x=>Math.round(x/20)*20, cl=(x,a,b)=>Math.min(b,Math.max(a,x));
+  if(bt==="mtb") return isFinite(P.height)&&P.height>0?cl(r20(P.height*0.42),700,800):760;
+  if(bt==="tri") return isFinite(P.shoulderW)&&P.shoulderW>0?cl(r20(P.shoulderW),380,440):400;
+  return isFinite(P.shoulderW)&&P.shoulderW>0?cl(r20(P.shoulderW),360,460):420; }
+const typeCompDef=c=>{ const bt=btype(); c.barWidth=barWidthIdeal(); c.stemAngle=STEM_ANGLE_T[bt]; c.barRise=bt==="mtb"?20:0; { const cs=centeredSetback(c.saddleH); c.setback=isFinite(cs)?cs:SETBACK_T[bt]; } if(bt!=="road"){ c.stemLen=stemIdeal(); c.spacer=spacerIdeal(); } return c; };   // Cockpit-Grundwerte je Radart
 const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v.back-5,v.back+5]]));
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
 const styleElbow=()=>{ const v=(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).elbow; return isFinite(v)?v:160; };   // Ellbogen-Ziel je Fahrstil (sportlicher = stärker angewinkelt)
@@ -1679,7 +1685,7 @@ function renderSug(){
     const extra=`<br><span class="note">Vorschlag für <b>${esc(cb?`${cb.b} ${cb.m} ${cb.s}`:"–")}</b> (Stack ${Math.round(vals.stack)} / Reach ${Math.round(vals.reach)} mm, Sitzwinkel ${(Math.round(vals.sta*10)/10).toLocaleString("de-DE")}°). Sattelhöhe und -versatz hängen nur von Körper, Kurbel, Pedal und Schuh ab; der Rahmen bestimmt Vorbau und Spacer.</span>`+
       (Math.abs(rs)>35?`<br><span class="bad">Mit dem Sitzwinkel dieses Rahmens liegt der Sattel ${Math.round(Math.abs(rs))} mm ${rs<0?"hinter":"vor"} der Stützenachse – nur mit ${rs<0?"Versatzstütze (Setback)":"nach vorn versetzter Stütze oder einem Rahmen mit steilerem Sitzwinkel"} möglich.</span>`:"");
     var sugExtra=extra; }
-  $("sugParts").innerHTML=`Bauteile für den Vorschlag: Sattelhöhe <b>${P2.saddleH} mm</b>, Versatz <b>${P2.setback} mm</b>, Vorbau <b>${P2.stemLen} mm</b> mit <b>${P2.stemAngle}°</b>, Spacer <b>${P2.spacer} mm</b>${isFinite(P2.padStack)?`, Armpad-Höhe <b>${P2.padStack} mm</b>`:""}. `+
+  $("sugParts").innerHTML=`Bauteile für den Vorschlag: Sattelhöhe <b>${P2.saddleH} mm</b>, Versatz <b>${P2.setback} mm</b>, Vorbau <b>${P2.stemLen} mm</b> mit <b>${P2.stemAngle}°</b>, Spacer <b>${P2.spacer} mm</b>${isFinite(P2.padStack)?`, Armpad-Höhe <b>${P2.padStack} mm</b>`:""}, Lenkerbreite <b>${barWidthIdeal()} mm</b>${btype()==="mtb"?" (nach Körpergröße)":" (nach Schulterbreite)"}. `+
     `${S.bar==="aero"?"Mit dem Ellbogen auf dem Armpad":`Bei Ellbogen ${T.elbow}°`} ergibt das einen Rückenwinkel von ${Math.round(r.back)}° (Ziel ${Math.round(r.backTarget)}°) und einen Schulterwinkel von ${Math.round(r.ev.shoulder)}° (Ziel ${T.shoulder}°).`+
     (Math.abs(r.back-r.backTarget)>5||Math.abs(r.ev.shoulder-T.shoulder)>10?" Mit Vorbau und Spacern lässt sich beides nicht gleichzeitig erreichen – Lenker-Reach oder ein anderer Rahmen (Stack/Reach) wären nötig.":"");
   $("sugParts").innerHTML+=sugExtra;
@@ -2374,7 +2380,7 @@ $("sugApply").onclick=()=>{
   const r=suggest(), p=r.parts, c=S.comp;
   if(p.stemAngle!==c.stemAngle) S.compSel.stem="";
   const keepAuto=!!S.person.autoBack;   // Haken „Rückenwinkel aus Griffposition ermitteln“: Rücken folgt dem eingestellten Griff
-  Object.assign(c,p);
+  Object.assign(c,p); c.barWidth=barWidthIdeal();
   if(keepAuto) delete S.person.ov.backAngle; else { S.person.ov.backAngle=Math.round(r.back); }
   syncComp(); syncPerson(); render(); save();
   $("sugNote").textContent=keepAuto?`Vorschlag übernommen: Sattel und Cockpit sind eingestellt, der Rückenwinkel ergibt sich aus der Griffposition (jetzt ${Math.round(cur.J.back)}°).`
@@ -4234,7 +4240,7 @@ async function makePdf(){
     if(fd){ doc.addImage(fd.url,"JPEG",M,y,PW,hh); y+=hh+3; } else T("Zeichnung konnte nicht eingefügt werden.",9);
     try{ const {g}=cur, Sd=g.seat, G=g.grip;
       tiles([["Sattelposition X / Y",`${Math.round(-Sd.x)} / ${Math.round(Sd.y)} mm`],[S.bar==="aero"?"Armauflage X / Y":"Griffposition X / Y",`${Math.round(G.x)} / ${Math.round(G.y)} mm`],["Sattelhöhe",`${Math.round(Math.hypot(Sd.x,Sd.y))} mm`,"Tretlager bis Sattel"],["Sattelüberhöhung",`${Math.round(Sd.y-G.y)} mm`,"Sattel über Griff"]]);
-      tiles([[S.bar==="aero"?"Abstand Sattel - Armauflage":"Abstand Sattel - Griff",`${Math.round(Math.hypot(G.x-Sd.x,G.y-Sd.y))} mm`],S.bar==="aero"?["Armpad-Höhe",`${S.comp.padStack} mm`,"über Lenkermitte"]:["Kurbellänge",`${S.comp.crank} mm`],["Vorbau",`${S.comp.stemLen} mm`,`Winkel ${S.comp.stemAngle}°`],["Spacer",`${S.comp.spacer} mm`]]); }catch(e){}
+      tiles([[S.bar==="aero"?"Abstand Sattel - Armauflage":"Abstand Sattel - Griff",`${Math.round(Math.hypot(G.x-Sd.x,G.y-Sd.y))} mm`],S.bar==="aero"?["Armpad-Höhe",`${S.comp.padStack} mm`,"über Lenkermitte"]:["Kurbellänge",`${S.comp.crank} mm`],["Vorbau",`${S.comp.stemLen} mm`,`Winkel ${S.comp.stemAngle}°`],["Spacer",`${S.comp.spacer} mm`],["Lenkerbreite",`${S.comp.barWidth} mm`,"Mitte–Mitte"]]); }catch(e){}
   }
   let im=null; if(pdfOn("drawing")) try{ im=await drawingPng(); }catch(e){}
   if(pdfOn("drawing")||pdfOn("angles")||pdfOn("sug")){ need(im?PW*im.ratio+26:60); H1("Sitzposition"); }   // Überschrift und Zeichnung auf derselben Seite
@@ -4253,7 +4259,7 @@ async function makePdf(){
   if(pdfOn("sug")&&personReady()) try{
     const r=suggest(), p=r.parts; H2("Vorschlag optimale Sitzposition");
     const sY=Math.round(Math.sqrt(Math.max(0,p.saddleH**2-p.setback**2)));
-    tiles([["Sattelhöhe",p.saddleH+" mm"],["Sattelposition X / Y",`${Math.round(p.setback)} / ${sY} mm`,"ab Tretlager"],["Vorbau",p.stemLen+" mm",`Winkel ${p.stemAngle}°`],["Spacer",p.spacer+" mm"]]);
+    tiles([["Sattelhöhe",p.saddleH+" mm"],["Sattelposition X / Y",`${Math.round(p.setback)} / ${sY} mm`,"ab Tretlager"],["Vorbau",p.stemLen+" mm",`Winkel ${p.stemAngle}°`],["Spacer",p.spacer+" mm"],["Lenkerbreite",barWidthIdeal()+" mm","Mitte–Mitte"]]);
     T(`Griffposition X / Y: ${Math.round(r.grip.x)} / ${Math.round(r.grip.y)} mm · ergibt Knie gestreckt ${dgv(r.ev.kneeMax)}, Knielot ${Math.round(r.ev.kops)} mm, Rücken ${dgv(r.back)}, Ellbogen ${dgv(r.ev.elbow)}.`,9,false,C.mute);
     lastSec="sug";
   }catch(e){}
