@@ -1288,6 +1288,15 @@ function bikeSVG(v,g,c){
   const bt=btype(), W=bt==="tri"?{dt:54,st:46,tt:32,ht:58,fk:36,ss:13}:{dt:36,st:28,tt:26,ht:42,fk:bt==="road"?31:24,ss:15};
   s+=line({x:0,y:0},g.rAxle,18,F)+line(g.rAxle,g.ssTop,W.ss,F)+line({x:0,y:0},g.dtFront,W.dt,F)+line({x:0,y:0},g.stTop,W.st,F)+line(g.ttRear,g.ttFront,W.tt,F)+line(g.htBot,g.htTop,W.ht,F);
   if(bt==="tri") s+=line({x:0,y:0},g.dtFront,W.dt*0.38,"#000",`opacity=".10" transform="translate(0,${r1(W.dt*0.28)})"`)+line({x:0,y:0},g.stTop,W.st*0.36,"#000",`opacity=".10" transform="translate(${r1(-W.st*0.27)},0)"`);   // Kamm-Hinterkante der Aero-Profile
+  { /* Tretlagerbereich: kräftiger Knotenpunkt aus Unterrohr, Sitzrohr und Kettenstreben mit Tretlagergehäuse */
+    const O={x:0,y:0}, ud=unit(g.dtFront), us=unit(g.stTop), uc=unit(g.rAxle), pp=v=>({x:-v.y,y:v.x});
+    const side=(u,L,w,id)=>[{...add(mul(u,L),mul(pp(u),w)),id},{...add(mul(u,L),mul(pp(u),-w)),id}];
+    const pts=[...side(ud,165,W.dt/2+6,0),...side(us,130,W.st/2+6,1),...side(uc,115,13,2)];
+    pts.sort((a,b)=>Math.atan2(a.y,a.x)-Math.atan2(b.y,b.x));   // Umriss im Kreis um das Tretlager
+    let d="M"+P(pts[0]);   // zwischen den Rohren weich nach innen geschwungene Hohlkehlen
+    for(let i=0;i<pts.length;i++){ const a=pts[i], b=pts[(i+1)%pts.length]; d+=a.id===b.id?" L"+P(b):" Q"+P(mul(add(a,b),0.3))+" "+P(b); }
+    s+=`<path d="${d}Z" fill="${F}" stroke="${F}" stroke-width="10" stroke-linejoin="round"/>`;
+    s+=circ(O,44,F,0,F)+circ(O,44,"rgba(0,0,0,.16)",3,"none"); }
   s+=`<path d="M${P(g.crown)} Q${P(add(g.crown,mul(g.d,g.t*0.72)))} ${P(g.fAxle)}" stroke="${F}" stroke-width="${W.fk}" fill="none" stroke-linecap="round"/>`;
   s+=line(g.crown,add(g.crown,mul(g.d,22)),Math.max(44,W.ht+2),F)+circ(g.fAxle,14,F,0,F)+circ(g.rAxle,14,F,0,F);
   s+=caliper(g.fAxle,g.crown,27)+caliper(g.rAxle,{x:0,y:0},12,0.82,76);   // vorn direkt hinten an der Gabel, hinten klein auf der Kettenstrebe
