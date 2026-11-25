@@ -147,7 +147,7 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .su input[data-t=num]{max-width:110px;justify-self:start}
 .su select{max-width:300px}
 
-#pName,#pDate,#styleSel,#sexSel{width:min(300px,58vw);max-width:100%;height:34px;box-sizing:border-box;font-size:14px}   /* Kopfzeilen bei Person gleich breit */
+#pName,#pDate,#styleSel,#discSel,#sexSel{width:min(300px,58vw);max-width:100%;height:34px;box-sizing:border-box;font-size:14px}   /* Kopfzeilen bei Person gleich breit */
 #selBar,#selStem,#selLever,#selPedal,#selShoe{max-width:380px}
 #sugCmp{max-width:300px}
 #calKnee,#calAnkle{max-width:140px} #calLabel{max-width:360px}
@@ -580,6 +580,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
           <div><label class="f" for="pDate">Datum</label><input class="bfi" id="pDate" type="date"></div></div>
         <label class="f" for="styleSel">Sitzposition / Fahrstil</label>
         <select id="styleSel"><option value="comfort">comfort</option><option value="endurance">endurance</option><option value="sportlich">sportlich</option><option value="ambitioniert">ambitioniert</option><option value="professional">professional</option></select>
+        <div id="discWrap" hidden><label class="f" for="discSel" id="discLab">Disziplin</label><select id="discSel"></select></div>
         <label class="f" for="sexSel">Geschlecht</label>
         <select id="sexSel"><option value="männlich">männlich</option><option value="weiblich">weiblich</option></select>
       </section>
@@ -852,11 +853,20 @@ const SETBACK_T={road:200,tri:110,mtb:200};   // Sattelversatz-Grundwert je Rada
 function centeredSetback(sh){ let sta=NaN; try{ sta=vals&&vals.sta; }catch(e){} if(!isFinite(sta)) return NaN; sh=isFinite(sh)?sh:760;
   let sb=200; for(let i=0;i<8;i++){ const y=Math.sqrt(Math.max(sh*sh-sb*sb,1)); sb=(y-45)/Math.tan(rad(sta)); } return Math.round(sb); }
 /* Lenkerbreite-Vorschlag: Rennrad/Gravel und Triathlon nach Schulterbreite (Mitte–Mitte), MTB nach Körpergröße */
+/* Disziplin je Radart (Triathlon, MTB): verschiebt das Rückenwinkel-Ziel (+ = aufrechter) und beim MTB die Lenkerbreite – alles im Bewertungsmodell einstellbar */
+const DISC_T={tri:[["kurz","Sprint / Olympische Distanz",-2,1],["mittel","Mitteldistanz (70.3)",0,1],["lang","Langdistanz (Ironman)",3,1],["zf","Zeitfahren",-4,1]],
+  mtb:[["xc","Cross-Country (XC Race)",-4,0.96],["marathon","XC-Marathon",-2,0.98],["trail","Trail / All-Mountain",0,1],["enduro","Enduro",3,1.03],["tour","Tour / Bikepacking",5,1]]};
+const DISC_DEF={tri:"mittel",mtb:"trail"}, STYLE_KEYS=["comfort","endurance","sportlich","ambitioniert","professional"], BAR_STYLE_DEF={comfort:1.04,endurance:1.02,sportlich:1,ambitioniert:0.98,professional:0.96};
+const discOf=(bt=btype())=>{ const L=DISC_T[bt]; if(!L) return ""; const d=S.person&&S.person["disc_"+bt]; return L.some(x=>x[0]===d)?d:DISC_DEF[bt]; };
+const discLabel=(bt=btype())=>{ const d=discOf(bt), x=(DISC_T[bt]||[]).find(x=>x[0]===d); return x?x[1]:""; };
+const fitmNum=(k,def)=>{ try{ return isFinite(FITM[k])?FITM[k]:def; }catch(e){ return def; } };
+const discBackOff=(bt=btype())=>{ const d=discOf(bt), x=(DISC_T[bt]||[]).find(x=>x[0]===d); return x?fitmNum(`disc_${bt}_${d}`,x[2]):0; };
 function barWidthIdeal(){ const bt=btype(), P=S.person||{}, r20=x=>Math.round(x/20)*20, cl=(x,a,b)=>Math.min(b,Math.max(a,x));
   const fM=FITM.barFacMtb>0?FITM.barFacMtb:0.42, fT=FITM.barFacTri>0?FITM.barFacTri:1, fR=FITM.barFacRoad>0?FITM.barFacRoad:0.945;   // Faktoren im Bewertungsmodell (Admin) einstellbar
-  if(bt==="mtb") return isFinite(P.height)&&P.height>0?cl(r20(P.height*fM),640,840):760;
-  if(bt==="tri") return isFinite(P.shoulderW)&&P.shoulderW>0?cl(r20(P.shoulderW*fT),340,480):400;
-  return isFinite(P.shoulderW)&&P.shoulderW>0?cl(r20(P.shoulderW*fR),320,480):420; }
+  const st=P.style||"sportlich", fS=fitmNum("barSt_"+st,BAR_STYLE_DEF[st]||1)||1;   // Sitzposition: komfortabler = breiter, sportlicher = schmaler
+  if(bt==="mtb"){ const d=discOf("mtb"), x=DISC_T.mtb.find(x=>x[0]===d), fD=fitmNum("discBar_mtb_"+d,x?x[3]:1)||1; return isFinite(P.height)&&P.height>0?cl(r20(P.height*fM*fS*fD),640,840):760; }
+  if(bt==="tri") return isFinite(P.shoulderW)&&P.shoulderW>0?cl(r20(P.shoulderW*fT*fS),340,480):400;
+  return isFinite(P.shoulderW)&&P.shoulderW>0?cl(r20(P.shoulderW*fR*fS),320,480):420; }
 const typeCompDef=c=>{ const bt=btype(); c.barWidth=barWidthIdeal(); c.stemAngle=STEM_ANGLE_T[bt]; c.barRise=bt==="mtb"?20:0; { const cs=centeredSetback(c.saddleH); c.setback=isFinite(cs)?cs:SETBACK_T[bt]; } if(bt!=="road"){ c.stemLen=stemIdeal(); c.spacer=spacerIdeal(); } return c; };   // Cockpit-Grundwerte je Radart
 const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v.back-5,v.back+5]]));
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
@@ -2128,6 +2138,8 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["barFacRoad","Lenkerbreite","Rennrad/Gravel: Faktor × Schulterbreite","",0.945,0.005,"Lenkerbreite (Mitte–Mitte) = Schulterbreite × Faktor, gerundet auf 20 mm"],
   ["barFacTri","Lenkerbreite","Triathlon: Faktor × Schulterbreite","",1,0.005,"Basislenker = Schulterbreite × Faktor, gerundet auf 20 mm"],
   ["barFacMtb","Lenkerbreite","MTB: Faktor × Körpergröße","",0.42,0.005,"Lenkerbreite = Körpergröße × Faktor, gerundet auf 20 mm"],
+  ...STYLE_KEYS.map(st=>["barSt_"+st,"Lenkerbreite",`Sitzposition ${st}: Faktor`,"",BAR_STYLE_DEF[st],0.005,st==="comfort"?"wird zusätzlich mit dem Faktor der Radart multipliziert (alle Radarten)":""]),
+  ...DISC_T.mtb.map(([k,l,,b])=>["discBar_mtb_"+k,"Lenkerbreite",`MTB ${l}: Faktor`,"",b,0.005,k==="xc"?"zusätzlicher Faktor je MTB-Disziplin":""]),
   ["crankHipRoad","Kurbellänge","Rennrad/Gravel: Hüfte geschlossen mindestens","°",48,1,"längste Kurbel, bei der der kleinste Hüftwinkel (oberer Totpunkt) nicht darunter fällt"],
   ["crankHipTri","Kurbellänge","Triathlon: Hüfte geschlossen mindestens","°",45,1,"Aeroposition: Hüfte ist ohnehin geschlossener"],
   ["crankHipMtb","Kurbellänge","MTB: Hüfte geschlossen mindestens","°",48,1,""],
@@ -2136,6 +2148,8 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["crankMaxL","Kurbellänge","Längste Kurbel","mm",175,2.5,""],
   ["crankBase","Kurbellänge","Kontrolle: Grundwert","mm",110,1,"Vergleichswert = Grundwert + Faktor × Schrittlänge (760 mm → 165, 895 mm → 175)"],
   ["crankPct","Kurbellänge","Kontrolle: Faktor × Schrittlänge","",0.0725,0.0005,"gerundet auf 2,5 mm"],
+  ...DISC_T.tri.map(([k,l,o])=>["disc_tri_"+k,"Disziplin Triathlon",l+": Rückenwinkel","°",o,0.5,k==="kurz"?"wird zum Rückenwinkel-Ziel der Sitzposition addiert (+ = aufrechter)":""]),
+  ...DISC_T.mtb.map(([k,l,o])=>["disc_mtb_"+k,"Disziplin MTB",l+": Rückenwinkel","°",o,0.5,k==="xc"?"wird zum Rückenwinkel-Ziel der Sitzposition addiert (+ = aufrechter)":""]),
   ["expoShiftMtb","Radart","MTB: Stützenauszug verschieben","mm",80,5,"kurze Sitzrohre (Dropper): Grenzen und Ziel des Auszugs liegen um diesen Wert höher"],
   ["green","Farben","Grün bis Score","",1.3,0.1,"darunter: passt"],
   ["orange","Farben","Orange bis Score","",3,0.1,"darunter: bedingt, ab hier rot; die beste Größe unter diesem Wert ist immer grün"]];
@@ -2147,6 +2161,7 @@ const STEM_T={}, SPACER_T={}, kpT=bt=>bt==="road"?"":bt+"_";   // Schlüssel: st
 function applyFitModel(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
   const o=S.fitOv||{}, d=(S.modelStd&&S.modelStd.fitModel)||{}, pick=(k,def)=>isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:def;
   for(const x of FITM_DEF) FITM[x[0]]=pick(x[0],x[4]);
+  try{ applyStyleStd(); }catch(e){}   // Disziplin-Verschiebung des Rücken-Ziels kann sich geändert haben
   for(const bt of Object.keys(BTYPES)){ STEM_T[bt]={}; SPACER_T[bt]={};
     for(const st of Object.keys(STEM_FACTORY)){ STEM_T[bt][st]=pick(kpT(bt)+"stem_"+st,STEM_FACTORY_T[bt][st]); SPACER_T[bt][st]=pick(kpT(bt)+"spacer_"+st,SPACER_FACTORY_T[bt][st]); } }
   Object.assign(STEM_BY_STYLE,STEM_T[btype()]); Object.assign(SPACER_BY_STYLE,SPACER_T[btype()]);
@@ -2351,7 +2366,7 @@ function useData(geoRows,fitObj,fileName,source,keep){
   }
   if(S.cmp.b&&!findBike(S.cmp)) S.cmp={b:"",m:"",s:""};
   S.cmpX=(S.cmpX||[]).map(x=>x&&x.b&&findBike(x)?x:EMPTY_CMP());
-  document.getElementById("styleSel").value=S.person.style;
+  document.getElementById("styleSel").value=S.person.style; renderDisc();
   if(!S.person.sex) S.person.sex=(FIT.person&&FIT.person.sex==="weiblich")?"weiblich":"männlich";
   document.getElementById("sexSel").value=S.person.sex;
   document.getElementById("autoBack").checked=!!S.person.autoBack;
@@ -2465,7 +2480,7 @@ function applyBarVis(){ for(const b of ["drop","flat","aero"]) document.body.cla
 function applyBtypeUI(){
   const bt=btype(); for(const t of Object.keys(BTYPES)) document.body.classList.toggle("bt-"+t,t===bt);
   document.querySelectorAll("#btGroup [data-bt]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.bt===bt)));
-  applyBarVis(); updViewMenu();
+  applyBarVis(); updViewMenu(); try{ renderDisc(); }catch(e){}
 }
 /* Aufklappmenü oben links: Fitting (WiFitPro/WiFitBasic), Radart und Anzeige */
 function updViewMenu(){
@@ -2525,6 +2540,12 @@ $("resetStd").onclick=()=>{
   sugCache.key=""; syncPerson(); render(); save(); factorySave();
   $("stdNote").textContent="Ursprüngliche App-Werte wiederhergestellt; sie sind jetzt die Werkseinstellung.";
 };
+/* Disziplin-Auswahl unter Sitzposition/Fahrstil – nur Triathlon und MTB */
+function renderDisc(){ const w=$("discWrap"), sel=$("discSel"); if(!w||!sel) return; const bt=btype(), L=DISC_T[bt]; w.hidden=!L; if(!L) return;
+  $("discLab").textContent=bt==="tri"?"Triathlon-Disziplin":"MTB-Disziplin"; const d=discOf(bt);
+  sel.innerHTML=L.map(([k,l])=>`<option value="${k}"${k===d?" selected":""}>${l}</option>`).join(""); }
+$("discSel").onchange=e=>{ S.person["disc_"+btype()]=e.target.value; delete S.person.ov.backAngle; if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }
+  applyStyleStd(); sugCache.key=""; sizeFitCache.key=""; cmpFit={}; syncPerson(); render(); save(); };
 $("styleSel").onchange=e=>{ S.person.style=e.target.value; delete S.person.ov.backAngle;
   if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }   // Zielwerte folgen dem Fahrstil
   syncPerson(); render(); save(); };
@@ -4521,11 +4542,11 @@ async function makePdf(){
   const RT=S.basic?"WiFitBasic Report":`${tier[1]||"WiFitPro"} Report`;   /* Paketname + Report, sonst WiFitPro Report */
   font(20,true); col([255,255,255]); doc.text(RT,M,16);
   font(10.5); doc.text(pdfTxt(`${Bf.name||"Name nicht angegeben"}${Bf.date?" · "+new Date(Bf.date).toLocaleDateString("de-DE"):""}`),M,24);
-  const cb=findBike(S.sel); font(8.5); doc.text(pdfTxt(`Rad: ${cb?`${cb.b} ${cb.m} ${cb.s}`:"-"} · ${BTYPES[btype()]} · Fahrstil: ${P.style}`),M,29.5);
+  const cb=findBike(S.sel); font(8.5); doc.text(pdfTxt(`Rad: ${cb?`${cb.b} ${cb.m} ${cb.s}`:"-"} · ${BTYPES[btype()]}${discLabel()?" ("+discLabel()+")":""} · Fahrstil: ${P.style}`),M,29.5);
   col(C.ink); y=44; firstTop=y;
 
   if(pdfOn("person")){ H1("Person");
-    tiles([["Körpergröße",mm(Bd.height)],["Schrittlänge",mm(Bd.inseam)],["Fahrstil",P.style],["Geschlecht",P.sex||"-"]]);
+    tiles([["Körpergröße",mm(Bd.height)],["Schrittlänge",mm(Bd.inseam)],["Fahrstil",P.style,discLabel()],["Geschlecht",P.sex||"-"]]);
     const NN=normsFor(Bd), armR=Bd.acromion-Bd.hand, armL=Bd.L.acromionL-Bd.L.handL;
     font(7.5); col(C.mute); need(6); doc.text(pdfTxt("Norm nach Körpergröße und Geschlecht · grün: bis 1 SD · gelb: 1-2 SD · rot: mehr als 2 SD"),M,y+2.5); y+=6;
     normRows([["Schrittlänge",Bd.inseam,NN.inseam],["Höhe Brustbein",Bd.sternum,NN.sternum],["Oberkörperlänge (Brustbein - Schritt)",Bd.sternum-Bd.inseam,NN.torsoLen],["Schulterbreite",S.person.shoulderW,NN.shoulderW]]);
@@ -4865,7 +4886,8 @@ function applyStyleStd(){   // Reihenfolge: aktuelle Änderung > gespeicherte We
   for(const bt of Object.keys(BTYPES)){ const fac=bt==="road"?STYLE_FACTORY:STYLE_T_DEF[bt], O=styleOvOf(bt), D=styleStdOf(bt); STYLE_T[bt]={};
     for(const st of Object.keys(STYLE_FACTORY)){ const o=O[st]||{}, d=D[st]||{}; STYLE_T[bt][st]={};
       for(const k of ["back","shoulder","elbow"]) STYLE_T[bt][st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:fac[st][k]; } }
-  for(const st of Object.keys(STYLE_FACTORY)){ Object.assign(STYLE_STD[st],STYLE_T[btype()][st]); STYLE_BACK[st]=[STYLE_STD[st].back-5,STYLE_STD[st].back+5]; }
+  const off=discBackOff();   // Disziplin (Triathlon/MTB) verschiebt das Rücken-Ziel
+  for(const st of Object.keys(STYLE_FACTORY)){ Object.assign(STYLE_STD[st],STYLE_T[btype()][st]); STYLE_STD[st].back=Math.round((STYLE_T[btype()][st].back+off)*10)/10; STYLE_BACK[st]=[STYLE_STD[st].back-5,STYLE_STD[st].back+5]; }
 }
 function renderStyleStd(){
   try{ renderFitModel(); }catch(e){}   // Werkseinstellung kann auch das Bewertungsmodell enthalten (Cache-Schlüssel enthalten das Modell)
@@ -4875,7 +4897,7 @@ function renderStyleStd(){
   const tag=(st,k)=>O[st]&&isFinite(O[st][k])?'<small class="src edit">geändert</small>'
     :D[st]&&isFinite(D[st][k])?'<small class="src">Standard</small>':'<small class="src">&nbsp;</small>';
   box.innerHTML=`<h3 style="margin:14px 0 4px">Richtwerte je Fahrstil – ${BTYPES[bt]}</h3><div class="bfg styleGrid"><span></span><b>Rücken (°)</b><b>Schulter (°)</b><b>Ellbogen (°)</b>`+
-    ["comfort","endurance","sportlich","ambitioniert","professional"].map(st=>`<span>${st}</span>${["back","shoulder","elbow"].map(k=>`<div><input class="bfi" type="number" step="${k==="elbow"?1:0.5}" data-stylestd="${st}|${k}" value="${STYLE_STD[st][k]}" aria-label="${k==="back"?"Rücken":k==="shoulder"?"Schulter":"Ellbogen"} ${st}">${tag(st,k)}</div>`).join("")}`).join("")+
+    ["comfort","endurance","sportlich","ambitioniert","professional"].map(st=>`<span>${st}</span>${["back","shoulder","elbow"].map(k=>`<div><input class="bfi" type="number" step="${k==="elbow"?1:0.5}" data-stylestd="${st}|${k}" value="${STYLE_T[bt][st][k]}" aria-label="${k==="back"?"Rücken":k==="shoulder"?"Schulter":"Ellbogen"} ${st}">${tag(st,k)}</div>`).join("")}`).join("")+
     `</div><p class="note info">Rücken: Rückenwinkel und Ziel im Vorschlag, Bereich ±5°. Schulter: Ziel im Vorschlag, Bereich ±10°. Ellbogen: Ziel im Vorschlag und Armhaltung der Figur (180° = gestreckt). Mit „Modellwerte als Standard speichern“ (ganz unten) als Werkseinstellung sichern.</p>`;
   box.querySelectorAll("[data-stylestd]").forEach(el=>el.onchange=()=>{
     const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value); if(!(k==="elbow"?(x>=70&&x<=180):(x>=5&&x<=130))){ renderStyleStd(); return; }
