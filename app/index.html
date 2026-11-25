@@ -2247,7 +2247,7 @@ const COMP_FITM=["Lenkerbreite","Kurbellänge"];   // diese Gruppen stehen im Ta
 /* Tabelle im Tab Bauteile: Lenkerfaktor sowie Hüft- und Kniewinkel-Minimum (Kurbellänge) je Disziplin */
 function discCompTable(tag){   // Lenker-Faktor je Disziplin – Zeilen in der Gruppe „Lenkerbreite“
   const bt=admBt(), ref=bt==="mtb"?"Körpergröße":"Schulterbreite";
-  return `<div style="grid-column:1/-1;margin:10px 0 0;font-size:14px;font-weight:600;color:var(--muted)">Lenker-Faktor je Disziplin${ib(`Lenkerbreite = ${ref} × Faktor × Faktor der Sitzposition, gerundet auf 20 mm`)}</div>`+DISC_T[bt].map(([k,l],i)=>{ const key="dbar_"+bt+"_"+k;
+  return `<div style="grid-column:1/-1;margin:10px 0 0;font-size:14px;font-weight:600;color:var(--muted)">Lenker-Faktor je Disziplin</div>`+DISC_T[bt].map(([k,l],i)=>{ const key="dbar_"+bt+"_"+k;
     return `<label for="cm_${key}">${DISC_T[bt].length>1?esc(l)+": ":""}Lenker-Faktor × ${ref}</label><div class="fitmIn"><input class="bfi" type="number" step="0.005" id="cm_${key}" data-fitm="${key}" value="${FITM[key]}" style="max-width:90px"><span class="note" style="margin:0"></span>${tag(key)}</div>`; }).join(""); }
 const DISC_FITM=["Disziplin Rennrad","Disziplin Triathlon","Disziplin MTB"];   // diese Gruppen stehen unter Person → Richtwerte je Fahrstil
 function renderFitModel(){ renderFitBox("fitModelBox","fm",g=>!COMP_FITM.includes(g)&&!DISC_FITM.includes(g),true); try{ renderDiscStd(); }catch(e){} renderFitBox("compModelBox","cm",g=>COMP_FITM.includes(g)||g==="_disc",false,undefined,discCompTable); }
@@ -2260,7 +2260,7 @@ function renderFitBox(boxId,pf,filt,full,note,extra){
   let grp="";
   h+=`<div class="fitmGrid">`;
   for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){ if(!filt(g)||g[0]==="_"||(g==="Radart"&&bt!=="mtb")) continue;
-    if(g!==grp){ if(grp==="Lenkerbreite"&&extra) h+=extra(tag); grp=g; h+=`<div class="suh">${g}</div>`; }
+    if(g!==grp){ if(grp==="Lenkerbreite"&&extra) h+=extra(tag); grp=g; h+=`<div class="suh">${g}${g==="Lenkerbreite"?ib(`Lenkerbreite = ${bt==="mtb"?"Körpergröße":"Schulterbreite"} × Lenker-Faktor der Disziplin × Faktor der Sitzposition, gerundet auf 20 mm`):""}</div>`; }
     h+=`<label for="${pf}_${k}">${esc(lab)}${expl?ib(expl):""}</label><div class="fitmIn">${inp(k,fitmOf(bt,k),step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
   }
   if(grp==="Lenkerbreite"&&extra) h+=extra(tag);
