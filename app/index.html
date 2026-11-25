@@ -639,7 +639,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <details class="acc"><summary>Berechnet</summary><div class="res" id="results"></div></details>
       <details class="acc adminOnly" id="fitModelDetails"><summary>Bewertungsmodell Größenempfehlung</summary><div id="fitModelBox"></div></details>
       <details class="acc"><summary>Rahmenfarbe <span class="note" id="colorName" style="margin:0 auto 0 10px;font-weight:400"></span></summary><div class="swatches" id="swatches" style="flex-wrap:wrap"></div></details>
-      <section class="geoSec adminOnly"><div class="row"></div><div id="geoImgBox"></div></section>
+      <section class="geoSec"><div class="row"></div><div id="geoImgBox"></div></section>
       <details class="acc adminOnly" id="bmDetails"><summary>Räder verwalten</summary><p class="note dbstat" style="margin-top:0"></p>
         <div class="row"><button class="btn ghost small" id="newBikeBtn">+ Rad anlegen</button></div>
         <div id="newBikeBox"></div>
@@ -965,7 +965,7 @@ const TYPE_FIX=[["gravel",/^(avona callis|bergamont grandurance|bianchi arcadex|
   ["mtb",/^(avona silva|simplon cirex|focus jarifa)/i],["tri",/^(cervelo p-?series|cube (cube )?aerium|pinarello bolide)/i]];
 function bikeTypeOf(b,m){
   { const t=(b+" "+m).trim(); for(const [ty,re] of TYPE_FIX) if(re.test(t)) return ty; }
-  const k=norm(b)+"|"+norm(m), o=[...BUILTIN_BIKES,...(S.customBikes||[])].find(o=>o.radart&&norm(o.marke)+"|"+norm(o.modell)===k);
+  const k=norm(b)+"|"+norm(m), o=[...BUILTIN_BIKES,...(S.customBikes||[]),...(S.userBikes||[])].find(o=>o.radart&&norm(o.marke)+"|"+norm(o.modell)===k);
   const t=b+" "+m; if(o&&BTYPES[o.radart]) return o.radart==="road"&&GRAVEL_RE.test(m)?"gravel":o.radart;
   return TRI_RE.test(t)&&!/\broad\b/i.test(t)?"tri":MTB_RE.test(m)?"mtb":GRAVEL_RE.test(m)?"gravel":"road";   // MTB nur am Modellnamen (Marken wie „Rocky Mountain“ bauen auch Gravelräder)
 }
@@ -2683,7 +2683,7 @@ function markBasic(){
 /* „Geometrie aus Bild“: in WiFitPro unter „Räder verwalten“, in WiFitBasic als eigener Bereich (dort ist „Räder verwalten“ ausgeblendet) */
 function placeGeo(){   /* „+ Rad anlegen“ samt Formular: in WiFitPro unter „Räder verwalten“, in WiFitBasic als eigener Bereich */
   const b=$("newBikeBtn"), gx=$("geoImgBox"), nb=$("newBikeBox"), sec=document.querySelector(".geoSec"), row=document.querySelector("#bmDetails .row"); if(!b||!gx||!nb||!sec||!row) return;
-  if(S.basic){ sec.querySelector(".row").appendChild(b); sec.appendChild(gx); sec.appendChild(nb); sec.hidden=false; }
+  if(S.basic||isWebUser()){ sec.querySelector(".row").appendChild(b); sec.appendChild(gx); sec.appendChild(nb); sec.hidden=false; }   // Nutzer ohne Admin-Rechte: „Räder verwalten“ ist ausgeblendet, Rad anlegen trotzdem möglich
   else { row.appendChild(b); row.after(gx); gx.after(nb); sec.hidden=true; }
 }
 /* Erklärtexte als kleiner i-Button: Beschreibung erscheint beim Darüberfahren (Touch: antippen) */
@@ -2940,6 +2940,11 @@ function renderBikeManager(){
     bmSel=null; reloadData(); renderOwnBikes(); renderBikeManager();
   };
   if($("bmRestore")) $("bmRestore").onclick=()=>{ S.bikeDel=(S.bikeDel||[]).filter(k=>!k.startsWith(bmSel.b+"|")); reloadData(); renderBikeManager(); };
+  if(isWebUser()){   // Nutzer: nur ansehen und neue Räder anlegen, nichts ändern oder löschen
+    box.querySelectorAll("input,select,textarea").forEach(e=>{ if(!["bmCat","bmB","bmM"].includes(e.id)) e.disabled=true; });
+    box.querySelectorAll("#bmRen,#bmAddS,#bmDelM,#bmRestore,[data-bmdel],#bmNewS").forEach(e=>e.hidden=true);
+    if($("bmNote")) $("bmNote").textContent="Nur ansehen: Räder ändern oder löschen dürfen nur Admins. Neue Räder kannst du mit „+ Rad anlegen“ hinzufügen – sie sind dann für alle sichtbar.";
+    return; }
   $("bmAddS").onclick=()=>{
     const s=$("bmNewS").value.trim(); if(!s){ $("bmNote").textContent="Bitte eine Größenbezeichnung eingeben."; return; }
     if(sizesOf(bmSel.b,bmSel.m).some(x=>String(x.s)===s)){ $("bmNote").textContent="Diese Größe gibt es schon."; return; }
@@ -3026,7 +3031,15 @@ const BUILTIN_BIKES=[
     ["Canyon","Lux World Cup CF (2026)","mtb",[["XS",415,595,66,75.5,569,93,390,435,1144,42],["S",435,595,66,75.5,589,93,420,435,1164,42],["M",455,597,66,75.5,609,95,440,435,1185,42],["L",475,609,66,75.5,632,108,470,440,1216,42],["XL",495,624,66,75.5,655,120,500,440,1242,42]]]
   ].flatMap(([marke,modell,radart,rows])=>rows.map(([s,r,st,hta,sta,tt,ht,stl,cs,wb,bb])=>({marke,modell,radart,grosse:s,reach:r,stack:st,steuerwinkel:hta,sitzwinkel:sta,oberrohr:tt,steuerrohr:ht,sitzrohr:stl,kettenstrebe:cs,radstand:wb,tretlageroffset:bb})))
 ];
-function customRows(header){ return [...BUILTIN_BIKES,...(S.customBikes||[])].map(o=>header.map(hc=>{ const v=o[norm(hc)]; return v===undefined?"":v; })); }
+/* Räder, die Nutzer (ohne Admin-Rechte) angelegt haben – eigene Tabelle in Supabase, für alle sichtbar, nur Admins können ändern/löschen */
+const userBikesExtra=()=>{ const own=new Set((S.customBikes||[]).map(o=>norm(o.marke)+"|"+norm(o.modell)+"|"+norm(o.grosse))); return (S.userBikes||[]).filter(o=>!own.has(norm(o.marke)+"|"+norm(o.modell)+"|"+norm(o.grosse))); };
+const isWebUser=()=>!!(window.WF&&WF.userBikes&&WF.user&&!WF.isAdmin);
+function addBikes(list){   // neue Räder speichern: Admin → zentrale Bibliothek, Nutzer → Tabelle „user_bikes“
+  if(isWebUser()){ S.userBikes=S.userBikes||[]; S.userBikes.push(...list);
+    WF.userBikes.add(list).then(()=>libToast("✓ Rad gespeichert – für alle sichtbar. Ändern oder löschen kann es nur ein Admin.",true))
+      .catch(e=>libToast("✗ Rad nicht zentral gespeichert: "+(e&&e.message||e),false)); return "user"; }
+  S.customBikes=S.customBikes||[]; S.customBikes.push(...list); return "lib"; }
+function customRows(header){ return [...BUILTIN_BIKES,...(S.customBikes||[]),...userBikesExtra()].map(o=>header.map(hc=>{ const v=o[norm(hc)]; return v===undefined?"":v; })); }
 /* ================= Geometrie aus Bild: Screenshot einer Geometrietabelle → Werte je Größe → eigene Räder ================= */
 const GEO_F=[["reach","Reach"],["stack","Stack"],["steuerwinkel","Steuerwinkel","°"],["sitzwinkel","Sitzwinkel","°"],["oberrohr","Oberrohr (eff.)"],["steuerrohr","Steuerrohr"],
   ["sitzrohr","Sitzrohr"],["kettenstrebe","Kettenstrebe"],["radstand","Radstand"],["tretlageroffset","Tretlager-Offset"]];
@@ -3281,11 +3294,11 @@ function geoTable(r){
       if(DB.bikes.some(x=>norm(x.b)===norm(marke)&&norm(x.m)===norm(modell)&&norm(x.s)===norm(o.grosse))){ skip.push(o.grosse); return; }
       add.push(o); });
     if(!add.length){ $("geoErr").textContent=miss.length?`Es fehlen Reach, Stack, Steuer- oder Sitzwinkel (${miss.join(", ")}).`:"Diese Größen gibt es schon."; return; }
-    S.customBikes=S.customBikes||[]; S.customBikes.push(...add);
+    const via=addBikes(add);
     if(art!==btype()) setBtype(art);
     reloadData(); selectMain(marke,modell,String(add[0].grosse)); try{ renderOwnBikes(); bmSel={b:marke,m:modell}; renderBikeManager(); }catch(e){} save();
     const host=$("geoRes").closest("#newBikeBox")||$("geoImgBox"); host.innerHTML=`<p class="note">${esc(marke)} ${esc(modell)}: ${add.length} Größe${add.length>1?"n":""} angelegt${skip.length?`, schon vorhanden: ${esc(skip.join(", "))}`:""}${miss.length?`, ohne Pflichtwerte übersprungen: ${esc(miss.join(", "))}`:""}. Wird zentral gespeichert …</p>`;
-    try{ libSaveNow(); }catch(e){}   // gleich zentral sichern – auch in WiFitBasic, wo „Räder verwalten“ ausgeblendet ist
+    if(via==="lib") try{ libSaveNow(); }catch(e){}   // gleich zentral sichern – auch in WiFitBasic, wo „Räder verwalten“ ausgeblendet ist
     document.removeEventListener("paste",geoPaste);
   };
 }
@@ -3322,7 +3335,7 @@ function renderBikeForm(boxId="newBikeBox",onSaved=null){
     for(const k of ["marke","modell","grosse","reach","stack","steuerwinkel","sitzwinkel"]) if(o[k]===undefined||o[k]===""){ $("nbErr").textContent="Bitte mindestens Marke, Modell, Größe, Reach, Stack, Steuer- und Sitzwinkel angeben."; return; }
     if(DB.bikes.some(x=>norm(x.b)===norm(o.marke)&&norm(x.m)===norm(o.modell)&&norm(x.s)===norm(o.grosse))){ $("nbErr").textContent="Dieses Rad gibt es schon."; return; }
     o.radart=btype();   // neues Rad gehört zur gerade gewählten Radart
-    S.customBikes=S.customBikes||[]; S.customBikes.push(o); box.innerHTML=""; if(S.basic) setTimeout(()=>{ try{ libSaveNow(); }catch(e){} },0);   // WiFitBasic: gleich zentral speichern
+    const via=addBikes([o]); box.innerHTML=""; if(S.basic&&via==="lib") setTimeout(()=>{ try{ libSaveNow(); }catch(e){} },0);   // WiFitBasic: gleich zentral speichern
     reloadData(); if(onSaved) onSaved(o); else selectMain(o.marke,o.modell,String(o.grosse)); renderOwnBikes(); bmSel={b:o.marke,m:o.modell}; renderBikeManager();
   };
 }
@@ -5111,7 +5124,7 @@ async function factoryLoad(){
     const db=window.claude&&window.claude.use?await window.claude.use("db"):null; if(!db){ DB_STATE="none"; setDbStat(); return; } FACT_DB=db; DB_STATE="ok";
     try{ const u=await window.claude.use("user"); const w=u&&u.can?await u.can("data.write"):null; if(w===false) DB_STATE="ro"; }catch(e){}
     setDbStat();
-    accessLoad(); await libLoad();
+    accessLoad(); await libLoad(); loadUserBikes();
     const snap=await db.doc("settings/factory").get(); if(!snap.exists) return;
     const d=JSON.parse(JSON.stringify(snap.data()||null)); if(!d||!d.vals||!isFinite(d.at)) return;
     if(isFinite(S.modelStdAt)&&S.modelStdAt>=d.at) return;   // lokal ist schon aktuell
@@ -5265,6 +5278,7 @@ libSaveNote();
 /* beim Schließen oder Wegwechseln noch offene Änderungen sofort schreiben */
 addEventListener("pagehide",()=>{ try{ const a=document.activeElement; if(a&&a.blur) a.blur(); clearTimeout(saveT); localStorage.setItem("bike-geo-v3",JSON.stringify(S)); }catch(e){} if(libT) libWrite(); });
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"&&libT) libWrite(); });
+async function loadUserBikes(){ if(!(window.WF&&WF.userBikes)) return; try{ placeGeo(); }catch(e){} try{ S.userBikes=await WF.userBikes.list(); reloadData(); renderOwnBikes(); try{ renderBikeManager(); }catch(e){} }catch(e){} }
 async function libLoad(){
   try{
     if(!FACT_DB) return;
