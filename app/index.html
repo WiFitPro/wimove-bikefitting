@@ -950,7 +950,11 @@ function parseList(rows){
 const TRI_RE=/\b(tri|triathlon\w*|tt|zeitfahr\w*|time ?trial|speedmax|speed ?concept|trinity|shiv|p[2-5]|plasma|ia|timemachine|speedmachine|andean|ventum|chrono|dimond)\b/i;
 const MTB_RE=/\b(mtb|mountain\w*|trail|enduro|downhill|hardtail|fully|xc|spark|scale|lux|neuron|spectral|strive|exceed|grand ?canyon|epic|stumpjumper|chisel|rockhopper|supercaliber|procaliber|fuel|top ?fuel|marlin|roscoe|anthem|trance|talon|fathom|reign|jeffsy|capra|oiz|occam|rallon|fourstroke|twostroke|blur|tallboy|hightower|scalpel|habit|jekyll|genius|ransom|spur|switchblade|ripmo|ripley)\b/i;
 const GRAVEL_RE=/gravel|grizl|grail|aspero|diverge|checkpoint|topstone|revolt|\bcrux\b|exploro|kanzo|terra|stigmata|warbird|cutthroat|allroad|all-road|\bgrx\b|cyclocross|\bcx\b|gravelator|\bgrvl\b/i;
+/* Radart je Modell, nach Geometrie und Herstellerangabe geprüft (geht vor Namenserkennung und gespeicherter Radart) */
+const TYPE_FIX=[["gravel",/^(avona callis|bergamont grandurance|bianchi arcadex|bmc kaius|bombtrack hook|canyon inflite|cube cross ?race|cube nuroad|cube nulane|focus atlas|focus mares|lauf seigla|liv devote|marin headlands|megamo west|merida silex|opem u\.?p|open u\.?p|propain terrel|rocky mountain solo|rose backroad|stevens prestige|stevens gavere|trek checkmate)/i],
+  ["mtb",/^(avona silva|simplon cirex|focus jarifa)/i],["tri",/^(cervelo p-?series|cube (cube )?aerium|pinarello bolide)/i]];
 function bikeTypeOf(b,m){
+  { const t=(b+" "+m).trim(); for(const [ty,re] of TYPE_FIX) if(re.test(t)) return ty; }
   const k=norm(b)+"|"+norm(m), o=[...BUILTIN_BIKES,...(S.customBikes||[])].find(o=>o.radart&&norm(o.marke)+"|"+norm(o.modell)===k);
   const t=b+" "+m; if(o&&BTYPES[o.radart]) return o.radart==="road"&&GRAVEL_RE.test(m)?"gravel":o.radart;
   return TRI_RE.test(t)&&!/\broad\b/i.test(t)?"tri":MTB_RE.test(m)?"mtb":GRAVEL_RE.test(m)?"gravel":"road";   // MTB nur am Modellnamen (Marken wie „Rocky Mountain“ bauen auch Gravelräder)
