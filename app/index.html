@@ -2182,7 +2182,7 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["crankKnee","_alt","Knie gebeugt mindestens","°",58,1,"kleinster Kniewinkel im oberen Totpunkt"],
   ["crankMinL","Kurbellänge","Kürzeste Kurbel","mm",160,2.5,"Suchbereich in 2,5-mm-Schritten"],
   ["crankMaxL","Kurbellänge","Längste Kurbel","mm",175,2.5,""],
-  ["crankBase","Kurbellänge","Empfehlung: Grundwert","mm",110,1,"Kurbellänge = Grundwert + Faktor × Schrittlänge (760 mm → 165, 895 mm → 175) – gilt überall"],
+  ["crankBase","Kurbellänge","Empfehlung: Grundwert","mm",110,1,""],
   ["crankPct","Kurbellänge","Empfehlung: Faktor × Schrittlänge","",0.0725,0.0005,"gerundet auf 2,5 mm"],
   ...DISC_T.tri.map(([k,l,o])=>["disc_tri_"+k,"Disziplin Triathlon",l+": Rückenwinkel","°",o,0.5,k==="kurz"?"wird zum Rückenwinkel-Ziel der Sitzposition addiert (+ = aufrechter)":""]),
   ...DISC_T.mtb.map(([k,l,o])=>["disc_mtb_"+k,"Disziplin MTB",l+": Rückenwinkel","°",o,0.5,k==="xc"?"wird zum Rückenwinkel-Ziel der Sitzposition addiert (+ = aufrechter)":""]),
@@ -2260,7 +2260,7 @@ function renderFitBox(boxId,pf,filt,full,note,extra){
   let grp="";
   h+=`<div class="fitmGrid">`;
   for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){ if(!filt(g)||g[0]==="_"||(g==="Radart"&&bt!=="mtb")) continue;
-    if(g!==grp){ if(grp==="Lenkerbreite"&&extra) h+=extra(tag); grp=g; h+=`<div class="suh">${g}${g==="Lenkerbreite"?ib(`Lenkerbreite = ${bt==="mtb"?"Körpergröße":"Schulterbreite"} × Lenker-Faktor der Disziplin × Faktor der Sitzposition, gerundet auf 20 mm`):""}</div>`; }
+    if(g!==grp){ if(grp==="Lenkerbreite"&&extra) h+=extra(tag); grp=g; h+=`<div class="suh">${g}${g==="Kurbellänge"?ib("Kurbellänge = Grundwert + Faktor × Schrittlänge (760 mm → 165, 895 mm → 175) – gilt überall"):""}${g==="Lenkerbreite"?ib(`Lenkerbreite = ${bt==="mtb"?"Körpergröße":"Schulterbreite"} × Lenker-Faktor der Disziplin × Faktor der Sitzposition, gerundet auf 20 mm`):""}</div>`; }
     if(k==="barSt_comfort") h+=`<div style="grid-column:1/-1;margin:6px 0 0;font-size:14px;font-weight:600;color:var(--muted)">Faktor je Sitzposition</div>`;
     h+=`<label for="${pf}_${k}">${esc(lab)}${expl?ib(expl):""}</label><div class="fitmIn">${inp(k,fitmOf(bt,k),step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
   }
