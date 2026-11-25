@@ -430,8 +430,8 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <button class="startBtn basic" type="button" id="startBasic">WiFitBasic</button>
     </div>
     <div class="startBtns types" id="startTypes" hidden>
-      <button class="startBtn basic" type="button" data-bt="road" data-disc="rennrad">Rennrad</button>
-      <button class="startBtn basic" type="button" data-bt="road" data-disc="gravel">Gravel</button>
+      <button class="startBtn basic" type="button" data-bt="road">Rennrad</button>
+      <button class="startBtn basic" type="button" data-bt="gravel">Gravel</button>
       <button class="startBtn basic" type="button" data-bt="tri">Triathlonrad</button>
       <button class="startBtn basic" type="button" data-bt="mtb">Mountainbike</button>
     </div>
@@ -446,7 +446,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
           <div class="vmFit"><div class="vmH">Fitting</div><div class="btGroup" id="wfGroup" role="group" aria-label="Fitting"><button type="button" data-wf="pro">WiFitPro</button><button type="button" data-wf="basic">WiFitBasic</button></div></div>
           <button class="btn ghost" id="basicBtn" hidden aria-pressed="false">WiFitBasic</button>
           <div class="vmH">Radart</div>
-          <div class="btGroup" id="btGroup" role="group" aria-label="Radart"><button type="button" data-bt="road" data-disc="rennrad" aria-pressed="true">Rennrad</button><button type="button" data-bt="road" data-disc="gravel" aria-pressed="false">Gravel</button><button type="button" data-bt="tri" aria-pressed="false">Triathlonrad</button><button type="button" data-bt="mtb" aria-pressed="false">Mountainbike</button></div>
+          <div class="btGroup" id="btGroup" role="group" aria-label="Radart"><button type="button" data-bt="road" aria-pressed="true">Rennrad</button><button type="button" data-bt="gravel" aria-pressed="false">Gravel</button><button type="button" data-bt="tri" aria-pressed="false">Triathlonrad</button><button type="button" data-bt="mtb" aria-pressed="false">Mountainbike</button></div>
           <div class="vmH">Anzeige</div>
           <div class="vmChecks">
             <label class="toggle"><input type="checkbox" id="tRider"> Person</label>
@@ -834,33 +834,34 @@ const PERS = [
 /* Standardwerte je Fahrstil: Rückenwinkel und Schulterwinkel (Zielwerte), Richtwertbereiche jeweils darum herum */
 const STYLE_STD={comfort:{back:48,shoulder:77,elbow:165},endurance:{back:46.5,shoulder:78.5,elbow:162},sportlich:{back:45,shoulder:80,elbow:160},ambitioniert:{back:43.5,shoulder:81.5,elbow:157},professional:{back:42,shoulder:83,elbow:155}};
 /* ================= Radart: Rennrad/Gravel, Triathlonrad, Mountainbike ================= */
-const BTYPES={road:"Rennrad/Gravel",tri:"Triathlonrad",mtb:"Mountainbike"};
+const BTYPES={road:"Rennrad",gravel:"Gravel",tri:"Triathlonrad",mtb:"Mountainbike"};   // Gravel ist eine eigene Radart mit eigenen Einstellungen
 const btype=()=>BTYPES[S.btype]?S.btype:"road";
 const barForType=bt=>bt==="tri"?"aero":bt==="mtb"?"flat":"drop";
 /* Richtwerte je Fahrstil für Triathlon (Aeroposition auf den Armpads) und Mountainbike (aufrechter, Ellbogen stärker gebeugt) */
 const STYLE_T_DEF={
+  gravel:{comfort:{back:50,shoulder:77,elbow:165},endurance:{back:48.5,shoulder:78.5,elbow:162},sportlich:{back:47,shoulder:80,elbow:160},ambitioniert:{back:45.5,shoulder:81.5,elbow:157},professional:{back:44,shoulder:83,elbow:155}},
   tri:{comfort:{back:24,shoulder:88,elbow:100},endurance:{back:21,shoulder:89,elbow:97},sportlich:{back:18,shoulder:90,elbow:95},ambitioniert:{back:15,shoulder:91,elbow:92},professional:{back:12,shoulder:92,elbow:90}},
   mtb:{comfort:{back:59,shoulder:58,elbow:160},endurance:{back:56,shoulder:60,elbow:158},sportlich:{back:53,shoulder:62,elbow:155},ambitioniert:{back:50,shoulder:64,elbow:152},professional:{back:47,shoulder:66,elbow:150}}};
-const STEM_RANGE_T={road:[60,140],tri:[60,130],mtb:[30,100]};   // Suchbereich Vorbaulänge (mm)
-const STEM_ANGLES_T={road:[-6,-10,-17],tri:[-6,-10,-17],mtb:[0,-6,6]};
-const STEM_ANGLE_T={road:-6,tri:-6,mtb:0};   // Standard-Vorbauwinkel je Radart
-const KOPS_T={road:0,tri:50,mtb:0};          // Knielot-Ziel: Triathlon sitzt weiter vorn
+const STEM_RANGE_T={road:[60,140],gravel:[50,130],tri:[60,130],mtb:[30,100]};   // Suchbereich Vorbaulänge (mm)
+const STEM_ANGLES_T={road:[-6,-10,-17],gravel:[-6,-10,6],tri:[-6,-10,-17],mtb:[0,-6,6]};
+const STEM_ANGLE_T={road:-6,gravel:-6,tri:-6,mtb:0};   // Standard-Vorbauwinkel je Radart
+const KOPS_T={road:0,gravel:0,tri:50,mtb:0};          // Knielot-Ziel: Triathlon sitzt weiter vorn
 const PAD_STACKS=[30,50,70,90,110,130];      // Armpad-Höhen im Vorschlag (Triathlon)
 const BAR_ROWS={barReach:["drop"],leverName:["drop"],leverReach:["drop"],leverAngle:["drop"],barRise:["flat"],padStack:["aero"],padReach:["aero"],extAngle:["aero"],extLen:["aero"]};
 const barRowOn=k=>!BAR_ROWS[k]||BAR_ROWS[k].includes(S.bar);
 const gripLbl=()=>S.bar==="aero"?"Armauflage":"Griff";
-const SETBACK_T={road:200,tri:110,mtb:200};   // Sattelversatz-Grundwert je Radart (Triathlon weit vorn)
+const SETBACK_T={road:200,gravel:200,tri:110,mtb:200};   // Sattelversatz-Grundwert je Radart (Triathlon weit vorn)
 /* Sattelversatz, bei dem der Sattel mittig über der Stützenachse sitzt – folgt dem Sitzwinkel des Rads */
 function centeredSetback(sh){ let sta=NaN; try{ sta=vals&&vals.sta; }catch(e){} if(!isFinite(sta)) return NaN; sh=isFinite(sh)?sh:760;
   let sb=200; for(let i=0;i<8;i++){ const y=Math.sqrt(Math.max(sh*sh-sb*sb,1)); sb=(y-45)/Math.tan(rad(sta)); } return Math.round(sb); }
 /* Lenkerbreite-Vorschlag: Rennrad/Gravel und Triathlon nach Schulterbreite (Mitte–Mitte), MTB nach Körpergröße */
 /* Disziplin je Radart (Triathlon, MTB): verschiebt das Rückenwinkel-Ziel (+ = aufrechter) und beim MTB die Lenkerbreite – alles im Bewertungsmodell einstellbar */
-const DISC_T={road:[["rennrad","Rennrad",0,1],["gravel","Gravel",2,1]],tri:[["kurz","Sprint / Olympische Distanz",-2,1],["mittel","Mitteldistanz (70.3)",0,1],["lang","Langdistanz (Ironman)",3,1],["zf","Zeitfahren",-4,1]],
+const DISC_T={road:[["rennrad","Rennrad",0,1]],gravel:[["gravel","Gravel",0,1]],tri:[["kurz","Sprint / Olympische Distanz",-2,1],["mittel","Mitteldistanz (70.3)",0,1],["lang","Langdistanz (Ironman)",3,1],["zf","Zeitfahren",-4,1]],
   mtb:[["xc","Cross-Country (XC Race)",-4,0.96],["marathon","XC-Marathon",-2,0.98],["trail","Trail / All-Mountain",0,1],["enduro","Enduro",3,1.03],["tour","Tour / Bikepacking",5,1]]};
-const DISC_DEF={road:"rennrad",tri:"mittel",mtb:"trail"}, STYLE_KEYS=["comfort","endurance","sportlich","ambitioniert","professional"], BAR_STYLE_DEF={comfort:1.04,endurance:1.02,sportlich:1,ambitioniert:0.98,professional:0.96};
+const DISC_DEF={road:"rennrad",gravel:"gravel",tri:"mittel",mtb:"trail"}, STYLE_KEYS=["comfort","endurance","sportlich","ambitioniert","professional"], BAR_STYLE_DEF={comfort:1.04,endurance:1.02,sportlich:1,ambitioniert:0.98,professional:0.96};
 /* Lenkerbreite und Kurbellänge je Disziplin: Faktor (Rennrad/Gravel, Triathlon × Schulterbreite, MTB × Körpergröße), Hüft- und Kniewinkel-Minimum im oberen Totpunkt */
-const DISC_BAR_DEF={road:{rennrad:0.945,gravel:1.05},tri:{kurz:1,mittel:1,lang:1,zf:1},mtb:{xc:0.405,marathon:0.41,trail:0.42,enduro:0.435,tour:0.42}};
-const DISC_KEYS=[]; for(const bt of ["road","tri","mtb"]) for(const [k] of DISC_T[bt]) DISC_KEYS.push([bt,k]);
+const DISC_BAR_DEF={road:{rennrad:0.945},gravel:{gravel:1.05},tri:{kurz:1,mittel:1,lang:1,zf:1},mtb:{xc:0.405,marathon:0.41,trail:0.42,enduro:0.435,tour:0.42}};
+const DISC_KEYS=[]; for(const bt of ["road","gravel","tri","mtb"]) for(const [k] of DISC_T[bt]) DISC_KEYS.push([bt,k]);
 const discOf=(bt=btype())=>{ const L=DISC_T[bt]; if(!L) return ""; const d=S.person&&S.person["disc_"+bt]; return L.some(x=>x[0]===d)?d:DISC_DEF[bt]; };
 const discLabel=(bt=btype())=>{ const d=discOf(bt), x=(DISC_T[bt]||[]).find(x=>x[0]===d); return x?x[1]:""; };
 const fitmNum=(k,def)=>{ try{ return isFinite(FITM[k])?FITM[k]:def; }catch(e){ return def; } };
@@ -948,10 +949,11 @@ function parseList(rows){
 /* Radart eines Rads: fest hinterlegt (eingebaute und eigene Räder) oder am Namen erkannt; alles andere zählt als Rennrad/Gravel */
 const TRI_RE=/\b(tri|triathlon\w*|tt|zeitfahr\w*|time ?trial|speedmax|speed ?concept|trinity|shiv|p[2-5]|plasma|ia|timemachine|speedmachine|andean|ventum|chrono|dimond)\b/i;
 const MTB_RE=/\b(mtb|mountain\w*|trail|enduro|downhill|hardtail|fully|xc|spark|scale|lux|neuron|spectral|strive|exceed|grand ?canyon|epic|stumpjumper|chisel|rockhopper|supercaliber|procaliber|fuel|top ?fuel|marlin|roscoe|anthem|trance|talon|fathom|reign|jeffsy|capra|oiz|occam|rallon|fourstroke|twostroke|blur|tallboy|hightower|scalpel|habit|jekyll|genius|ransom|spur|switchblade|ripmo|ripley)\b/i;
+const GRAVEL_RE=/gravel|grizl|grail|aspero|diverge|checkpoint|topstone|revolt|\bcrux\b|exploro|kanzo|terra|stigmata|warbird|cutthroat|allroad|all-road|\bgrx\b|cyclocross|\bcx\b|gravelator|\bgrvl\b/i;
 function bikeTypeOf(b,m){
   const k=norm(b)+"|"+norm(m), o=[...BUILTIN_BIKES,...(S.customBikes||[])].find(o=>o.radart&&norm(o.marke)+"|"+norm(o.modell)===k);
-  if(o&&BTYPES[o.radart]) return o.radart;
-  const t=b+" "+m; return TRI_RE.test(t)&&!/\broad\b/i.test(t)?"tri":MTB_RE.test(m)?"mtb":"road";   // MTB nur am Modellnamen (Marken wie „Rocky Mountain“ bauen auch Gravelräder)
+  const t=b+" "+m; if(o&&BTYPES[o.radart]) return o.radart==="road"&&GRAVEL_RE.test(m)?"gravel":o.radart;
+  return TRI_RE.test(t)&&!/\broad\b/i.test(t)?"tri":MTB_RE.test(m)?"mtb":GRAVEL_RE.test(m)?"gravel":"road";   // MTB nur am Modellnamen (Marken wie „Rocky Mountain“ bauen auch Gravelräder)
 }
 /* Korrekturen für Einträge der eingebetteten Radliste (z. B. verschobene Spalten) */
 const EMBED_FIX={"colnago|tt2":{radart:"tri",sizes:{xs:{hta:71},s:{hta:72.5},m:{hta:72.5},l:{hta:72.5}},all:{ett:"",htl:"",cs:408}}};   // Steuerwinkel stand im Oberrohr-Feld, Front-Center im Steuerrohr-Feld
@@ -1129,7 +1131,7 @@ function valuesFor(bike,withKeep){
   const v=Object.fromEntries(PARAMS.map(p=>[p.key,p.def])), s=Object.fromEntries(PARAMS.map(p=>[p.key,"Standard"]));
   const inf={}, w=[];
   if(bike) for(const k in bike.raw){ const x=parseVal(k,bike.raw[k]); if(!isFinite(x)) continue; if(BYKEY[k].g){v[k]=x;s[k]="Datenbank";} else inf[k]=x; }
-  if(bike&&s.tire!=="Datenbank"&&(bike.t==="mtb"||bike.t==="tri")){ v.tire=bike.t==="mtb"?58:26; s.tire=bike.t==="mtb"?"MTB 29 × 2,3":"Triathlon"; }   // Reifenbreite je Radart
+  if(bike&&s.tire!=="Datenbank"&&(bike.t==="mtb"||bike.t==="tri"||bike.t==="gravel")){ v.tire=bike.t==="mtb"?58:bike.t==="gravel"?40:26; s.tire=bike.t==="mtb"?"MTB 29 × 2,3":bike.t==="gravel"?"Gravel 40 mm":"Triathlon"; }   // Reifenbreite je Radart
   if(withKeep) for(const k of KEEP) if(k in S.edits) v[k]=S.edits[k];
   const R=(v.wheel+2*v.tire)/2;
   if(s.reach!=="Datenbank"&&isFinite(inf.ett)&&s.stack==="Datenbank"){ v.reach=inf.ett-v.stack/Math.tan(rad(v.sta)); s.reach="aus Oberrohr"; }
@@ -1332,7 +1334,7 @@ function bikeSVG(v,g,c){
   s+=rotor(g.rAxle,{x:0,y:0})+rotor(g.fAxle,g.crown)+bikeRear(g);
   const rd=derailleur(g);
   /* Rohrstärken: Triathlon mit tiefen Aero-Profilen, Rennrad mit etwas kräftigerer Gabel */
-  const bt=btype(), W=bt==="tri"?{dt:54,st:46,tt:32,ht:58,fk:36,ss:13}:{dt:36,st:28,tt:26,ht:42,fk:bt==="road"?31:24,ss:15};
+  const bt=btype(), W=bt==="tri"?{dt:54,st:46,tt:32,ht:58,fk:36,ss:13}:{dt:36,st:28,tt:26,ht:42,fk:bt==="road"?31:bt==="gravel"?33:24,ss:15};
   s+=line({x:0,y:0},g.rAxle,18,F)+line(g.rAxle,g.ssTop,W.ss,F)+line({x:0,y:0},g.dtFront,W.dt,F)+line({x:0,y:0},g.stTop,W.st,F)+line(g.ttRear,g.ttFront,W.tt,F)+line(g.htBot,g.htTop,W.ht,F);
   if(bt==="tri") s+=line({x:0,y:0},g.dtFront,W.dt*0.38,"#000",`opacity=".10" transform="translate(0,${r1(W.dt*0.28)})"`)+line({x:0,y:0},g.stTop,W.st*0.36,"#000",`opacity=".10" transform="translate(${r1(-W.st*0.27)},0)"`);   // Kamm-Hinterkante der Aero-Profile
   s+=`<path d="M${P(g.crown)} Q${P(add(g.crown,mul(g.d,g.t*0.72)))} ${P(g.fAxle)}" stroke="${F}" stroke-width="${W.fk}" fill="none" stroke-linecap="round"/>`;
@@ -2153,7 +2155,6 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["crankMaxL","Kurbellänge","Längste Kurbel","mm",175,2.5,""],
   ["crankBase","Kurbellänge","Kontrolle: Grundwert","mm",110,1,"Vergleichswert = Grundwert + Faktor × Schrittlänge (760 mm → 165, 895 mm → 175)"],
   ["crankPct","Kurbellänge","Kontrolle: Faktor × Schrittlänge","",0.0725,0.0005,"gerundet auf 2,5 mm"],
-  ...DISC_T.road.map(([k,l,o])=>["disc_road_"+k,"Disziplin Rennrad",l+": Rückenwinkel","°",o,0.5,""]),
   ...DISC_T.tri.map(([k,l,o])=>["disc_tri_"+k,"Disziplin Triathlon",l+": Rückenwinkel","°",o,0.5,k==="kurz"?"wird zum Rückenwinkel-Ziel der Sitzposition addiert (+ = aufrechter)":""]),
   ...DISC_T.mtb.map(([k,l,o])=>["disc_mtb_"+k,"Disziplin MTB",l+": Rückenwinkel","°",o,0.5,k==="xc"?"wird zum Rückenwinkel-Ziel der Sitzposition addiert (+ = aufrechter)":""]),
   ["expoShiftMtb","Radart","MTB: Stützenauszug verschieben","mm",80,5,"kurze Sitzrohre (Dropper): Grenzen und Ziel des Auszugs liegen um diesen Wert höher"],
@@ -2161,8 +2162,8 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["orange","Farben","Orange bis Score","",3,0.1,"darunter: bedingt, ab hier rot; die beste Größe unter diesem Wert ist immer grün"]];
 const FITM={}; for(const d of FITM_DEF) FITM[d[0]]=d[4];
 const STEM_FACTORY={comfort:90,endurance:100,sportlich:105,ambitioniert:115,professional:125}, SPACER_FACTORY={comfort:25,endurance:20,sportlich:15,ambitioniert:10,professional:5};
-const STEM_FACTORY_T={road:STEM_FACTORY,tri:{comfort:80,endurance:85,sportlich:90,ambitioniert:100,professional:110},mtb:{comfort:50,endurance:55,sportlich:60,ambitioniert:70,professional:80}};
-const SPACER_FACTORY_T={road:SPACER_FACTORY,tri:{comfort:30,endurance:25,sportlich:20,ambitioniert:10,professional:5},mtb:{comfort:20,endurance:15,sportlich:10,ambitioniert:5,professional:0}};
+const STEM_FACTORY_T={road:STEM_FACTORY,gravel:{comfort:80,endurance:90,sportlich:95,ambitioniert:105,professional:115},tri:{comfort:80,endurance:85,sportlich:90,ambitioniert:100,professional:110},mtb:{comfort:50,endurance:55,sportlich:60,ambitioniert:70,professional:80}};
+const SPACER_FACTORY_T={road:SPACER_FACTORY,gravel:{comfort:30,endurance:25,sportlich:20,ambitioniert:15,professional:10},tri:{comfort:30,endurance:25,sportlich:20,ambitioniert:10,professional:5},mtb:{comfort:20,endurance:15,sportlich:10,ambitioniert:5,professional:0}};
 const STEM_T={}, SPACER_T={}, kpT=bt=>bt==="road"?"":bt+"_";   // Schlüssel: stem_comfort (Rennrad), tri_stem_comfort, mtb_stem_comfort …
 function applyFitModel(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
   const o=S.fitOv||{}, d=(S.modelStd&&S.modelStd.fitModel)||{}, pick=(k,def)=>isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:def;
@@ -2172,7 +2173,9 @@ function applyFitModel(){   // Reihenfolge: aktuelle Änderung > gespeicherte We
   for(const [bt,k] of DISC_KEYS){ const B="dbar_"+bt+"_"+k, Hk="dhip_"+bt+"_"+k, Kk="dknee_"+bt+"_"+k;
     if(!has(B)){ if(bt==="road"&&k==="rennrad"&&has("barFacRoad")) FITM[B]=FITM.barFacRoad; else if(bt==="tri"&&has("barFacTri")) FITM[B]=FITM.barFacTri;
       else if(bt==="mtb"&&(has("barFacMtb")||has("discBar_mtb_"+k))) FITM[B]=Math.round(FITM.barFacMtb*FITM["discBar_mtb_"+k]*1000)/1000; }
-    const oh=bt==="tri"?"crankHipTri":bt==="mtb"?"crankHipMtb":"crankHipRoad"; if(!has(Hk)) FITM[Hk]=FITM[oh]; if(!has(Kk)) FITM[Kk]=FITM.crankKnee; }
+    const oh=bt==="tri"?"crankHipTri":bt==="mtb"?"crankHipMtb":"crankHipRoad"; if(!has(Hk)) FITM[Hk]=FITM[oh]; if(!has(Kk)) FITM[Kk]=FITM.crankKnee;
+    if(bt==="gravel"){ const ov=x=>isFinite(o[x])?o[x]:d[x];   // Werte der früheren Disziplin „Gravel“ unter Rennrad übernehmen
+      if(!has(B)&&isFinite(ov("dbar_road_gravel"))) FITM[B]=ov("dbar_road_gravel"); if(!has(Hk)&&isFinite(ov("dhip_road_gravel"))) FITM[Hk]=ov("dhip_road_gravel"); if(!has(Kk)&&isFinite(ov("dknee_road_gravel"))) FITM[Kk]=ov("dknee_road_gravel"); } }
   try{ applyStyleStd(); }catch(e){}   // Disziplin-Verschiebung des Rücken-Ziels kann sich geändert haben
   for(const bt of Object.keys(BTYPES)){ STEM_T[bt]={}; SPACER_T[bt]={};
     for(const st of Object.keys(STEM_FACTORY)){ STEM_T[bt][st]=pick(kpT(bt)+"stem_"+st,STEM_FACTORY_T[bt][st]); SPACER_T[bt][st]=pick(kpT(bt)+"spacer_"+st,SPACER_FACTORY_T[bt][st]); } }
@@ -2185,9 +2188,9 @@ const COMP_FITM=["Lenkerbreite","Kurbellänge"];   // diese Gruppen stehen im Ta
 /* Tabelle im Tab Bauteile: Lenkerfaktor sowie Hüft- und Kniewinkel-Minimum (Kurbellänge) je Disziplin */
 function discCompTable(tag){
   const cell=(k,st)=>`<div><input class="bfi" type="number" step="${st}" data-fitm="${k}" value="${FITM[k]}" aria-label="${k}">${tag(k)||'<small class="src">&nbsp;</small>'}</div>`;
-  let h=`<h3 style="margin:16px 0 4px">Je Disziplin</h3><p class="note" style="margin-top:0">Lenker: Rennrad/Gravel und Triathlon × Schulterbreite, MTB × Körpergröße – danach × Faktor der Sitzposition, gerundet auf 20 mm. Hüfte/Knie: die längste Kurbel, bei der diese Winkel im oberen Totpunkt nicht unterschritten werden.</p>
+  let h=`<h3 style="margin:16px 0 4px">Je Disziplin</h3><p class="note" style="margin-top:0">Lenker: Rennrad, Gravel und Triathlon × Schulterbreite, MTB × Körpergröße – danach × Faktor der Sitzposition, gerundet auf 20 mm. Hüfte/Knie: die längste Kurbel, bei der diese Winkel im oberen Totpunkt nicht unterschritten werden.</p>
     <div class="bfg styleGrid discGrid"><span></span><b>Lenker-Faktor</b><b>Hüfte min (°)</b><b>Knie min (°)</b>`;
-  for(const bt of ["road","tri","mtb"]){ h+=`<div class="suh" style="grid-column:1/-1;align-items:flex-start;margin-top:8px">${BTYPES[bt]}</div>`;
+  for(const bt of Object.keys(BTYPES)){ h+=`<div class="suh" style="grid-column:1/-1;align-items:flex-start;margin-top:8px">${BTYPES[bt]}</div>`;
     for(const [k,l] of DISC_T[bt]) h+=`<span>${esc(l)}</span>${cell("dbar_"+bt+"_"+k,0.005)}${cell("dhip_"+bt+"_"+k,1)}${cell("dknee_"+bt+"_"+k,1)}`; }
   return h+`</div>`; }
 const DISC_FITM=["Disziplin Rennrad","Disziplin Triathlon","Disziplin MTB"];   // diese Gruppen stehen unter Person → Richtwerte je Fahrstil
@@ -2364,6 +2367,7 @@ function useData(geoRows,fitObj,fileName,source,keep){
   if(!S.hipSitLink){ if(S.modelStd) delete S.modelStd.hipSit; if(S.person&&S.person.ov) delete S.person.ov.hipSit; S.hipSitLink=true; }
   if(!S.cleat72){ S.comp.cleat=72; if(S.compBase) S.compBase.cleat=72; S.cleat72=true; }
   if(!S.styleStd3){ if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; delete S.sugT.elbow; } if(S.person&&S.person.ov) delete S.person.ov.backAngle; S.styleStd3=true; }
+  if(S.person&&S.person.disc_road==="gravel"){ if(S.btype==="road") S.btype="gravel"; delete S.person.disc_road; }   // frühere Disziplin Gravel → eigene Radart
   if(!S.styleStd4){ if(S.sugT) delete S.sugT.elbow; if(S.person&&S.person.ov) delete S.person.ov.elbowT; S.styleStd4=true; }   // Ellbogen jetzt je Fahrstil   // neue Fahrstil-Standards und Ellbogen 160°
   if(!S.cap5){ for(const c of [S.comp,S.compBase]) if(c&&(c.cap===10||c.cap===undefined)) c.cap=5;
     for(const o of [S.setupOv&&S.setupOv.ci,S.setupOv&&S.setupOv.co]) if(o&&+o.cap===10) o.cap=5; S.cap5=true; }   // Steuersatzkappe neu 5 mm
@@ -2548,7 +2552,7 @@ $("saveStd").onclick=()=>{
     delete S.person.ov[k];
   }
   S.modelStd.cleat=S.comp.cleat; if(S.compBase) S.compBase.cleat=S.comp.cleat;
-  applyStyleStd(); S.modelStd.styleStd=JSON.parse(JSON.stringify(STYLE_T.road)); S.modelStd.styleStdT=JSON.parse(JSON.stringify({tri:STYLE_T.tri,mtb:STYLE_T.mtb})); delete S.styleOv; delete S.styleOvT; renderStyleStd();
+  applyStyleStd(); S.modelStd.styleStd=JSON.parse(JSON.stringify(STYLE_T.road)); S.modelStd.styleStdT=JSON.parse(JSON.stringify(Object.fromEntries(Object.keys(BTYPES).filter(b=>b!=="road").map(b=>[b,STYLE_T[b]])))); delete S.styleOv; delete S.styleOvT; renderStyleStd();
   applyFitModel(); S.modelStd.fitModel=fitModelVals(); delete S.fitOv; renderFitModel();   // Bewertungsmodell mitspeichern   // Richtwerte je Fahrstil mitspeichern
   S.modelStdAt=Date.now();
   syncPerson(); syncComp(); render(); save();
@@ -2565,7 +2569,7 @@ $("resetStd").onclick=()=>{
   $("stdNote").textContent="Ursprüngliche App-Werte wiederhergestellt; sie sind jetzt die Werkseinstellung.";
 };
 /* Disziplin-Auswahl unter Sitzposition/Fahrstil – nur Triathlon und MTB */
-function renderDisc(){ const w=$("discWrap"), sel=$("discSel"); if(!w||!sel) return; const bt=btype(), L=DISC_T[bt]; w.hidden=!L||bt==="road"; if(!L||bt==="road") return;   // Rennrad/Gravel wird auf der Startseite bzw. im Menü gewählt
+function renderDisc(){ const w=$("discWrap"), sel=$("discSel"); if(!w||!sel) return; const bt=btype(), L=DISC_T[bt]; w.hidden=!L||L.length<2; if(!L||L.length<2) return;   // Rennrad und Gravel haben keine Disziplin-Auswahl
   $("discLab").textContent="Disziplin"; const d=discOf(bt);
   sel.innerHTML=L.map(([k,l])=>`<option value="${k}"${k===d?" selected":""}>${l}</option>`).join(""); }
 $("discSel").onchange=e=>{ S.person["disc_"+btype()]=e.target.value; delete S.person.ov.backAngle; if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }
@@ -2927,7 +2931,7 @@ function renameBike(oldKey,nb,nm,ns){
 const BIKE_F=[["marke","Marke","t"],["modell","Modell","t"],["grosse","Größe","t"],["reach","Reach (mm)"],["stack","Stack (mm)"],["steuerwinkel","Steuerwinkel (°)"],["sitzwinkel","Sitzwinkel (°)"],
   ["steuerrohr","Steuerrohr (mm)"],["sitzrohr","Sitzrohr (mm)"],["oberrohr","Oberrohr (mm)"],["kettenstrebe","Kettenstrebe (mm)"],["radstand","Radstand (mm)"],["tretlageroffset","Tretlager-Offset (mm)"]];
 /* fest eingebaute Ergänzungen der Geometrie-Datenbank (unabhängig von der Excel-Datei) */
-const STD_BIKES={road:{b:"Standard",m:"Rennrad"},tri:{b:"Standard",m:"Triathlonrad"},mtb:{b:"Standard",m:"Mountainbike"}};
+const STD_BIKES={road:{b:"Standard",m:"Rennrad"},gravel:{b:"Standard",m:"Gravel"},tri:{b:"Standard",m:"Triathlonrad"},mtb:{b:"Standard",m:"Mountainbike"}};
 const STD_BIKE=STD_BIKES.road, stdBike=()=>STD_BIKES[btype()];
 const BUILTIN_BIKES=[
   // Standardrad ohne Hersteller (Werkseinstellung) – typische Endurance-/Allround-Rennradgeometrie
@@ -2939,6 +2943,7 @@ const BUILTIN_BIKES=[
     .map(([s,r,st,hta,tt,ht,stl,wb])=>({marke:"BMC",modell:"Roadmachine 01 (2026)",grosse:s,reach:r,stack:st,steuerwinkel:hta,sitzwinkel:74.2,oberrohr:tt,steuerrohr:ht,sitzrohr:stl,kettenstrebe:415,radstand:wb,tretlageroffset:75})),
   /* Triathlon- und Mountainbike-Rahmen: Größe, Reach, Stack, Steuerwinkel, Sitzwinkel, Oberrohr, Steuerrohr, Sitzrohr, Kettenstrebe, Radstand, Tretlager-Offset (Quelle: Herstellerdaten über bikeinsights.com) */
   ...[
+    ["Standard","Gravel","gravel",[["XS",370,535,70.5,74,525,115,460,425,1010,72],["S",377,553,71,73.5,540,130,490,425,1020,72],["M",385,573,71.5,73.5,557,150,520,425,1032,72],["L",393,595,71.5,73,575,170,550,425,1047,72],["XL",401,618,72,73,593,195,580,425,1062,72]]],
     ["Standard","Triathlonrad","tri",[["XS",380,470,72,78,500,70,470,405,965,72],["S",395,490,72.5,78,515,85,495,405,980,72],["M",410,510,73,78,535,105,520,410,1000,72],["L",425,530,73,78,555,125,545,410,1020,72],["XL",440,550,73,78,575,145,570,410,1040,72]]],
     ["Standard","Mountainbike","mtb",[["XS",405,590,66.5,75.5,565,90,380,435,1135,42],["S",430,593,66.5,75.5,590,95,410,435,1160,42],["M",455,597,66.5,75.5,612,100,440,435,1185,42],["L",480,607,66.5,75.5,637,110,470,438,1213,42],["XL",505,620,66.5,75.5,663,125,500,440,1242,42]]],
     ["Canyon","Speedmax CF SLX (2026)","tri",[["S",419,470,73,81,516,62,480,420,989,75],["M",440,481,73,81,537,73,513,420,1013,75],["L",463,511,73,81,565,105,550,420,1046,75],["XL",486,542,73,81,593,137,585,420,1078,72]]],
@@ -4914,7 +4919,7 @@ function applyStyleStd(){   // Reihenfolge: aktuelle Änderung > gespeicherte We
   for(const st of Object.keys(STYLE_FACTORY)){ Object.assign(STYLE_STD[st],STYLE_T[btype()][st]); STYLE_STD[st].back=Math.round((STYLE_T[btype()][st].back+off)*10)/10; STYLE_BACK[st]=[STYLE_STD[st].back-5,STYLE_STD[st].back+5]; }
 }
 /* Rückenwinkel je Disziplin (Triathlon/MTB) unter den Richtwerten je Fahrstil */
-function renderDiscStd(){ const box=$("discStdBox"); if(!box) return; const bt=btype(), L=DISC_T[bt]; if(!L){ box.innerHTML=""; return; }
+function renderDiscStd(){ const box=$("discStdBox"); if(!box) return; const bt=btype(), L=DISC_T[bt]; if(!L||L.length<2){ box.innerHTML=""; return; }
   const tag=k=>S.fitOv&&isFinite(S.fitOv[k])?'<small class="src edit">geändert</small>':S.modelStd&&S.modelStd.fitModel&&isFinite(S.modelStd.fitModel[k])?'<small class="src">Standard</small>':'<small class="src">&nbsp;</small>';
   box.innerHTML=`<h3 style="margin:14px 0 4px">Rückenwinkel je Disziplin – ${BTYPES[bt]}</h3><div class="bfg styleGrid"><span></span><b>Rücken (°)</b><span></span><span></span>`+
     L.map(([k,l])=>{ const key=`disc_${bt}_${k}`; return `<span>${esc(l)}</span><div><input class="bfi" type="number" step="0.5" data-discstd="${key}" value="${FITM[key]}" aria-label="Rücken ${esc(l)}">${tag(key)}</div><span></span><span></span>`; }).join("")+
