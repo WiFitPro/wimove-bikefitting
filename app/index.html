@@ -886,7 +886,7 @@ const typeCompDef=c=>{ const bt=btype(); c.barWidth=barWidthIdeal(); c.stemAngle
 const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v.back-5,v.back+5]]));
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
 const styleElbow=()=>{ const v=(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).elbow; return isFinite(v)?v:160; };   // Ellbogen-Ziel je Fahrstil (sportlicher = stärker angewinkelt)
-const shoulderRange=()=>[styleShoulder()-10,styleShoulder()+10];
+const shoulderRange=()=>{ const r=styV("shR",10); return [styleShoulder()-r,styleShoulder()+r]; };
 
 /* Pflicht-Messwerte (rechts und links): die Person wird erst gezeichnet, wenn alle eingegeben sind */
 const P_REQ=["height","sternum","inseam","foot","footL","acromion","hand","acromionL","handL","shoulderW"];
@@ -1661,7 +1661,7 @@ let cur=null; // letzte Berechnung
 /* ================= Vorschlag optimale Sitzposition ================= */
 const SUG_DEF={knee:145,kops:0,back:NaN,shoulder:NaN,elbow:160};
 const sugOv=()=>btype()==="road"?S.sugT:((S.sugTT||{})[btype()]);   // Zielwerte je Radart getrennt
-const sugT=()=>{ const eT=(()=>{ try{ const v=body().elbowT; return isFinite(v)?v:160; }catch(e){ return 160; } })(); const t={...SUG_DEF,kops:KOPS_T[btype()],elbow:eT,...(sugOv()||{})}; for(const k in t) if(!(typeof t[k]==="number"&&isFinite(t[k]))) t[k]=k==="back"?NaN:k==="shoulder"?styleShoulder():k==="kops"?KOPS_T[btype()]:SUG_DEF[k]; return t; };
+const sugT=()=>{ const eT=(()=>{ try{ const v=body().elbowT; return isFinite(v)?v:160; }catch(e){ return 160; } })(); const t={...SUG_DEF,knee:styV("kneeT",145),kops:styV("kops",KOPS_T[btype()]),elbow:eT,...(sugOv()||{})}; for(const k in t) if(!(typeof t[k]==="number"&&isFinite(t[k]))) t[k]=k==="back"?NaN:k==="shoulder"?styleShoulder():k==="kops"?styV("kops",KOPS_T[btype()]):k==="knee"?styV("kneeT",145):SUG_DEF[k]; return t; };
 let sugCache={key:"",val:null};
 const styleBack=()=>(STYLE_STD[S.person.style]||STYLE_STD.sportlich).back;
 const STEM_PREF=0.6;
@@ -1849,7 +1849,7 @@ function ghostSVG(g,op,col){
 }
 
 /* ================= Auswertung ================= */
-const RANGES={kneeMax:[140,150],hipMin:[50,999],shoulder:[75,95],elbow:[145,165],ankleExt:[100,120]};   // Sprunggelenk unten: 90° = rechtwinklig
+const RANGES={get kneeMax(){ return [styV("kneeLo",140),styV("kneeHi",150)]; },get hipMin(){ return [styV("hip",50),999]; },shoulder:[75,95],get elbow(){ return [styV("elbowLo",145),styV("elbowHi",165)]; },get ankleExt(){ return [styV("ankleLo",100),styV("ankleHi",120)]; }};   // Bereiche aus den Richtwerten je Fahrstil (Admin)   // Sprunggelenk unten: 90° = rechtwinklig
 function rate(v,r){ if(!r) return ""; if(v<r[0]-0.5) return `<span class="bad">zu klein</span>`; if(v>r[1]+0.5) return `<span class="bad">zu groß</span>`; return `<span class="good">im Bereich</span>`; }
 function renderSummary(){
   const {g,J,cyc}=cur, t=target();
@@ -1882,12 +1882,12 @@ function renderFit(){
   document.getElementById("kopsNote").innerHTML=`Knielot der aktuellen Einstellung (Kurbel auf 3 Uhr): <span class="${kOk?"good":"bad"}">${kopsText(ko)}</span>${kOk?"":` (${sgn(ko.dx)} mm)`}.`;
   // Winkel
   const style=S.person.style, A=[
-    ["Knie","knee",`${dg(cyc.kneeMin)} – ${dg(cyc.kneeMax)}`,"gestreckt 140–150°",rate(cyc.kneeMax,RANGES.kneeMax)],
-    ["Hüfte","hip",`${dg(cyc.hipMin)} – ${dg(cyc.hipMax)}`,"geschlossen ≥ 50°",rate(cyc.hipMin,RANGES.hipMin)],
-    ["Sprunggelenk","ankle",`${dg(cyc.ankleMin)} – ${dg(cyc.ankleMax)}`,`gestreckt ${dg(cyc.ankleExt)}`,""],
+    ["Knie","knee",`${dg(cyc.kneeMin)} – ${dg(cyc.kneeMax)}`,`gestreckt ${RANGES.kneeMax[0]}–${RANGES.kneeMax[1]}°`,rate(cyc.kneeMax,RANGES.kneeMax)],
+    ["Hüfte","hip",`${dg(cyc.hipMin)} – ${dg(cyc.hipMax)}`,`geschlossen ≥ ${RANGES.hipMin[0]}°`,rate(cyc.hipMin,RANGES.hipMin)],
+    ["Sprunggelenk","ankle",`${dg(cyc.ankleMin)} – ${dg(cyc.ankleMax)}`,`gestreckt ${RANGES.ankleExt[0]}–${RANGES.ankleExt[1]}°`,rate(cyc.ankleExt,RANGES.ankleExt)],
     ["Rücken zur Waagerechten","back","",`${STYLE_BACK[style][0]}–${STYLE_BACK[style][1]}° (${style})`,rate(J.back,STYLE_BACK[style])],
     ["Schulter","shoulder","",`${shoulderRange()[0]}–${shoulderRange()[1]}° (${S.person.style})`,rate(J.shoulder,shoulderRange())],
-    ["Ellbogen","elbow","","145–165°",R.armOver>0?`<span class="bad">nicht erreichbar</span>`:rate(J.elbow,RANGES.elbow)]
+    ["Ellbogen","elbow","",`${RANGES.elbow[0]}–${RANGES.elbow[1]}°`,R.armOver>0?`<span class="bad">nicht erreichbar</span>`:rate(J.elbow,RANGES.elbow)]
   ];
   let a=`<table class="t"><tr><th>Gelenk</th><th>Jetzt</th><th>Bereich</th><th>Richtwert</th></tr>`;
   for(const [n,k,rg,rw,st] of A) a+=`<tr><td>${n}<br><span class="note" style="margin:0">${st}</span></td><td id="ja_${k}">${dg(J[k])}</td><td>${rg}</td><td class="r">${rw}</td></tr>`;
@@ -2535,7 +2535,7 @@ $("fileIn").onchange=e=>{ const f=e.target.files[0]; if(f) readFile(f); e.target
 $("resetBtn").onclick=()=>{ S.edits={}; loadBike(); save(); };
 $("fitBtn").onclick=fitToTarget;
 for(const [id,k] of [["tKnee","knee"],["tKops","kops"],["tBack","back"],["tShoulder","shoulder"],["tElbow","elbow"]])
-  $(id).onchange=e=>{ const x=parseFloat(String(e.target.value).replace(",",".")), v=isFinite(x)?x:(k==="back"?NaN:k==="kops"?KOPS_T[btype()]:SUG_DEF[k]);
+  $(id).onchange=e=>{ const x=parseFloat(String(e.target.value).replace(",",".")), v=isFinite(x)?x:(k==="back"?NaN:k==="kops"?styV("kops",KOPS_T[btype()]):k==="knee"?styV("kneeT",145):SUG_DEF[k]);
     if(btype()==="road") S.sugT={...(S.sugT||{}),[k]:v}; else { S.sugTT=S.sugTT||{}; S.sugTT[btype()]={...(S.sugTT[btype()]||{}),[k]:v}; } sugCache.key=""; renderBikeResults(); render(); save(); };
 $("sugCmp").onchange=e=>{ S.sugCmp=e.target.value; $("fitNote").textContent=""; renderBikeResults(); render(); save(); };
 $("sugApply").onclick=()=>{
@@ -4774,12 +4774,12 @@ async function makePdf(){
   if(pdfOn("angles")){ H2("Gelenkwinkel");
     font(7.5); col(C.mute); need(6); doc.text(pdfTxt("Grün: Richtwertbereich · Punkt: Wert · dunkler Balken: Bereich über eine Kurbelumdrehung"),M,y+2.5); y+=6;
     const sr=STYLE_BACK[P.style]||[40,50], shr=shoulderRange();
-    gauge("Knie gestreckt",cyc.kneeMax,120,180,140,150,"°",null,"unterer Totpunkt");
+    gauge("Knie gestreckt",cyc.kneeMax,120,180,RANGES.kneeMax[0],RANGES.kneeMax[1],"°",null,"unterer Totpunkt");
     gauge("Knie gebeugt",cyc.kneeMin,50,120,NaN,NaN,"°",null,"oberer Totpunkt");
-    gauge("Hüfte geschlossen",cyc.hipMin,30,90,50,90,"°",null,"kleinster Winkel");
+    gauge("Hüfte geschlossen",cyc.hipMin,30,90,RANGES.hipMin[0],90,"°",null,"kleinster Winkel");
     gauge("Sprunggelenk gestreckt",cyc.ankleExt,70,140,RANGES.ankleExt[0],RANGES.ankleExt[1],"°",[cyc.ankleMin,cyc.ankleMax],"unten; Balken: Bereich über Umdrehung");
     gauge("Rücken",J.back,20,70,sr[0],sr[1],"°",null,P.style);
-    if(cur.R.armOver>0){ T("Ellbogen: Griff nicht erreichbar",9.5,true,C.bad); } else gauge("Ellbogen",J.elbow,120,180,145,165,"°",null,"");
+    if(cur.R.armOver>0){ T("Ellbogen: Griff nicht erreichbar",9.5,true,C.bad); } else gauge("Ellbogen",J.elbow,120,180,RANGES.elbow[0],RANGES.elbow[1],"°",null,"");
     gauge("Knielot (3 Uhr)",kops.dx,-60,60,(T2.kops||0)-10,(T2.kops||0)+10," mm",null,"+ vor / - hinter Pedalachse"); }
   if(pdfOn("sug")&&personReady()) try{
     const r=suggest(), p=r.parts; H2("Vorschlag optimale Sitzposition");
@@ -5005,13 +5005,18 @@ const STYLE_T={};   // Richtwerte aller Radarten; STYLE_STD enthält jeweils die
 const styleOvOf=bt=>(bt==="road"?S.styleOv:(S.styleOvT||{})[bt])||{};
 const styleStdOf=bt=>(S.modelStd&&(bt==="road"?S.modelStd.styleStd:(S.modelStd.styleStdT||{})[bt]))||{};
 /* Mindest-Hüftwinkel je Fahrstil (Kurbel-Prüfung): Grundwert aus der bisherigen Einstellung je Radart */
+/* alle Richtwerte je Fahrstil (je Radart): Ziele und Bereiche der Gelenkwinkel, Knielot */
+const STYLE_ALL=["back","backR","shoulder","shR","elbow","elbowLo","elbowHi","kneeT","kneeLo","kneeHi","hip","kops","ankleLo","ankleHi"];
+const styT=()=>{ try{ return (STYLE_T[btype()]||{})[(S.person&&S.person.style)||"sportlich"]||{}; }catch(e){ return {}; } };
+const styV=(k,def)=>{ const v=styT()[k]; return isFinite(v)?v:def; };
 const hipMinDef=bt=>fitmNum(`dhip_${bt}_${DISC_DEF[bt]}`,bt==="tri"?45:48);
 function applyStyleStd(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
   for(const bt of Object.keys(BTYPES)){ const fac=bt==="road"?STYLE_FACTORY:STYLE_T_DEF[bt], O=styleOvOf(bt), D=styleStdOf(bt); STYLE_T[bt]={};
     for(const st of Object.keys(STYLE_FACTORY)){ const o=O[st]||{}, d=D[st]||{}; STYLE_T[bt][st]={};
-      for(const k of ["back","shoulder","elbow","hip"]) STYLE_T[bt][st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:k==="hip"?hipMinDef(bt):fac[st][k]; } }
+      const def={hip:hipMinDef(bt),kneeT:145,kneeLo:140,kneeHi:150,kops:KOPS_T[bt],elbowLo:145,elbowHi:165,ankleLo:100,ankleHi:120,backR:5,shR:10};
+      for(const k of STYLE_ALL) STYLE_T[bt][st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:k in def?def[k]:fac[st][k]; } }
   const off=discBackOff();   // Disziplin (Triathlon/MTB) verschiebt das Rücken-Ziel
-  for(const st of Object.keys(STYLE_FACTORY)){ Object.assign(STYLE_STD[st],STYLE_T[btype()][st]); STYLE_STD[st].back=Math.round((STYLE_T[btype()][st].back+off)*10)/10; STYLE_BACK[st]=[STYLE_STD[st].back-5,STYLE_STD[st].back+5]; }
+  for(const st of Object.keys(STYLE_FACTORY)){ Object.assign(STYLE_STD[st],STYLE_T[btype()][st]); STYLE_STD[st].back=Math.round((STYLE_T[btype()][st].back+off)*10)/10; { const r=isFinite(STYLE_T[btype()][st].backR)?STYLE_T[btype()][st].backR:5; STYLE_BACK[st]=[STYLE_STD[st].back-r,STYLE_STD[st].back+r]; } }
 }
 /* Rückenwinkel je Disziplin (Triathlon/MTB) unter den Richtwerten je Fahrstil */
 function renderDiscStd(){ const box=$("discStdBox"); if(!box) return; const bt=admBt(), L=DISC_T[bt]; if(!L||L.length<2){ box.innerHTML=""; return; }
@@ -5028,15 +5033,21 @@ function renderStyleStd(){
   renderAdmBt(); const bt=admBt(), O=styleOvOf(bt), D=styleStdOf(bt);
   const tag=(st,k)=>O[st]&&isFinite(O[st][k])?'<small class="src edit">geändert</small>'
     :D[st]&&isFinite(D[st][k])?'<small class="src">Standard</small>':'<small class="src">&nbsp;</small>';
-  box.innerHTML=`<div class="bfg styleGrid"><span></span><b>Rücken (°)</b><b>Schulter (°)</b><b>Ellbogen (°)</b><b>Hüfte min (°)</b>`+
-    ["comfort","endurance","sportlich","ambitioniert","professional"].map(st=>`<span>${st}</span>${["back","shoulder","elbow","hip"].map(k=>`<div><input class="bfi" type="number" step="${k==="back"||k==="shoulder"?0.5:1}" data-stylestd="${st}|${k}" value="${STYLE_T[bt][st][k]}" aria-label="${{back:"Rücken",shoulder:"Schulter",elbow:"Ellbogen",hip:"Hüfte min"}[k]} ${st}">${tag(st,k)}</div>`).join("")}`).join("")+
-    `</div><p class="note info">Rücken: Rückenwinkel und Ziel im Vorschlag, Bereich ±5°. Schulter: Ziel im Vorschlag, Bereich ±10°. Ellbogen: Ziel im Vorschlag und Armhaltung der Figur (180° = gestreckt). Hüfte min: kleinster Hüftwinkel im oberen Totpunkt – darunter warnt die Kurbelempfehlung. Mit „Modellwerte als Standard speichern“ (ganz unten) als Werkseinstellung sichern.</p>`;
+  const STS=["comfort","endurance","sportlich","ambitioniert","professional"];
+  const grid=(title,cols)=>`<h3 style="margin:14px 0 4px">${title}</h3><div class="bfg styleGrid"><span></span>${cols.map(([,l])=>`<b>${l}</b>`).join("")}${"<span></span>".repeat(4-cols.length)}`+
+    STS.map(st=>`<span>${st}</span>${cols.map(([k,l,stp])=>`<div><input class="bfi" type="number" step="${stp}" data-stylestd="${st}|${k}" value="${STYLE_T[bt][st][k]}" aria-label="${l} ${st}">${tag(st,k)}</div>`).join("")}${"<span></span>".repeat(4-cols.length)}`).join("")+`</div>`;
+  box.innerHTML=grid("Oberkörper",[["back","Rücken (°)",0.5],["backR","Rücken ± (°)",0.5],["shoulder","Schulter (°)",0.5],["shR","Schulter ± (°)",0.5]])+
+    grid("Arme",[["elbow","Ellbogen Ziel (°)",1],["elbowLo","Ellbogen von (°)",1],["elbowHi","Ellbogen bis (°)",1]])+
+    grid("Beine",[["kneeT","Knie gestreckt Ziel (°)",0.5],["kneeLo","Knie von (°)",0.5],["kneeHi","Knie bis (°)",0.5],["hip","Hüfte min (°)",1]])+
+    grid("Fuß und Knielot",[["kops","Knielot (mm)",1],["ankleLo","Sprunggelenk von (°)",1],["ankleHi","Sprunggelenk bis (°)",1]])+
+    `<p class="note info">Ziele steuern den Vorschlag (Sitzposition), die Bereiche die Bewertung grün/rot in Gelenkwinkeln, Kopfzeile und PDF. Rücken/Schulter ±: Breite des grünen Bereichs um das Ziel. Knie gestreckt: größter Kniewinkel unten. Hüfte min: kleinster Hüftwinkel oben (auch Warnung bei der Kurbel). Knielot: + vor / − hinter der Pedalachse bei 3 Uhr. Sprunggelenk: gestreckt unten (90° = rechtwinklig). Mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern.</p>`;
   box.insertAdjacentHTML("beforeend",'<div id="discStdBox"></div>'); renderDiscStd();
   box.querySelectorAll("[data-stylestd]").forEach(el=>el.onchange=()=>{
-    const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value); if(!(k==="elbow"?(x>=70&&x<=180):k==="hip"?(x>=20&&x<=100):(x>=5&&x<=130))){ renderStyleStd(); return; }
+    const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value), LIM={backR:[0,30],shR:[0,40],elbow:[70,180],elbowLo:[60,180],elbowHi:[60,180],kneeT:[100,180],kneeLo:[100,180],kneeHi:[100,180],hip:[20,100],kops:[-80,80],ankleLo:[40,170],ankleHi:[40,170]}[k]||[5,130];
+    if(!(x>=LIM[0]&&x<=LIM[1])){ renderStyleStd(); return; }
     const eb=admBt(); let O2; if(eb==="road") O2=S.styleOv=S.styleOv||{}; else { S.styleOvT=S.styleOvT||{}; O2=S.styleOvT[eb]=S.styleOvT[eb]||{}; }
     (O2[st]=O2[st]||{})[k]=x;
-    applyStyleStd(); delete S.person.ov.backAngle; sugCache.key="";
+    applyStyleStd(); delete S.person.ov.backAngle; sugCache.key=""; sizeFitCache.key="";
     setTimeout(()=>{ syncPerson(); render(); renderStyleStd(); save(); },0);
   });
 }
