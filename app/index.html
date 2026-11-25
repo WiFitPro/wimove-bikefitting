@@ -3714,9 +3714,16 @@ function migrateAnam(){
     B.a_support=ins&&side?"Einlagen + Beinlängenausgleich "+side:ins?"Einlagen":side?"Beinlängenausgleich "+side:"keine"; }
   delete B.a_events; delete B.a_ops; delete B.a_insole; delete B.a_lift; B.anamV2=true;
 }
+function migrateUmfang(){   // früher: km pro Woche und Stunden pro Woche als feste Felder
+  const B=bf(), km=String(B.a_km??"").trim(), h=String(B.a_h??"").trim(); if(!km&&!h) return;
+  const set=(k,v,u)=>{ if(!String(B[k]??"").trim()){ B[k]=v; B[k+"_u"]=u; return true; } return false; };
+  if(km) set("a_umf",km,"km pro Woche"); if(h) set(km?"a_umf2":"a_umf",h,"Stunden pro Woche")||set("a_umf2",h,"Stunden pro Woche");
+  delete B.a_km; delete B.a_h; }
+/* Umfang: Zahl + frei wählbare Einheit */
+const UMF_U=["km pro Woche","km pro Monat","km pro Jahr","Stunden pro Woche","Stunden pro Monat","Stunden pro Jahr","Ausfahrten pro Woche"];
 const ANAM=[
   ["Fahrprofil",[["a_disc","Disziplin","sel",["–","Rennrad","Gravel","MTB","Zeitfahren / Triathlon","Trekking / Fitness","E-Bike"]],
-    ["a_km","Umfang (km pro Woche)","num"],["a_h","Umfang (Stunden pro Woche)","num"],["a_long","Längste Fahrt (km)","num"],["a_years","Fahrerfahrung (Jahre)","num"],
+    ["a_umf","Umfang","numu",UMF_U],["a_umf2","Umfang (zweite Angabe)","numu",UMF_U],["a_long","Längste Fahrt (km)","num"],["a_years","Fahrerfahrung (Jahre)","num"],
     ["a_race","Wettkampf","sel",YN],["a_indoor","Indoor-Anteil (Rolle)","sel",["–","kein","unter 25 %","25–50 %","über 50 %"]]]],
   ["Ziele und Prioritäten",[["a_goal1","Hauptziel","sel",GOALS],["a_goal2","Zweites Ziel","sel",GOALS],["t_ziele","Geplante Events und Saisonziele","area",null,"z. B. Ötztaler Radmarathon 30.08., Saisonziel Alpencross"]]],
   ["Gesundheit",[["t_verl","Verletzungshistorie und Operationen","area",null,"z. B. Schlüsselbeinbruch 2019, OP Meniskus rechts 2021"],["a_diag","Bekannte Diagnosen","text"],
@@ -4051,7 +4058,7 @@ const bfAbn=(key,opts)=>["_l","_r"].some(s=>opts.indexOf(bf()[key+s])>=2);
 function renderBefund(){
   const B=bf(), v=k=>esc(B[k]||"");
   const sel=(k,opts)=>`<select data-bf="${k}">${opts.map(o=>`<option${(B[k]||opts[0])===o?" selected":""}>${esc(o)}</option>`).join("")}</select>`;
-  migratePain(); migrateAnam(); renderPainPicker();
+  migratePain(); migrateAnam(); migrateUmfang(); renderPainPicker();
   $("bfPain").innerHTML=`<div class="bfg"><span></span><b>Links</b><b>Rechts</b>`+BF_PAIN.map(([k,l,lr])=>lr
     ? `<span>${l}</span><input class="bfi" data-bf="p_${k}_l" value="${v("p_"+k+"_l")}" placeholder="–" aria-label="${l} links"><input class="bfi" data-bf="p_${k}_r" value="${v("p_"+k+"_r")}" placeholder="–" aria-label="${l} rechts">`
     : `<span>${l}</span><input class="bfi" style="grid-column:2/4" data-bf="p_${k}" value="${v("p_"+k)}" placeholder="–" aria-label="${l}">`).join("")+`</div>`;
@@ -4059,6 +4066,7 @@ function renderBefund(){
   $("bfText").innerHTML=`<div class="bfg">`+ANAM.map(([grp,rows])=>`<div class="suh">${grp}</div>`+rows.map(([k,l,t,o,ph])=>{
       const id="bf_"+k, lab=`<label for="${id}">${l}</label>`, sp=' style="grid-column:2/4"';
       if(t==="sel") return lab+`<select class="bfi" id="${id}" data-bf="${k}"${sp}>${o.map(x=>`<option${(B[k]||o[0])===x?" selected":""}>${esc(x)}</option>`).join("")}</select>`;
+      if(t==="numu") return lab+`<input class="bfi" id="${id}" data-bf="${k}" value="${v(k)}" inputmode="decimal"><select class="bfi" data-bf="${k}_u" aria-label="Einheit ${esc(l)}">${o.map(x=>`<option${(B[k+"_u"]||o[0])===x?" selected":""}>${esc(x)}</option>`).join("")}</select>`;
       if(t==="area") return lab+`<textarea class="bfi" rows="3" id="${id}" data-bf="${k}"${sp}${ph?` placeholder="${esc(ph)}"`:""}>${v(k)}</textarea>`;
       return lab+`<input class="bfi" id="${id}" data-bf="${k}" value="${v(k)}"${t==="num"?' inputmode="decimal"':""}${sp}>`;
     }).join("")).join("")+`</div>`;
@@ -4599,7 +4607,7 @@ async function makePdf(){
 
   if(pdfOn("pain")||pdfOn("anam")) H1("Körperliche Voraussetzungen");
   if(pdfOn("anam")){ H2("Anamnese"); let any=false;
-    for(const [grp,list] of ANAM){ const r=list.filter(([k])=>{ const x=String(Bf[k]??"").trim(); return x&&x!=="–"; }).map(([k,l])=>[l,String(Bf[k])]);
+    for(const [grp,list] of ANAM){ const r=list.filter(([k])=>{ const x=String(Bf[k]??"").trim(); return x&&x!=="–"; }).map(([k,l,t,o])=>[l,String(Bf[k])+(t==="numu"?" "+(Bf[k+"_u"]||o[0]):"")]);
       if(!r.length) continue; any=true;
       font(8.5,true); col(C.mute); need(8); doc.text(pdfTxt(grp.toUpperCase()),M,y+3); y+=5;
       kv(r,2); }
