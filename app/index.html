@@ -3132,12 +3132,36 @@ function geoTable(r){
     S.customBikes=S.customBikes||[]; S.customBikes.push(...add);
     if(art!==btype()) setBtype(art);
     reloadData(); selectMain(marke,modell,String(add[0].grosse)); try{ renderOwnBikes(); bmSel={b:marke,m:modell}; renderBikeManager(); }catch(e){} save();
-    $("geoImgBox").innerHTML=`<p class="note">${esc(marke)} ${esc(modell)}: ${add.length} Größe${add.length>1?"n":""} angelegt${skip.length?`, schon vorhanden: ${esc(skip.join(", "))}`:""}${miss.length?`, ohne Pflichtwerte übersprungen: ${esc(miss.join(", "))}`:""}. Wird zentral gespeichert …</p>`;
+    const host=$("geoRes").closest("#newBikeBox")||$("geoImgBox"); host.innerHTML=`<p class="note">${esc(marke)} ${esc(modell)}: ${add.length} Größe${add.length>1?"n":""} angelegt${skip.length?`, schon vorhanden: ${esc(skip.join(", "))}`:""}${miss.length?`, ohne Pflichtwerte übersprungen: ${esc(miss.join(", "))}`:""}. Wird zentral gespeichert …</p>`;
     try{ libSaveNow(); }catch(e){}   // gleich zentral sichern – auch in WiFitBasic, wo „Räder verwalten“ ausgeblendet ist
     document.removeEventListener("paste",geoPaste);
   };
 }
+/* Neues Rad: erst Marke, Modell, Radart und Größen – dann eine leere Tabelle für alle Größen und Maße */
+function renderNewBikeStart(){
+  const box=$("newBikeBox"); if(!box) return; if($("geoImgBox")) $("geoImgBox").innerHTML="";
+  box.innerHTML=`<div class="suadd"><div class="row" style="justify-content:space-between;align-items:center;margin:0 0 6px"><h3 style="margin:0">Rad anlegen</h3><button class="btn small" type="button" id="nbGeo" title="Screenshot einer Geometrietabelle auslesen – alle Größen auf einmal">Geometrie aus Bild …</button></div>
+    <p class="note info" style="margin-top:0">Marke, Modell und die Größen eintragen, dann erscheint die Tabelle für alle Maße. Oder mit „Geometrie aus Bild“ eine Geometrietabelle einlesen.</p>
+    <div class="two"><div><label class="f" for="nbM">Marke</label><input class="bfi" id="nbM"></div><div><label class="f" for="nbMo">Modell</label><input class="bfi" id="nbMo"></div>
+    <div><label class="f" for="nbS">Größen</label><input class="bfi" id="nbS" placeholder="z. B. XS, S, M, L oder 49, 52, 54"></div>
+    <div><label class="f" for="nbA">Radart</label><select id="nbA">${Object.entries(BTYPES).map(([k,l])=>`<option value="${k}"${k===btype()?" selected":""}>${l}</option>`).join("")}</select></div></div>
+    <div class="row" style="margin-top:10px"><button class="btn small" type="button" id="nbNext">Weiter zur Tabelle</button><button class="btn ghost small" type="button" id="nbCancel">Abbrechen</button></div><p class="note warn" id="nbErr"></p></div>`;
+  $("nbGeo").onclick=()=>{ box.innerHTML=""; renderGeoImg(); };
+  $("nbCancel").onclick=()=>{ box.innerHTML=""; };
+  $("nbNext").onclick=()=>{
+    const marke=$("nbM").value.trim(), modell=$("nbMo").value.trim(), sizes=$("nbS").value.split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean), art=$("nbA").value;
+    if(!marke||!modell||!sizes.length){ $("nbErr").textContent="Bitte Marke, Modell und mindestens eine Größe eintragen."; return; }
+    const r={marke,modell,sizes,werte:{},art}; for(const [k] of GEO_F) r.werte[k]=sizes.map(()=>NaN);
+    box.innerHTML=`<div class="suadd"><h3 style="margin:0 0 6px">Rad anlegen: ${esc(marke)} ${esc(modell)}</h3><p class="note" id="geoNote">Pflicht je Größe: Reach, Stack, Steuer- und Sitzwinkel. Leere Felder ergänzt die App aus der Geometrie.</p><div id="geoRes"></div>
+      <div class="row"><button class="btn ghost small" type="button" id="nbBack">Zurück</button></div></div>`;
+    geoTable(r); if($("geoArt")) $("geoArt").value=art;
+    $("nbBack").onclick=()=>{ renderNewBikeStart(); $("nbM").value=marke; $("nbMo").value=modell; $("nbS").value=sizes.join(", "); $("nbA").value=art; };
+    const first=$("geoRes").querySelector('.geoIn[data-k="reach"]'); if(first) first.focus();
+  };
+  $("nbM").focus();
+}
 function renderBikeForm(boxId="newBikeBox",onSaved=null){
+  if(boxId==="newBikeBox") return renderNewBikeStart();
   for(const id of ["newBikeBox","suAddBox"]) if($(id)&&id!==boxId) $(id).innerHTML="";
   const box=$(boxId); if(!box) return;
   const cb=findBike(S.sel), v=vals||{};
