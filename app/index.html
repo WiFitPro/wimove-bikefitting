@@ -1069,7 +1069,7 @@ function compsFrom(which){
     const pos=validPos(U.pos[which])?U.pos[which]:(validPos(U.pos.ist)?U.pos.ist:null);
     if(pos){ c.setback=pos.sx; c.saddleH=Math.round(Math.hypot(pos.sx,pos.sy)*10)/10; }
   }
-  c.cleat=(S.modelStd&&isFinite(S.modelStd.cleat))?S.modelStd.cleat:72;   // Cleatposition: eigener Standard oder 72 %, nicht aus der Excel
+  c.cleat=cleatStd();   // Cleatposition: Standard der Radart oder 72 %, nicht aus der Excel
   if(U) for(const k of CLEAT_KEYS){   // Cleats aus „Bike Set Up“: leere optimierte Werte übernehmen den Ist-Wert, 0 ist ein echter Wert
     const iv=cleatVal(U.ci,k), ov=cleatVal(U.co,k), v=which==="opt"&&String(ov).trim()!==""?ov:iv;
     if(k==="cleatPct"){ const x=num(v); if(isFinite(x)) c.cleat=x; }
@@ -1098,6 +1098,7 @@ const MODEL_KEYS=["hipStand","hipFwd","sitBack","sink","shoulderDrop","protr","k
 const stdValT=(bt,k)=>{ const T=S.segOvT&&S.segOvT[bt]; if(T&&isFinite(T[k])) return T[k]; const B=S.modelStd&&S.modelStd.byT&&S.modelStd.byT[bt]; if(B&&isFinite(B[k])) return B[k];
   return S.modelStd&&isFinite(S.modelStd[k])?S.modelStd[k]:NaN; };
 const stdVal=k=>stdValT(btype(),k);
+const cleatStd=(bt=btype())=>{ const v=stdValT(bt,"cleat"); return isFinite(v)?v:72; };   // Cleatposition-Standard je Radart
 /* Fehlende Messwerte: geschlechtsspezifische Normwerte wie in den Spalten I (männlich) und M (weiblich) von „Peronendaten“ */
 function measures(){
   const p=S.person, w=p.sex==="weiblich", m={...p};
@@ -2014,7 +2015,7 @@ function initControls(){
   { const sb=document.getElementById("styleStdBox"); if(sb) sb.classList.add("adminOnly"); }
   /* eigener Admin-Tab: alle festgelegten Richtwerte und Modelle dorthin verschieben */
   { const mv=(el,to)=>{ if(el&&$(to)) $(to).appendChild(el); };
-    mv($("pCleat"),"admCleatBox"); mv($("styleStdBox"),"admStyleBox"); mv($("fitModelDetails"),"admMore"); mv($("compModelDetails"),"admMore"); mv($("stdBox"),"admStdBox"); }
+    mv($("styleStdBox"),"admStyleBox"); mv($("fitModelDetails"),"admMore"); mv($("compModelDetails"),"admMore"); mv($("stdBox"),"admStdBox"); }
   syncPerson=()=>{ s1();s1b();s1c();s2();s3();s3b();s4();s5(); try{ decorateNorms(); }catch(e){} markPending(); };
   try{ applyBtypeUI(); }catch(e){}
   document.querySelectorAll(".subtab").forEach(b=>b.onclick=()=>{ const R=b.dataset.side==="R";
@@ -2193,10 +2194,13 @@ const SPACER_FACTORY_T={road:SPACER_FACTORY,gravel:{comfort:30,endurance:25,spor
 let ADM_BT=null; const admBt=()=>BTYPES[ADM_BT]?ADM_BT:btype();   // im Admin-Tab bearbeitete Radart (Standard: aktuelle)
 function renderSegStd(){ const box=$("admSegBox"); if(!box) return; const bt=admBt(), P0=body();
   const tag=k=>S.segOvT&&S.segOvT[bt]&&isFinite(S.segOvT[bt][k])?'<small class="src edit">geändert</small>':isFinite(stdValT(bt,k))?'<small class="src">Standard</small>':'<small class="src">App-Wert</small>';
-  box.innerHTML=`<div class="fitmGrid">`+MODEL_KEYS.map(k=>{ const d=PERS.find(x=>x.key===k); if(!d) return ""; const v=isFinite(stdValT(bt,k))?stdValT(bt,k):d.f(P0);
+  const CLD={key:"cleat",label:"Cleatposition (% Fußlänge ab Ferse)",unit:"%",min:40,max:90,step:0.5,f:()=>72};
+  const dOf=k=>k==="cleat"?CLD:PERS.find(x=>x.key===k);
+  box.innerHTML=`<div class="fitmGrid">`+[...MODEL_KEYS,"cleat"].map(k=>{ const d=dOf(k); if(!d) return ""; const v=isFinite(stdValT(bt,k))?stdValT(bt,k):d.f(P0);
     return `<label for="sg_${k}">${esc(d.label)}</label><div class="fitmIn"><input class="bfi" id="sg_${k}" type="number" step="${d.step||1}" data-seg="${k}" value="${Math.round(v*10)/10}" style="max-width:90px"><span class="note" style="margin:0">${d.unit||"mm"}</span>${tag(k)}</div>`; }).join("")+`</div>`;
-  box.querySelectorAll("[data-seg]").forEach(el=>el.onchange=()=>{ const k=el.dataset.seg, d=PERS.find(x=>x.key===k), x=num(el.value); if(!isFinite(x)||x<d.min||x>d.max){ renderSegStd(); return; }
+  box.querySelectorAll("[data-seg]").forEach(el=>el.onchange=()=>{ const k=el.dataset.seg, d=dOf(k), x=num(el.value); if(!isFinite(x)||x<d.min||x>d.max){ renderSegStd(); return; }
     S.segOvT=S.segOvT||{}; (S.segOvT[bt]=S.segOvT[bt]||{})[k]=x; if(bt===btype()&&S.person.ov) delete S.person.ov[k];
+    if(k==="cleat"&&bt===btype()){ S.comp.cleat=x; if(S.compBase) S.compBase.cleat=x; try{ syncComp(); }catch(e){} }
     sugCache.key=""; sizeFitCache.key=""; renderSegStd(); setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
 /* geänderte Werte der gezeigten Radart auf alle anderen Radarten übertragen */
 function admCopyAll(){ const bt=admBt(), others=Object.keys(BTYPES).filter(b=>b!==bt); let n=0;
@@ -2574,6 +2578,7 @@ function setBtype(bt){
   S.selT=S.selT||{}; if(S.sel&&S.sel.b) S.selT[old]={...S.sel};
   S.btype=bt; applyStyleStd(); applyFitModel(); sugCache.key=""; sizeFitCache.key=""; cmpFit={};
   if(old!==bt){   // Cockpit auf die Radart einstellen: Vorbau und Spacer nach Sitzposition, MTB mit Riserbar
+    S.comp.cleat=cleatStd(bt); if(S.compBase) S.compBase.cleat=S.comp.cleat;   // Cleatposition-Standard der neuen Radart
     const keepA=S.comp.stemAngle; typeCompDef(S.comp); S.comp.stemLen=stemIdeal(); S.comp.spacer=spacerIdeal(); if(S.compSel.stem||S.compSel.bar) S.comp.stemAngle=keepA;
     for(const k of ["padStack","padReach","extAngle","extLen"]) if(!isFinite(S.comp[k])){ const d=COMP.find(x=>x.key===k); S.comp[k]=d.def; }
     S.cmp=EMPTY_CMP(); S.cmpX=[]; cmpRowsN=0; }
@@ -2607,16 +2612,15 @@ $("saveStd").onclick=()=>{
     delete S.person.ov[k];
   }
   for(const [bt,vals] of Object.entries(S.segOvT||{})){ const by=S.modelStd.byT=S.modelStd.byT||{}; by[bt]=Object.assign(by[bt]||{},vals); n+=Object.keys(vals).length; } delete S.segOvT;   // Grundwerte je Radart aus dem Admin-Tab
-  for(const bt of Object.keys(BTYPES)){ const by=S.modelStd.byT=S.modelStd.byT||{}; by[bt]=by[bt]||{}; for(const k of MODEL_KEYS) if(!isFinite(by[bt][k])&&isFinite(S.modelStd[k])) by[bt][k]=S.modelStd[k]; }   // jede Radart bekommt eigene, vollständige Werte
+  for(const bt of Object.keys(BTYPES)){ const by=S.modelStd.byT=S.modelStd.byT||{}; by[bt]=by[bt]||{}; for(const k of [...MODEL_KEYS,"cleat"]) if(!isFinite(by[bt][k])&&isFinite(S.modelStd[k])) by[bt][k]=S.modelStd[k]; }   // jede Radart bekommt eigene, vollständige Werte
   try{ renderSegStd(); }catch(e){}
-  S.modelStd.cleat=S.comp.cleat; if(S.compBase) S.compBase.cleat=S.comp.cleat;
   applyStyleStd(); S.modelStd.styleStd=JSON.parse(JSON.stringify(STYLE_T.road)); S.modelStd.styleStdT=JSON.parse(JSON.stringify(Object.fromEntries(Object.keys(BTYPES).filter(b=>b!=="road").map(b=>[b,STYLE_T[b]])))); delete S.styleOv; delete S.styleOvT; renderStyleStd();
   applyFitModel(); S.modelStd.fitModel=fitModelVals(); delete S.fitOv; renderFitModel();   // Bewertungsmodell mitspeichern   // Richtwerte je Fahrstil mitspeichern
   S.modelStdAt=Date.now();
   syncPerson(); syncComp(); render(); save();
-  $("stdNote").textContent=`Gespeichert als Werkseinstellung: ${n+1} Werte (Modellwerte, von Hand geänderte Längen, Cleatposition ${S.comp.cleat} %) …`;
+  $("stdNote").textContent=`Gespeichert als Werkseinstellung: ${n+1} Werte (Modellwerte, von Hand geänderte Längen, Cleatposition je Radart) …`;
   factorySave().then(ok=>{ $("stdNote").textContent=ok
-    ?`Als Werkseinstellung gespeichert: ${n+1} Werte (Modellwerte, von Hand geänderte Längen, Cleatposition ${S.comp.cleat} %). Sie gelten ab jetzt überall, wo die App geöffnet wird. Berechnete Längen richten sich weiter nach der Person.`
+    ?`Als Werkseinstellung gespeichert: ${n+1} Werte (Modellwerte, von Hand geänderte Längen, Cleatposition je Radart). Sie gelten ab jetzt überall, wo die App geöffnet wird. Berechnete Längen richten sich weiter nach der Person.`
     :`Als Werkseinstellung in diesem Browser gespeichert (${n+1} Werte). Für alle Geräte die App über ihren Link öffnen und erneut speichern.`; });
 };
 $("resetStd").onclick=()=>{
@@ -4846,7 +4850,7 @@ $("suClear").onclick=()=>{
   applySetupOv();
   /* Bauteile auf Grundwerte (Kurbel, Pedal, Sohle … aus den App-Standards), Teileauswahl leer */
   for(const p of COMP) if(!p.virt&&isFinite(p.def)) S.comp[p.key]=p.def;
-  typeCompDef(S.comp); S.comp.cap=CAP; if(S.modelStd&&isFinite(S.modelStd.cleat)) S.comp.cleat=S.modelStd.cleat;
+  typeCompDef(S.comp); S.comp.cap=CAP; S.comp.cleat=cleatStd();
   S.compSel={}; S.compBase={...S.comp}; S.compBaseName="Ist"; S.sugCmp="cur"; sugCache.key="";
   fillCompSelects(); syncComp(); renderSetup();
   /* Werkseinstellung: Standardrad in passender Größe und eine passende Position (Vorschlag) */
@@ -4897,7 +4901,7 @@ $("bikeClear").onclick=e=>{   // Standardrad in passender Größe, kein Vergleic
   sugCache.key=""; $("sugApply").click(); fillCmp(); render(); save(); clearDone(e.target); };
 $("compClear").onclick=e=>{   // Bauteile auf Grundwerte, keine Teile ausgewählt
   for(const p of COMP) if(!p.virt&&isFinite(p.def)) S.comp[p.key]=p.def;
-  typeCompDef(S.comp); S.comp.cap=CAP; if(S.modelStd&&isFinite(S.modelStd.cleat)) S.comp.cleat=S.modelStd.cleat;
+  typeCompDef(S.comp); S.comp.cap=CAP; S.comp.cleat=cleatStd();
   S.compSel={}; sugCache.key=""; fillCompSelects(); syncComp(); render(); save(); clearDone(e.target); };
 $("fitClear").onclick=e=>{   // Zielwerte auf Standard, kein Vergleich, Position nach Vorschlag
   S.sugT={}; S.sugTT={}; S.sugCmp="none"; const sc=$("sugCmp"); if(sc) sc.value="none"; sugCache.key="";
