@@ -177,7 +177,7 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .bfg:not(.styleGrid){grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr)}
 .bfg>*{min-width:0}
 .bfg>div[style*="grid-column:2/4"]{display:flex;justify-content:flex-end}
-.bfg.styleGrid{grid-template-columns:minmax(90px,1fr) repeat(3,minmax(64px,92px));justify-content:stretch}
+.bfg.styleGrid{grid-template-columns:minmax(90px,1fr) repeat(4,minmax(60px,86px));justify-content:stretch}
 .bfg.styleGrid>div{align-items:flex-end}
 .su input[data-t=num],.su select{justify-self:end}
 .su .suv{text-align:right;padding-left:0;padding-right:7px}
@@ -487,6 +487,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <button class="tab" role="tab" data-tab="fit">Sitzposition</button>
       <button class="tab" role="tab" data-tab="pdf">PDF</button>
       <button class="tab" role="tab" data-tab="data">Daten</button>
+      <button class="tab adminOnly" role="tab" data-tab="admin">Admin</button>
     </div>
 
     <div class="panel" id="tab-fit">
@@ -741,6 +742,13 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <details class="acc"><summary>Dynamischer Befund</summary><div id="bfDyn"></div></details>
       <details class="acc"><summary>Mobilitätstests</summary><div id="bfMob"></div><p class="note">BAM = Bewegungsausmaß</p></details>
       <details class="acc"><summary>Muskelfunktion / Krafttests</summary><div id="bfKraft"></div></details>
+    </div>
+    <div class="panel" id="tab-admin" hidden>
+      <section><h2>Admin</h2><p class="note info" style="margin-top:0">Alle festgelegten Richtwerte und Modelle an einer Stelle. Änderungen gelten sofort für alle Fittings; mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern.</p></section>
+      <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
+      <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Feinwerte des Körpermodells (gelten als Grundwerte für jede Person).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
+      <div id="admMore"></div>
+      <div id="admStdBox"></div>
     </div>
   </aside>
 </div>
@@ -1712,7 +1720,7 @@ let crankCache={key:"",val:null};
 function crankAdvice(){
   if(!personReady()) return null;
   const r=suggest(), p=r.parts, c0=S.comp.crank, bt=btype(), M=FITM;
-  const dd=discOf(bt), hipT=M["dhip_"+bt+"_"+dd], kneeT=M["dknee_"+bt+"_"+dd];   // Grenzwerte je Disziplin
+  const dd=discOf(bt), stH=STYLE_T[bt]&&STYLE_T[bt][S.person.style||"sportlich"], hipT=stH&&isFinite(stH.hip)?stH.hip:M["dhip_"+bt+"_"+dd], kneeT=M["dknee_"+bt+"_"+dd];   // Hüfte min je Fahrstil, Knie min je Disziplin   // Grenzwerte je Disziplin
   const key=JSON.stringify([p,r.grip,r.back,c0,hipT,kneeT,M.crankMinL,M.crankMaxL,M.crankPct,M.crankBase,S.person.inseam,S.bar]);
   if(crankCache.key===key) return crankCache.val;
   const list=[]; for(let L=Math.max(140,M.crankMinL||160);L<=Math.min(190,M.crankMaxL||175)+0.01;L+=2.5) list.push(L);
@@ -1999,6 +2007,11 @@ function initControls(){
   /* Haltung: Nutzer sehen nur den Rückenwinkel */
   for(const k of ["elbowT","footAngle"]){ const n=document.getElementById("pn_"+k); if(n) n.closest(".param").classList.add("adminOnly"); }
   { const sb=document.getElementById("styleStdBox"); if(sb) sb.classList.add("adminOnly"); }
+  /* eigener Admin-Tab: alle festgelegten Richtwerte und Modelle dorthin verschieben */
+  { const mv=(el,to)=>{ if(el&&$(to)) $(to).appendChild(el); };
+    for(const k of ["hipStand","ankleH","sitBack","sink","hipFwd","hipSit","shoulderDrop","protr","kneeBack","armAdd"]){ const n=document.getElementById("pn_"+k); if(n) mv(n.closest(".param"),"admSegBox"); }
+    for(const k of ["elbowT","footAngle"]){ const n=document.getElementById("pn_"+k); if(n) mv(n.closest(".param"),"admHaltBox"); }
+    mv($("pCleat"),"admCleatBox"); mv($("styleStdBox"),"admStyleBox"); mv($("fitModelDetails"),"admMore"); mv($("compModelDetails"),"admMore"); mv($("stdBox"),"admStdBox"); }
   syncPerson=()=>{ s1();s1b();s1c();s2();s3();s3b();s4();s5(); try{ decorateNorms(); }catch(e){} markPending(); };
   try{ applyBtypeUI(); }catch(e){}
   document.querySelectorAll(".subtab").forEach(b=>b.onclick=()=>{ const R=b.dataset.side==="R";
@@ -2198,10 +2211,10 @@ const COMP_FITM=["Lenkerbreite","Kurbellänge"];   // diese Gruppen stehen im Ta
 /* Tabelle im Tab Bauteile: Lenkerfaktor sowie Hüft- und Kniewinkel-Minimum (Kurbellänge) je Disziplin */
 function discCompTable(tag){
   const cell=(k,st)=>`<div><input class="bfi" type="number" step="${st}" data-fitm="${k}" value="${FITM[k]}" aria-label="${k}">${tag(k)||'<small class="src">&nbsp;</small>'}</div>`;
-  let h=`<h3 style="margin:16px 0 4px">Je Disziplin</h3><p class="note" style="margin-top:0">Lenker: Rennrad, Gravel und Triathlon × Schulterbreite, MTB × Körpergröße – danach × Faktor der Sitzposition, gerundet auf 20 mm. Kurbellänge kommt aus der Schrittlänge (Formel oben); Hüfte/Knie min: Warnung im Vorschlag, wenn diese Winkel im oberen Totpunkt unterschritten werden.</p>
-    <div class="bfg styleGrid discGrid"><span></span><b>Lenker-Faktor</b><b>Hüfte min (°)</b><b>Knie min (°)</b>`;
+  let h=`<h3 style="margin:16px 0 4px">Je Disziplin</h3><p class="note" style="margin-top:0">Lenker: Rennrad, Gravel und Triathlon × Schulterbreite, MTB × Körpergröße – danach × Faktor der Sitzposition, gerundet auf 20 mm. Kurbellänge kommt aus der Schrittlänge (Formel oben); Knie min: Warnung im Vorschlag, wenn dieser Winkel im oberen Totpunkt unterschritten wird (Hüfte min steht bei den Richtwerten je Fahrstil).</p>
+    <div class="bfg styleGrid discGrid"><span></span><b>Lenker-Faktor</b><b>Knie min (°)</b><span></span><span></span>`;
   for(const bt of Object.keys(BTYPES)){ h+=`<div class="suh" style="grid-column:1/-1;align-items:flex-start;margin-top:8px">${BTYPES[bt]}</div>`;
-    for(const [k,l] of DISC_T[bt]) h+=`<span>${esc(l)}</span>${cell("dbar_"+bt+"_"+k,0.005)}${cell("dhip_"+bt+"_"+k,1)}${cell("dknee_"+bt+"_"+k,1)}`; }
+    for(const [k,l] of DISC_T[bt]) h+=`<span>${esc(l)}</span>${cell("dbar_"+bt+"_"+k,0.005)}${cell("dknee_"+bt+"_"+k,1)}<span></span><span></span>`; }
   return h+`</div>`; }
 const DISC_FITM=["Disziplin Rennrad","Disziplin Triathlon","Disziplin MTB"];   // diese Gruppen stehen unter Person → Richtwerte je Fahrstil
 function renderFitModel(){ renderFitBox("fitModelBox","fm",g=>!COMP_FITM.includes(g)&&!DISC_FITM.includes(g),true); try{ renderDiscStd(); }catch(e){} renderFitBox("compModelBox","cm",g=>COMP_FITM.includes(g)||g==="_disc",false,undefined,discCompTable); }
@@ -4939,18 +4952,20 @@ const STYLE_FACTORY=JSON.parse(JSON.stringify(STYLE_STD));
 const STYLE_T={};   // Richtwerte aller Radarten; STYLE_STD enthält jeweils die der aktiven Radart
 const styleOvOf=bt=>(bt==="road"?S.styleOv:(S.styleOvT||{})[bt])||{};
 const styleStdOf=bt=>(S.modelStd&&(bt==="road"?S.modelStd.styleStd:(S.modelStd.styleStdT||{})[bt]))||{};
+/* Mindest-Hüftwinkel je Fahrstil (Kurbel-Prüfung): Grundwert aus der bisherigen Einstellung je Radart */
+const hipMinDef=bt=>fitmNum(`dhip_${bt}_${DISC_DEF[bt]}`,bt==="tri"?45:48);
 function applyStyleStd(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
   for(const bt of Object.keys(BTYPES)){ const fac=bt==="road"?STYLE_FACTORY:STYLE_T_DEF[bt], O=styleOvOf(bt), D=styleStdOf(bt); STYLE_T[bt]={};
     for(const st of Object.keys(STYLE_FACTORY)){ const o=O[st]||{}, d=D[st]||{}; STYLE_T[bt][st]={};
-      for(const k of ["back","shoulder","elbow"]) STYLE_T[bt][st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:fac[st][k]; } }
+      for(const k of ["back","shoulder","elbow","hip"]) STYLE_T[bt][st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:k==="hip"?hipMinDef(bt):fac[st][k]; } }
   const off=discBackOff();   // Disziplin (Triathlon/MTB) verschiebt das Rücken-Ziel
   for(const st of Object.keys(STYLE_FACTORY)){ Object.assign(STYLE_STD[st],STYLE_T[btype()][st]); STYLE_STD[st].back=Math.round((STYLE_T[btype()][st].back+off)*10)/10; STYLE_BACK[st]=[STYLE_STD[st].back-5,STYLE_STD[st].back+5]; }
 }
 /* Rückenwinkel je Disziplin (Triathlon/MTB) unter den Richtwerten je Fahrstil */
 function renderDiscStd(){ const box=$("discStdBox"); if(!box) return; const bt=btype(), L=DISC_T[bt]; if(!L||L.length<2){ box.innerHTML=""; return; }
   const tag=k=>S.fitOv&&isFinite(S.fitOv[k])?'<small class="src edit">geändert</small>':S.modelStd&&S.modelStd.fitModel&&isFinite(S.modelStd.fitModel[k])?'<small class="src">Standard</small>':'<small class="src">&nbsp;</small>';
-  box.innerHTML=`<h3 style="margin:14px 0 4px">Rückenwinkel je Disziplin – ${BTYPES[bt]}</h3><div class="bfg styleGrid"><span></span><b>Rücken (°)</b><span></span><span></span>`+
-    L.map(([k,l])=>{ const key=`disc_${bt}_${k}`; return `<span>${esc(l)}</span><div><input class="bfi" type="number" step="0.5" data-discstd="${key}" value="${FITM[key]}" aria-label="Rücken ${esc(l)}">${tag(key)}</div><span></span><span></span>`; }).join("")+
+  box.innerHTML=`<h3 style="margin:14px 0 4px">Rückenwinkel je Disziplin – ${BTYPES[bt]}</h3><div class="bfg styleGrid"><span></span><b>Rücken (°)</b><span></span><span></span><span></span>`+
+    L.map(([k,l])=>{ const key=`disc_${bt}_${k}`; return `<span>${esc(l)}</span><div><input class="bfi" type="number" step="0.5" data-discstd="${key}" value="${FITM[key]}" aria-label="Rücken ${esc(l)}">${tag(key)}</div><span></span><span></span><span></span>`; }).join("")+
     `</div><p class="note info">Wird zum Rücken-Richtwert des Fahrstils addiert (+ = aufrechter, − = gestreckter). Die Disziplin wird oben unter „Sitzposition / Fahrstil“ gewählt. Mit „Modellwerte als Standard speichern“ als Werkseinstellung sichern.</p>`;
   box.querySelectorAll("[data-discstd]").forEach(el=>el.onchange=()=>{ const k=el.dataset.discstd, x=num(el.value); if(!isFinite(x)||Math.abs(x)>30){ renderDiscStd(); return; }
     (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); renderFitModel(); delete S.person.ov.backAngle; sugCache.key=""; setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
@@ -4961,12 +4976,12 @@ function renderStyleStd(){
   const bt=btype(), O=styleOvOf(bt), D=styleStdOf(bt);
   const tag=(st,k)=>O[st]&&isFinite(O[st][k])?'<small class="src edit">geändert</small>'
     :D[st]&&isFinite(D[st][k])?'<small class="src">Standard</small>':'<small class="src">&nbsp;</small>';
-  box.innerHTML=`<h3 style="margin:14px 0 4px">Richtwerte je Fahrstil – ${BTYPES[bt]}</h3><div class="bfg styleGrid"><span></span><b>Rücken (°)</b><b>Schulter (°)</b><b>Ellbogen (°)</b>`+
-    ["comfort","endurance","sportlich","ambitioniert","professional"].map(st=>`<span>${st}</span>${["back","shoulder","elbow"].map(k=>`<div><input class="bfi" type="number" step="${k==="elbow"?1:0.5}" data-stylestd="${st}|${k}" value="${STYLE_T[bt][st][k]}" aria-label="${k==="back"?"Rücken":k==="shoulder"?"Schulter":"Ellbogen"} ${st}">${tag(st,k)}</div>`).join("")}`).join("")+
-    `</div><p class="note info">Rücken: Rückenwinkel und Ziel im Vorschlag, Bereich ±5°. Schulter: Ziel im Vorschlag, Bereich ±10°. Ellbogen: Ziel im Vorschlag und Armhaltung der Figur (180° = gestreckt). Mit „Modellwerte als Standard speichern“ (ganz unten) als Werkseinstellung sichern.</p>`;
+  box.innerHTML=`<h3 style="margin:14px 0 4px">Richtwerte je Fahrstil – ${BTYPES[bt]}</h3><div class="bfg styleGrid"><span></span><b>Rücken (°)</b><b>Schulter (°)</b><b>Ellbogen (°)</b><b>Hüfte min (°)</b>`+
+    ["comfort","endurance","sportlich","ambitioniert","professional"].map(st=>`<span>${st}</span>${["back","shoulder","elbow","hip"].map(k=>`<div><input class="bfi" type="number" step="${k==="back"||k==="shoulder"?0.5:1}" data-stylestd="${st}|${k}" value="${STYLE_T[bt][st][k]}" aria-label="${{back:"Rücken",shoulder:"Schulter",elbow:"Ellbogen",hip:"Hüfte min"}[k]} ${st}">${tag(st,k)}</div>`).join("")}`).join("")+
+    `</div><p class="note info">Rücken: Rückenwinkel und Ziel im Vorschlag, Bereich ±5°. Schulter: Ziel im Vorschlag, Bereich ±10°. Ellbogen: Ziel im Vorschlag und Armhaltung der Figur (180° = gestreckt). Hüfte min: kleinster Hüftwinkel im oberen Totpunkt – darunter warnt die Kurbelempfehlung. Mit „Modellwerte als Standard speichern“ (ganz unten) als Werkseinstellung sichern.</p>`;
   box.insertAdjacentHTML("beforeend",'<div id="discStdBox"></div>'); renderDiscStd();
   box.querySelectorAll("[data-stylestd]").forEach(el=>el.onchange=()=>{
-    const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value); if(!(k==="elbow"?(x>=70&&x<=180):(x>=5&&x<=130))){ renderStyleStd(); return; }
+    const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value); if(!(k==="elbow"?(x>=70&&x<=180):k==="hip"?(x>=20&&x<=100):(x>=5&&x<=130))){ renderStyleStd(); return; }
     let O2; if(btype()==="road") O2=S.styleOv=S.styleOv||{}; else { S.styleOvT=S.styleOvT||{}; O2=S.styleOvT[btype()]=S.styleOvT[btype()]||{}; }
     (O2[st]=O2[st]||{})[k]=x;
     applyStyleStd(); delete S.person.ov.backAngle; sugCache.key="";
