@@ -3623,7 +3623,7 @@ function renderSetup(){
         r+=`<input type="text"${t==="num"?' inputmode="decimal"':""} data-su="c|${w}|${k}" data-t="${t}" value="${esc(String(val))}" placeholder="${esc(ph)}">`; }
       return r; };
     for(const [side,sx] of [["rechts","R"],["links","L"]]) for(const [k,lab,sub,t] of CLEAT_SIDE) h+=row("cleat"+k+sx,`${lab} ${side}`,sub,t); }
-  box.innerHTML=h+"</div>"+(hl?`<details class="acc" id="suLinked"${suLinkOpen?" open":""}><summary>Gekoppelte Maße</summary><p class="note info" style="margin-top:0">Kommen aus dem gewählten Teil. Eingabefelder erscheinen nur, wenn beim Teil kein Maß hinterlegt ist.</p><div class="su"><span></span><b>Ist-Zustand</b><b>Optimiert</b>${hl}</div></details>`:"")+dls;
+  box.innerHTML=h+"</div>"+(hl?`<details class="acc" id="suLinked" style="margin-top:26px"${suLinkOpen?" open":""}><summary>Gekoppelte Maße</summary><p class="note info" style="margin-top:0">Kommen aus dem gewählten Teil. Eingabefelder erscheinen nur, wenn beim Teil kein Maß hinterlegt ist.</p><div class="su"><span></span><b>Ist-Zustand</b><b>Optimiert</b>${hl}</div></details>`:"")+dls;
   { const d=document.getElementById("suLinked"); if(d) d.ontoggle=()=>{ suLinkOpen=d.open; }; }
   restoreFocus(box,"su",fk);
   if(!box._tabCol){ box._tabCol=true;
