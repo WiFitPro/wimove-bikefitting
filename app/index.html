@@ -256,6 +256,9 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .btGroup button:focus-visible{outline:2px solid var(--frame);outline-offset:-2px}
 .barHide{display:none!important}
 .geoSec[hidden]{display:none!important}
+.geoDrop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin:6px 0 10px;padding:22px 12px;border:2px dashed var(--rule);border-radius:10px;background:var(--field);cursor:pointer;text-align:center;transition:border-color .15s,background .15s}
+.geoDrop span{font-size:13px;color:#6B7785}.geoDrop:hover,.geoDrop:focus-visible{border-color:var(--frame);outline:none}
+.geoDrop.over{border-color:var(--frame);background:color-mix(in srgb,var(--frame) 10%,var(--field))}
 .infoBtn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin:0 0 0 8px;padding:0;border-radius:50%;border:1.5px solid currentColor;background:transparent;color:#6B7785;font:italic 700 12px/1 Georgia,serif;cursor:help;vertical-align:middle;opacity:.8;flex:none;text-transform:none;letter-spacing:0}
 .infoBtn:hover,.infoBtn:focus-visible{opacity:1;color:var(--frame);outline:none}
 .infoRow{display:flex;justify-content:flex-end;margin:4px 0}
@@ -3010,10 +3013,17 @@ function renderGeoImg(){
   const box=$("geoImgBox"); if(!box) return;
   box.innerHTML=`<div class="suadd"><h3 style="margin:0 0 6px">Geometrie aus Bild</h3>
     <p class="note info" style="margin-top:0">Screenshot einer Geometrietabelle wählen oder mit Strg/⌘+V einfügen. Die Werte werden erkannt und zum Prüfen angezeigt – erst „Speichern“ legt die Räder an.</p>
-    <div class="row"><label class="btn small" style="cursor:pointer">Bild wählen<input type="file" accept="image/*" id="geoFile" hidden></label><button class="btn ghost small" type="button" id="geoCancel">Schließen</button></div>
+    <label class="geoDrop" id="geoDrop" tabindex="0"><input type="file" accept="image/*" id="geoFile" hidden><b>Bild hierher ziehen</b><span>oder klicken zum Auswählen · Strg/⌘+V zum Einfügen</span></label>
+    <div class="row"><button class="btn ghost small" type="button" id="geoCancel">Schließen</button></div>
     <p class="note" id="geoNote"></p><div id="geoRes"></div></div>`;
   $("geoCancel").onclick=()=>{ box.innerHTML=""; document.removeEventListener("paste",geoPaste); };
-  $("geoFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(f) geoRun(f); };
+  $("geoFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(f) geoRun(f); e.target.value=""; };
+  { const dz=$("geoDrop"), on=v=>dz.classList.toggle("over",v);   /* Drag & Drop */
+    ["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{ e.preventDefault(); e.dataTransfer.dropEffect="copy"; on(true); }));
+    ["dragleave","dragend"].forEach(t=>dz.addEventListener(t,e=>{ if(!dz.contains(e.relatedTarget)) on(false); }));
+    dz.addEventListener("drop",e=>{ e.preventDefault(); on(false); const f=[...(e.dataTransfer.files||[])].find(x=>x.type.startsWith("image/"));
+      if(f) geoRun(f); else { const n=$("geoNote"); if(n) n.textContent="Bitte eine Bilddatei (PNG, JPG …) hineinziehen."; } });
+    dz.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("geoFile").click(); } }); }
   document.removeEventListener("paste",geoPaste); document.addEventListener("paste",geoPaste);
 }
 function geoPaste(e){ if(!$("geoFile")) return document.removeEventListener("paste",geoPaste);
