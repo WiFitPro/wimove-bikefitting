@@ -741,8 +741,8 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <details class="acc"><summary>Muskelfunktion / Krafttests</summary><div id="bfKraft"></div></details>
     </div>
     <div class="panel" id="tab-admin" hidden>
-      <section><h2>Admin</h2><p class="note info" style="margin-top:0">Alle festgelegten Richtwerte und Modelle an einer Stelle. Änderungen gelten sofort für alle Fittings; mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern.</p>
-        <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div><p class="note info" style="margin-top:6px">Jede Radart hat ihre eigene, unabhängige Einstellungsseite: Richtwerte, Disziplinen, Bewertungsmodell, Lenkerbreite und Kurbellänge. Gemeinsam für alle Radarten bleiben nur die Farben der Größenempfehlung.</p>
+      <section><h2>Admin</h2><p class="note info" style="margin-top:0">Alle festgelegten Richtwerte und Modelle an einer Stelle. Änderungen gelten sofort für alle Fittings; mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern. Jede Radart hat ihre eigene, unabhängige Einstellungsseite: Richtwerte, Disziplinen, Bewertungsmodell, Lenkerbreite und Kurbellänge. Gemeinsam für alle Radarten bleiben nur die Farben der Größenempfehlung.</p>
+        <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div>
         <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="admCopy">Änderungen für alle Radarten übernehmen</button></div><p class="note" id="admCopyNote"></p></section>
       <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
       <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
@@ -5032,6 +5032,7 @@ function renderDiscStd(){ const box=$("discStdBox"); if(!box) return; const bt=a
     `</div>`;
   box.querySelectorAll("[data-discstd]").forEach(el=>el.onchange=()=>{ const k=el.dataset.discstd, x=num(el.value); if(!isFinite(x)||Math.abs(x)>30){ renderDiscStd(); return; }
     (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); markEdited(el); delete S.person.ov.backAngle; sugCache.key=""; setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
+const STYLE_INFO="Ziele steuern den Vorschlag (Sitzposition), die Bereiche die Bewertung grün/rot in Gelenkwinkeln, Kopfzeile und PDF. Rücken/Schulter ±: Breite des grünen Bereichs um das Ziel. Knie gestreckt: größter Kniewinkel unten. Hüfte min: kleinster Hüftwinkel oben (auch Warnung bei der Kurbel). Knielot: + vor / − hinter der Pedalachse bei 3 Uhr. Sprunggelenk: gestreckt unten (90° = rechtwinklig). Mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern.";
 function renderStyleStd(){
   try{ renderFitModel(); }catch(e){}   // Werkseinstellung kann auch das Bewertungsmodell enthalten (Cache-Schlüssel enthalten das Modell)
   const box=$("styleStdBox"); if(!box) return;
@@ -5045,8 +5046,8 @@ function renderStyleStd(){
   box.innerHTML=grid("Oberkörper",[["back","Rücken (°)",0.5],["backR","Rücken ± (°)",0.5],["shoulder","Schulter (°)",0.5],["shR","Schulter ± (°)",0.5]])+
     grid("Arme",[["elbow","Ellbogen (°)",1],["elbowLo","Ellbogen von (°)",1],["elbowHi","Ellbogen bis (°)",1]])+
     grid("Beine",[["kneeT","Knie gestreckt (°)",0.5],["kneeLo","Knie von (°)",0.5],["kneeHi","Knie bis (°)",0.5],["hip","Hüfte min (°)",1]])+
-    grid("Fuß und Knielot",[["kops","Knielot (mm)",1],["ankleLo","Sprunggelenk von (°)",1],["ankleHi","Sprunggelenk bis (°)",1]])+
-    `<p class="note info">Ziele steuern den Vorschlag (Sitzposition), die Bereiche die Bewertung grün/rot in Gelenkwinkeln, Kopfzeile und PDF. Rücken/Schulter ±: Breite des grünen Bereichs um das Ziel. Knie gestreckt: größter Kniewinkel unten. Hüfte min: kleinster Hüftwinkel oben (auch Warnung bei der Kurbel). Knielot: + vor / − hinter der Pedalachse bei 3 Uhr. Sprunggelenk: gestreckt unten (90° = rechtwinklig). Mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern.</p>`;
+    grid("Fuß und Knielot",[["kops","Knielot (mm)",1],["ankleLo","Sprunggelenk von (°)",1],["ankleHi","Sprunggelenk bis (°)",1]]);
+  { const sm=$("admStyle")&&$("admStyle").querySelector("summary"); if(sm){ sm.querySelectorAll(".infoBtn").forEach(b=>b.remove()); sm.insertAdjacentHTML("beforeend",ib(STYLE_INFO)); } }   // Erklärung als i-Button an der Überschrift
   (box.querySelector(".stdCard")||box).insertAdjacentHTML("beforeend",'<div id="discStdBox"></div>'); renderDiscStd();   // Rückenwinkel je Disziplin gehört zum Oberkörper
   box.querySelectorAll("[data-stylestd]").forEach(el=>el.onchange=()=>{
     const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value), LIM={backR:[0,30],shR:[0,40],elbow:[70,180],elbowLo:[60,180],elbowHi:[60,180],kneeT:[100,180],kneeLo:[100,180],kneeHi:[100,180],hip:[20,100],kops:[-80,80],ankleLo:[40,170],ankleHi:[40,170]}[k]||[5,130];
