@@ -1716,12 +1716,13 @@ function crankAdvice(){
   const key=JSON.stringify([p,r.grip,r.back,c0,hipT,kneeT,M.crankMinL,M.crankMaxL,M.crankPct,M.crankBase,S.person.inseam,S.bar]);
   if(crankCache.key===key) return crankCache.val;
   const list=[]; for(let L=Math.max(140,M.crankMinL||160);L<=Math.min(190,M.crankMaxL||175)+0.01;L+=2.5) list.push(L);
+  const ins=crankByInseam(); if(isFinite(ins)&&!list.includes(ins)){ list.push(ins); list.sort((a,b)=>a-b); }
   const rows=list.map(L=>{ const sh=p.saddleH+(c0-L), sy=Math.sqrt(Math.max(0,sh*sh-p.setback*p.setback)); S.comp.crank=L;
     let e=null; try{ e=evalPos({x:-p.setback,y:sy},r.grip,r.back); }catch(err){} S.comp.crank=c0;
     return {L,hip:e?e.hipMin:NaN,knee:e?e.kneeMin:NaN,ok:!!e&&e.hipMin>=hipT&&e.kneeMin>=kneeT}; });
-  const ok=rows.filter(x=>x.ok), pick=ok.length?ok[ok.length-1]:rows[0];
-  const ins=isFinite(S.person.inseam)?Math.round(((M.crankBase??110)+S.person.inseam*(M.crankPct||0.0725))/2.5)*2.5:NaN;
-  const val={L:pick.L,hip:pick.hip,knee:pick.knee,hipT,kneeT,rows,anyOk:ok.length>0,inseamL:ins};
+  /* Empfehlung = Formel aus der Schrittlänge; Hüft-/Kniewinkel nur noch als Hinweis */
+  const ok=rows.filter(x=>x.ok), byIns=rows.find(x=>x.L===ins), pick=byIns||(ok.length?ok[ok.length-1]:rows[0]);
+  const val={L:pick.L,hip:pick.hip,knee:pick.knee,hipT,kneeT,rows,anyOk:ok.length>0,inseamL:ins,ok:pick.ok,byInseam:!!byIns};
   crankCache={key,val}; return val;
 }
 /* Kurbellänge aus der Schrittlänge (Grundwert + Faktor × Schrittlänge, auf 2,5 mm gerundet) – wird übernommen, solange die Kurbel nicht von Hand gewählt wurde */
@@ -1729,7 +1730,7 @@ const crankByInseam=()=>{ const ins=S.person&&S.person.inseam, M=FITM; if(!isFin
   const L=Math.round(((M.crankBase??110)+ins*(M.crankPct||0.0725))/2.5)*2.5; return Math.min(M.crankMaxL||180,Math.max(M.crankMinL||150,L)); };
 function autoCrank(){ if(S.crankManual||(S.person.entered&&!S.person.entered.inseam)) return;   /* nur echte, eingegebene Schrittlänge */ const L=crankByInseam(); if(isFinite(L)&&L!==S.comp.crank){ S.comp.crank=L; try{ if(!updateSelPart("crank",L)) clearSelFor("crank"); syncComp(); }catch(e){} } }
 const shWithCrank=sh=>{ const a=crankAdvice(); return a&&isFinite(a.L)?Math.round(sh+(S.comp.crank-a.L)):sh; };   // Sattelhöhe passend zur empfohlenen Kurbel
-const crankTxt=a=>a?`Kurbel <b>${String(a.L).replace(".",",")} mm</b> (Hüfte ${Math.round(a.hip)}° / Knie ${Math.round(a.knee)}° oben${a.anyOk?"":" – auch die kürzeste Kurbel erreicht die Mindestwinkel nicht"}${isFinite(a.inseamL)?`; nach Schrittlänge ${String(a.inseamL).replace(".",",")} mm`:""})`:"";
+const crankTxt=a=>a?`Kurbel <b>${String(a.L).replace(".",",")} mm</b> (${a.byInseam?"nach Schrittlänge; ":""}Hüfte ${String(a.ok?Math.round(a.hip):Math.floor(a.hip*10)/10).replace(".",",")}° / Knie ${String(a.ok?Math.round(a.knee):Math.floor(a.knee*10)/10).replace(".",",")}° oben${a.ok?"":` – <span class="bad">unter dem Mindestwert (Hüfte ${a.hipT}° / Knie ${a.kneeT}°), kürzere Kurbel prüfen</span>`})`:"";
 function renderSug(){
   const T=sugT();
   for(const [id,k] of [["tKnee","knee"],["tKops","kops"],["tBack","back"],["tShoulder","shoulder"],["tElbow","elbow"]]){ const el=$(id); if(document.activeElement!==el) el.value=isFinite(T[k])?T[k]:(k==="back"?styleBack():""); }
@@ -2162,8 +2163,8 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["crankKnee","_alt","Knie gebeugt mindestens","°",58,1,"kleinster Kniewinkel im oberen Totpunkt"],
   ["crankMinL","Kurbellänge","Kürzeste Kurbel","mm",160,2.5,"Suchbereich in 2,5-mm-Schritten"],
   ["crankMaxL","Kurbellänge","Längste Kurbel","mm",175,2.5,""],
-  ["crankBase","Kurbellänge","Kontrolle: Grundwert","mm",110,1,"Vergleichswert = Grundwert + Faktor × Schrittlänge (760 mm → 165, 895 mm → 175)"],
-  ["crankPct","Kurbellänge","Kontrolle: Faktor × Schrittlänge","",0.0725,0.0005,"gerundet auf 2,5 mm"],
+  ["crankBase","Kurbellänge","Empfehlung: Grundwert","mm",110,1,"Kurbellänge = Grundwert + Faktor × Schrittlänge (760 mm → 165, 895 mm → 175) – gilt überall"],
+  ["crankPct","Kurbellänge","Empfehlung: Faktor × Schrittlänge","",0.0725,0.0005,"gerundet auf 2,5 mm"],
   ...DISC_T.tri.map(([k,l,o])=>["disc_tri_"+k,"Disziplin Triathlon",l+": Rückenwinkel","°",o,0.5,k==="kurz"?"wird zum Rückenwinkel-Ziel der Sitzposition addiert (+ = aufrechter)":""]),
   ...DISC_T.mtb.map(([k,l,o])=>["disc_mtb_"+k,"Disziplin MTB",l+": Rückenwinkel","°",o,0.5,k==="xc"?"wird zum Rückenwinkel-Ziel der Sitzposition addiert (+ = aufrechter)":""]),
   ["expoShiftMtb","Radart","MTB: Stützenauszug verschieben","mm",80,5,"kurze Sitzrohre (Dropper): Grenzen und Ziel des Auszugs liegen um diesen Wert höher"],
@@ -2197,7 +2198,7 @@ const COMP_FITM=["Lenkerbreite","Kurbellänge"];   // diese Gruppen stehen im Ta
 /* Tabelle im Tab Bauteile: Lenkerfaktor sowie Hüft- und Kniewinkel-Minimum (Kurbellänge) je Disziplin */
 function discCompTable(tag){
   const cell=(k,st)=>`<div><input class="bfi" type="number" step="${st}" data-fitm="${k}" value="${FITM[k]}" aria-label="${k}">${tag(k)||'<small class="src">&nbsp;</small>'}</div>`;
-  let h=`<h3 style="margin:16px 0 4px">Je Disziplin</h3><p class="note" style="margin-top:0">Lenker: Rennrad, Gravel und Triathlon × Schulterbreite, MTB × Körpergröße – danach × Faktor der Sitzposition, gerundet auf 20 mm. Hüfte/Knie: die längste Kurbel, bei der diese Winkel im oberen Totpunkt nicht unterschritten werden.</p>
+  let h=`<h3 style="margin:16px 0 4px">Je Disziplin</h3><p class="note" style="margin-top:0">Lenker: Rennrad, Gravel und Triathlon × Schulterbreite, MTB × Körpergröße – danach × Faktor der Sitzposition, gerundet auf 20 mm. Kurbellänge kommt aus der Schrittlänge (Formel oben); Hüfte/Knie min: Warnung im Vorschlag, wenn diese Winkel im oberen Totpunkt unterschritten werden.</p>
     <div class="bfg styleGrid discGrid"><span></span><b>Lenker-Faktor</b><b>Hüfte min (°)</b><b>Knie min (°)</b>`;
   for(const bt of Object.keys(BTYPES)){ h+=`<div class="suh" style="grid-column:1/-1;align-items:flex-start;margin-top:8px">${BTYPES[bt]}</div>`;
     for(const [k,l] of DISC_T[bt]) h+=`<span>${esc(l)}</span>${cell("dbar_"+bt+"_"+k,0.005)}${cell("dhip_"+bt+"_"+k,1)}${cell("dknee_"+bt+"_"+k,1)}`; }
