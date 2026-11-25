@@ -967,7 +967,7 @@ function buildDB(p){
     x.hasData=["stack","reach","hta"].every(k=>isFinite(parseVal(k,x.raw[k]))); }
   /* leere Platzhalter (z. B. Kundenrad ohne Maße) ausblenden, sobald dasselbe Modell mit Geometrie vorhanden ist */
   { const full=new Set(p.bikes.filter(x=>x.hasData).map(x=>norm(x.b)+"|"+norm(x.m))); p.bikes=p.bikes.filter(x=>x.hasData||!full.has(norm(x.b)+"|"+norm(x.m))); }
-  for(const x of p.bikes) if(!x.t) x.t=bikeTypeOf(x.b,x.m);
+  for(const x of p.bikes){ const o=S.bikeType&&S.bikeType[x.b+"|"+x.m]; if(o&&BTYPES[o]) x.t=o; else if(!x.t) x.t=bikeTypeOf(x.b,x.m); }   // Radart von Hand gesetzt (Räder verwalten) geht vor
   const mk=list=>{ const brands=[],models={}; for(const x of list){ if(!models[x.b]){models[x.b]=[];brands.push(x.b);} if(!models[x.b].includes(x.m)) models[x.b].push(x.m); } return {brands,models}; };
   const all=mk(p.bikes), byT={}; for(const t of Object.keys(BTYPES)) byT[t]=mk(p.bikes.filter(x=>x.t===t));
   /* Marken- und Modelllisten zeigen nur Räder der gewählten Radart */
@@ -2834,7 +2834,8 @@ function renderBikeManager(){
   const sizes=sizesOf(bmSel.b,bmSel.m), own=new Set((S.customBikes||[]).map(o=>`${o.marke}|${o.modell}|${o.grosse}`));
   let h=`<div class="pmhead"><select id="bmB">${DB.brands.map(b=>`<option${b===bmSel.b?" selected":""}>${esc(b)}</option>`).join("")}</select>
     <select id="bmM">${(DB.models[bmSel.b]||[]).map(m=>`<option${m===bmSel.m?" selected":""}>${esc(m)}</option>`).join("")}</select></div>`;
-  h+=`<div class="row" style="margin:0 0 8px"><input class="bfi" id="bmRb" value="${esc(bmSel.b)}" aria-label="Marke" style="flex:1"><input class="bfi" id="bmRm" value="${esc(bmSel.m)}" aria-label="Modell" style="flex:1.4"><button class="btn ghost small" id="bmRen">Umbenennen</button></div>`;
+  h+=`<div class="row" style="margin:0 0 8px"><input class="bfi" id="bmRb" value="${esc(bmSel.b)}" aria-label="Marke" style="flex:1"><input class="bfi" id="bmRm" value="${esc(bmSel.m)}" aria-label="Modell" style="flex:1.4"><button class="btn ghost small" id="bmRen">Umbenennen</button></div>
+    <div class="row" style="margin:0 0 8px;align-items:center"><label class="f" for="bmT" style="margin:0">Radkategorie</label><select id="bmT" style="width:auto;flex:0 1 220px">${Object.entries(BTYPES).map(([k,l])=>`<option value="${k}"${k===((sizes[0]||{}).t||"road")?" selected":""}>${l}</option>`).join("")}</select></div>`;
   h+=`<div class="bmwrap"><table class="bmtab"><thead><tr><th>Größe</th>${sizes.map(x=>`<th><input type="text" class="bms" data-bms="${esc(bkKey(x))}" value="${esc(String(x.s))}" aria-label="Größe"></th>`).join("")}</tr><tr><th></th>${sizes.map(x=>`<th>${own.has(bkKey(x))?'<br><small class="src edit">eigen</small>':""}${S.bikeFix&&S.bikeFix[bkKey(x)]?'<br><small class="src edit">geändert</small>':""}</th>`).join("")}</tr></thead><tbody>`;
   for(const [k,l] of BM_F) h+=`<tr><th>${l}</th>${sizes.map(x=>`<td><input type="text" inputmode="decimal" data-bm="${esc(bkKey(x))}|${k}" value="${isFinite(x.raw[k])?x.raw[k]:""}" placeholder="–"></td>`).join("")}</tr>`;
   h+=`<tr><th></th>${sizes.map(x=>`<td><button type="button" class="suback" data-bmdel="${esc(bkKey(x))}" title="Größe entfernen" aria-label="Größe ${esc(String(x.s))} entfernen">✕</button></td>`).join("")}</tr></tbody></table></div>`;
@@ -2853,6 +2854,9 @@ function renderBikeManager(){
     else { S.bikeFix=S.bikeFix||{}; (S.bikeFix[key]=S.bikeFix[key]||{})[k]=isFinite(x)?x:null; }   // null = bewusst geleert (bleibt auch zentral erhalten)
     setTimeout(()=>{ reloadData(); renderBikeManager(); },0);
   });
+  $("bmT").onchange=e=>{ S.bikeType=S.bikeType||{}; S.bikeType[bmSel.b+"|"+bmSel.m]=e.target.value; for(const x of DB.bikes) if(x.b===bmSel.b&&x.m===bmSel.m) x.t=e.target.value;
+    const msg=`Radkategorie geändert: ${bmSel.b} ${bmSel.m} erscheint jetzt unter „${BTYPES[e.target.value]}“.`+(e.target.value!==btype()?" In dieser Radart ist es nicht mehr in der Liste.":"");
+    reloadData(); renderOwnBikes(); renderBikeManager(); $("bmNote").textContent=msg; };
   $("bmRen").onclick=()=>{
     const nb=$("bmRb").value, nm=$("bmRm").value;
     for(const x of sizesOf(bmSel.b,bmSel.m)){ const e=renameBike(bkKey(x),nb,nm,x.s); if(e){ $("bmNote").textContent=e; return; } }
@@ -5054,7 +5058,7 @@ async function factoryLoad(){
     else { sugCache.key=""; $("sugApply").click(); }
   }
 }
-const LIB_KEYS=["customParts","partFix","partDel","partRename","customBikes","bikeFix","bikeDel","bikeRename"];
+const LIB_KEYS=["customParts","partFix","partDel","partRename","customBikes","bikeFix","bikeDel","bikeRename","bikeType"];
 const libJSON=()=>JSON.stringify(LIB_KEYS.map(k=>S[k]||null));
 let libReady=false, libT=null;
 /* Daten für den zentralen Speicher säubern: ungültige Zahlen (NaN, leere Felder) weglassen – sonst lehnt der Speicher den ganzen Satz ab */
