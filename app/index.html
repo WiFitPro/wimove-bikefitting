@@ -742,7 +742,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
     <div class="panel" id="tab-admin" hidden>
       <section><h2>Admin</h2><p class="note info" style="margin-top:0">Alle festgelegten Richtwerte und Modelle an einer Stelle. Änderungen gelten sofort für alle Fittings; mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern.</p>
-        <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div><p class="note" style="margin-top:6px">Jede Radart hat ihre eigene, unabhängige Einstellungsseite: Richtwerte, Disziplinen, Bewertungsmodell, Lenkerbreite und Kurbellänge. Gemeinsam für alle Radarten bleiben nur die Farben der Größenempfehlung.</p>
+        <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div><p class="note info" style="margin-top:6px">Jede Radart hat ihre eigene, unabhängige Einstellungsseite: Richtwerte, Disziplinen, Bewertungsmodell, Lenkerbreite und Kurbellänge. Gemeinsam für alle Radarten bleiben nur die Farben der Größenempfehlung.</p>
         <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="admCopy">Änderungen für alle Radarten übernehmen</button></div><p class="note" id="admCopyNote"></p></section>
       <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
       <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
@@ -2247,7 +2247,7 @@ const COMP_FITM=["Lenkerbreite","Kurbellänge"];   // diese Gruppen stehen im Ta
 /* Tabelle im Tab Bauteile: Lenkerfaktor sowie Hüft- und Kniewinkel-Minimum (Kurbellänge) je Disziplin */
 function discCompTable(tag){   // Lenker-Faktor je Disziplin – Zeilen in der Gruppe „Lenkerbreite“
   const bt=admBt(), ref=bt==="mtb"?"Körpergröße":"Schulterbreite";
-  return `<p class="note" style="grid-column:1/-1;margin:10px 0 0">Lenkerbreite = ${ref} × Faktor × Faktor der Sitzposition, gerundet auf 20 mm</p>`+DISC_T[bt].map(([k,l],i)=>{ const key="dbar_"+bt+"_"+k;
+  return `<div style="grid-column:1/-1;margin:10px 0 0;font-size:14px;font-weight:600;color:var(--muted)">Lenker-Faktor je Disziplin${ib(`Lenkerbreite = ${ref} × Faktor × Faktor der Sitzposition, gerundet auf 20 mm`)}</div>`+DISC_T[bt].map(([k,l],i)=>{ const key="dbar_"+bt+"_"+k;
     return `<label for="cm_${key}">${DISC_T[bt].length>1?esc(l)+": ":""}Lenker-Faktor × ${ref}</label><div class="fitmIn"><input class="bfi" type="number" step="0.005" id="cm_${key}" data-fitm="${key}" value="${FITM[key]}" style="max-width:90px"><span class="note" style="margin:0"></span>${tag(key)}</div>`; }).join(""); }
 const DISC_FITM=["Disziplin Rennrad","Disziplin Triathlon","Disziplin MTB"];   // diese Gruppen stehen unter Person → Richtwerte je Fahrstil
 function renderFitModel(){ renderFitBox("fitModelBox","fm",g=>!COMP_FITM.includes(g)&&!DISC_FITM.includes(g),true); try{ renderDiscStd(); }catch(e){} renderFitBox("compModelBox","cm",g=>COMP_FITM.includes(g)||g==="_disc",false,undefined,discCompTable); }
@@ -2261,12 +2261,12 @@ function renderFitBox(boxId,pf,filt,full,note,extra){
   h+=`<div class="fitmGrid">`;
   for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){ if(!filt(g)||g[0]==="_"||(g==="Radart"&&bt!=="mtb")) continue;
     if(g!==grp){ if(grp==="Lenkerbreite"&&extra) h+=extra(tag); grp=g; h+=`<div class="suh">${g}</div>`; }
-    h+=`<label for="${pf}_${k}">${esc(lab)}<small>${esc(expl)}</small></label><div class="fitmIn">${inp(k,fitmOf(bt,k),step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
+    h+=`<label for="${pf}_${k}">${esc(lab)}${expl?ib(expl):""}</label><div class="fitmIn">${inp(k,fitmOf(bt,k),step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
   }
   if(grp==="Lenkerbreite"&&extra) h+=extra(tag);
   h+=`</div>`; if(full) h+=`<h3 style="margin:14px 0 4px">Vorlieben je Sitzposition – ${BTYPES[bt]}</h3><div class="bfg styleGrid" style="grid-template-columns:minmax(90px,120px) repeat(2,minmax(64px,92px))"><span></span><b>Vorbau (mm)</b><b>Spacer (mm)</b>`+
     Object.keys(STEM_FACTORY).map(st=>`<span>${st}</span><div>${inp(kp+"stem_"+st,STEM_T[bt][st],5)}${tag(kp+"stem_"+st)||'<small class="src">&nbsp;</small>'}</div><div>${inp(kp+"spacer_"+st,SPACER_T[bt][st],5)}${tag(kp+"spacer_"+st)||'<small class="src">&nbsp;</small>'}</div>`).join("")+`</div>`;
-  h+=`<div class="row" style="margin-top:10px"><button class="btn small" type="button" id="${pf}Save">Als Standard speichern</button><button class="btn ghost small" type="button" id="${pf}Reset">Auf App-Grundwerte zurücksetzen</button></div><p class="note" id="${pf}Note">Änderungen wirken sofort${full?" auf die Größenempfehlung":" auf den Vorschlag"}. „Als Standard speichern“ macht sie zur Werkseinstellung für alle Geräte.</p>`;
+  h+=`<div class="row" style="margin-top:10px"><button class="btn small" type="button" id="${pf}Save">Als Standard speichern</button><button class="btn ghost small" type="button" id="${pf}Reset">Auf App-Grundwerte zurücksetzen</button>${ib(`Änderungen wirken sofort${full?" auf die Größenempfehlung":" auf den Vorschlag"}. „Als Standard speichern“ macht sie zur Werkseinstellung für alle Geräte.`)}</div><p class="note" id="${pf}Note"></p>`;
   box.innerHTML=h;
   box.querySelectorAll("[data-fitm]").forEach(el=>el.onchange=()=>{ const k=el.dataset.fitm, kb=k.replace(/^[a-z]+__/,""), x=num(el.value); if(!isFinite(x)||(x<0&&!/^disc_/.test(kb))||(/Per$|^soft/.test(kb)&&x<=0)){ renderFitModel(); return; }
     (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); renderFitModel(); });
@@ -2690,6 +2690,7 @@ function placeGeo(){   /* „+ Rad anlegen“ samt Formular: in WiFitPro unter �
   else { row.appendChild(b); row.after(gx); gx.after(nb); sec.hidden=true; }
 }
 /* Erklärtexte als kleiner i-Button: Beschreibung erscheint beim Darüberfahren (Touch: antippen) */
+const ib=t=>`<button type="button" class="infoBtn" data-tip="${esc(t)}" aria-label="Info: ${esc(t)}">i</button>`;   // kleiner i-Button mit Beschreibung
 function infoize(root=document){
   root.querySelectorAll("p.note.info:not([data-done])").forEach(p=>{
     const txt=p.textContent.replace(/\s+/g," ").trim(); if(!txt) return; p.dataset.done="1";
