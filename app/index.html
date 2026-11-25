@@ -334,7 +334,7 @@ body.noPro #startPro,body.noPro #basicBtn{display:none!important}
 .ptools{position:absolute;right:0;top:0;z-index:2;display:flex;flex-direction:column;align-items:flex-end;max-width:60%}
 .ptools .note{margin:4px 0 0;text-align:right}
 #tab-befund{padding-top:44px}
-.nextbar{display:flex;justify-content:flex-start;padding:18px 0 4px}   /* links, damit der Netlify-Hinweis unten rechts nichts verdeckt */
+.nextbar{display:flex;justify-content:flex-start;flex-wrap:wrap;gap:10px;padding:18px 0 4px}   /* links, damit der Netlify-Hinweis unten rechts nichts verdeckt */
 .nextbar .btn{min-width:180px}
 section{padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--rule)}
 section:last-child{border-bottom:0}
@@ -2717,14 +2717,16 @@ function infoize(root=document){
   document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest(".infoBtn"); if(b){ e.preventDefault(); e.stopPropagation(); cur===b&&!tip.hidden?hide():show(b); } else if(cur) hide(); },true);
   addEventListener("scroll",hide,true);
   infoize(); new MutationObserver(()=>infoize()).observe(document.body,{childList:true,subtree:true}); }
-/* Weiter-Button am Ende jedes Tabs: springt zum nächsten sichtbaren Tab */
+/* Zurück- und Weiter-Button am Ende jedes Tabs: springt zum vorigen bzw. nächsten sichtbaren Tab */
 function renderNext(){
   const tabs=[...document.querySelectorAll(".tab")].filter(t=>getComputedStyle(t).display!=="none");
   document.querySelectorAll(".nextbar").forEach(n=>n.remove());
-  tabs.forEach((t,i)=>{ const nx=tabs[i+1], pan=$("tab-"+t.dataset.tab); if(!nx||!pan) return;
+  const go=t=>{ t.click(); const a=document.querySelector("aside"); if(a) a.scrollTop=0; t.scrollIntoView({block:"nearest"}); };
+  const nxTxt=t=>t.dataset.tab==="bike"?"Weiter zur Radauswahl":t.dataset.tab==="comp"?"Weiter zur Bauteilauswahl":t.dataset.tab==="fit"?"Weiter zur Sitzposition":t.dataset.tab==="pdf"?"Weiter zum PDF Report":"Weiter zu "+t.textContent;
+  tabs.forEach((t,i)=>{ const pv=tabs[i-1], nx=tabs[i+1], pan=$("tab-"+t.dataset.tab); if((!nx&&!pv)||!pan) return;
     const d=document.createElement("div"); d.className="nextbar";
-    d.innerHTML=`<button class="btn small">${nx.dataset.tab==="bike"?"Weiter zur Radauswahl":nx.dataset.tab==="comp"?"Weiter zur Bauteilauswahl":nx.dataset.tab==="fit"?"Weiter zur Sitzposition":nx.dataset.tab==="pdf"?"Weiter zum PDF Report":"Weiter zu "+nx.textContent} →</button>`;
-    d.firstChild.onclick=()=>{ nx.click(); const a=document.querySelector("aside"); if(a) a.scrollTop=0; nx.scrollIntoView({block:"nearest"}); };
+    if(pv){ const b=document.createElement("button"); b.className="btn ghost small"; b.textContent="← Zurück zu "+pv.textContent; b.onclick=()=>go(pv); d.appendChild(b); }
+    if(nx){ const b=document.createElement("button"); b.className="btn small"; b.textContent=nxTxt(nx)+" →"; b.onclick=()=>go(nx); d.appendChild(b); }
     pan.appendChild(d); });
 }
 function applyBasic(){ try{ placeGeo(); }catch(e){}
