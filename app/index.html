@@ -626,9 +626,9 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <details class="acc"><summary>Berechnet</summary><div class="res" id="results"></div></details>
       <details class="acc adminOnly" id="fitModelDetails"><summary>Bewertungsmodell Größenempfehlung</summary><div id="fitModelBox"></div></details>
       <details class="acc"><summary>Rahmenfarbe <span class="note" id="colorName" style="margin:0 auto 0 10px;font-weight:400"></span></summary><div class="swatches" id="swatches" style="flex-wrap:wrap"></div></details>
+      <section class="geoSec adminOnly"><div class="row"><button class="btn ghost small" id="geoImgBtn" title="Screenshot einer Geometrietabelle auslesen und als Rad anlegen">Geometrie aus Bild …</button></div><div id="geoImgBox"></div></section>
       <details class="acc adminOnly" id="bmDetails"><summary>Räder verwalten</summary><p class="note dbstat" style="margin-top:0"></p>
-        <div class="row"><button class="btn ghost small" id="newBikeBtn">+ Rad anlegen</button><button class="btn ghost small" id="geoImgBtn" title="Screenshot einer Geometrietabelle auslesen">Geometrie aus Bild …</button></div>
-        <div id="geoImgBox"></div>
+        <div class="row"><button class="btn ghost small" id="newBikeBtn">+ Rad anlegen</button></div>
         <div id="newBikeBox"></div>
         <div id="ownBikes"></div>
         <div id="bmBox" style="margin-top:12px"></div>
@@ -2988,7 +2988,8 @@ function geoTable(r){
     S.customBikes=S.customBikes||[]; S.customBikes.push(...add);
     if(art!==btype()) setBtype(art);
     reloadData(); selectMain(marke,modell,String(add[0].grosse)); try{ renderOwnBikes(); bmSel={b:marke,m:modell}; renderBikeManager(); }catch(e){} save();
-    $("geoImgBox").innerHTML=`<p class="note">${esc(marke)} ${esc(modell)}: ${add.length} Größe${add.length>1?"n":""} angelegt${skip.length?`, schon vorhanden: ${esc(skip.join(", "))}`:""}${miss.length?`, ohne Pflichtwerte übersprungen: ${esc(miss.join(", "))}`:""}. Zum zentralen Speichern unten auf „Speichern“ tippen.</p>`;
+    $("geoImgBox").innerHTML=`<p class="note">${esc(marke)} ${esc(modell)}: ${add.length} Größe${add.length>1?"n":""} angelegt${skip.length?`, schon vorhanden: ${esc(skip.join(", "))}`:""}${miss.length?`, ohne Pflichtwerte übersprungen: ${esc(miss.join(", "))}`:""}. Wird zentral gespeichert …</p>`;
+    try{ libSaveNow(); }catch(e){}   // gleich zentral sichern – auch in WiFitBasic, wo „Räder verwalten“ ausgeblendet ist
     document.removeEventListener("paste",geoPaste);
   };
 }
