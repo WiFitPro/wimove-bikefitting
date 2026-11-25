@@ -2874,23 +2874,40 @@ const GEO_ALIAS=[
   ["reach",/reach/i],["stack",/stack/i],
   ["oberrohr",/top ?tube|oberrohr|\bett\b|^tt\b/i],
   ["steuerrohr",/head ?tube|steuerrohr|^ht\b/i],
-  ["sitzrohr",/seat ?tube|sitzrohr|^st\b/i],
+  ["sitzrohr",/seat ?tube|sitzrohr|^st\b|\boot ?tube|\bc-?t\b/i],
   ["kettenstrebe",/chain ?stay|kettenstrebe/i],
   ["radstand",/wheel ?base|radstand/i],
   ["tretlageroffset",/bb ?drop|bottom ?bracket ?drop|(tretlager|innenlager).{0,3}(absenkung|offset|drop|tiefe)/i]];
 function geoNum(t){ t=String(t).replace(/[°˚º]|mm|cm/gi,"").trim(); if(/\d/.test(t)&&/^[0-9sSoOlIBZ.,]+$/.test(t)) t=t.replace(/[sS]/g,"5").replace(/[oO]/g,"0").replace(/[lI]/g,"1").replace(/B/g,"8").replace(/Z/g,"2"); /* typische Lesefehler der Texterkennung */ if(/^\d{1,2}[.,]\d{3}$/.test(t)) t=t.replace(/[.,]/,""); t=t.replace(",","."); const x=parseFloat(t); return /^-?\d+(\.\d+)?$/.test(t)&&isFinite(x)?x:NaN; }
-/* Texterkennung (OCR) zeilenweise auswerten: Beschriftung links, Zahlen je Größe rechts */
+/* Texterkennung (OCR) zeilenweise auswerten: Beschriftung links, Zahlen je Größe rechts.
+   Beschriftungen über mehrere Zeilen („Head / Angle“) und eine Größenzeile ohne Beschriftung („42cm 44cm …“) werden zusammengeführt. */
+const GEO_SIZE_TOK=/^(\d{2,3}([.,]\d)?(cm)?|x{0,3}[sml]|xx?s|xx?l|x{1,3}l|m)$/i;
 function geoParseText(txt){
-  const res={marke:"",modell:"",sizes:[],werte:{}}; let best={};
-  for(const raw of String(txt).split(/\n/)){
-    const line=raw.replace(/[|\[\]{}]/g," ").replace(/\s+/g," ").trim().replace(/^[A-Z]\.?\s+(?=[A-Za-zÄÖÜ]{2})/,""); if(!line) continue;   /* Kennbuchstaben (A Stack, B Reach …) entfernen */
-    const toks=line.split(" "), i0=toks.findIndex(t=>isFinite(geoNum(t))&&!/^[A-Za-zÄÖÜäöüß]/.test(t));
-    const labelRaw=(i0<0?line:toks.slice(0,i0).join(" ")), label=labelRaw.replace(/\(.*?\)/g,"").trim();
-    const hit=GEO_ALIAS.find(([,re])=>re.test(label)); if(!hit) continue; const k=hit[0];
-    if(k==="grosse"){ const j=/^(frame|rahmen)$/i.test(toks[0])&&toks[1]?2:1; const sz=toks.slice(j).filter(t=>!/^\(?(cm|mm|zoll|inch)\)?$/i.test(t)).filter(t=>/^[A-Za-z0-9.,\/-]{1,6}$/.test(t)); if(sz.length>res.sizes.length) res.sizes=sz; continue; }
+  const res={marke:"",modell:"",sizes:[],werte:{}}, best={};
+  const L=String(txt).split(/\n/).map(raw=>raw.replace(/[|\[\]{}]/g," ").replace(/\s+/g," ").trim().replace(/^[A-Z]\.?\s+(?=[A-Za-zÄÖÜ]{2})/,"")).filter(Boolean);
+  const split=line=>{ const toks=line.split(" "), i0=toks.findIndex(t=>isFinite(geoNum(t))&&!/^[A-Za-zÄÖÜäöüß(]/.test(t)); return {toks,i0,labelRaw:i0<0?line:toks.slice(0,i0).join(" ")}; };
+  const isLabelOnly=l=>{ const x=split(l); return x.i0<0&&/[A-Za-zÄÖÜ]{2}/.test(l); };
+  let pend=[], seenRow=false;
+  for(let li=0;li<L.length;li++){
+    const line=L[li], {toks,i0,labelRaw}=split(line);
+    /* Größenzeile ohne Beschriftung, z. B. „42cm 44cm 46.5cm …“ oder „XS S M L XL“ */
+    if(!res.sizes.length&&!seenRow&&toks.length>=3&&toks.every(t=>GEO_SIZE_TOK.test(t))&&(toks.some(t=>/cm$|[a-z]/i.test(t))||i0===0&&!pend.length)){ res.sizes=toks.map(t=>t.replace(/cm$/i,"")); pend=[]; continue; }
+    if(i0<0){ const hitG=GEO_ALIAS.find(([k,re])=>k==="grosse"&&re.test(line)); if(!hitG){ pend.push(line); if(pend.length>3) pend.shift(); continue; } }
+    let label=labelRaw.replace(/\(.*?\)/g,"").trim(), lr=labelRaw;
+    const next=L[li+1], nextLab=next&&isLabelOnly(next)&&!(L[li+2]&&split(L[li+2]).i0===0&&!split(L[li+2]).labelRaw)?next:"";
+    let hit=label?GEO_ALIAS.find(([,re])=>re.test(label)):null;
+    if(!hit||!label){   /* Beschriftung über mehrere Zeilen zusammensetzen */
+      for(const cand of [[...pend,label].join(" "),[...pend,label,next&&isLabelOnly(next)?next:""].join(" "),[label,next&&isLabelOnly(next)?next:""].join(" ")]){
+        const c=cand.replace(/\(.*?\)/g,"").replace(/\s+/g," ").trim(); const h=c&&GEO_ALIAS.find(([,re])=>re.test(c));
+        if(h){ hit=h; label=c; lr=cand; if(cand.includes(next||"\u0000")&&next&&isLabelOnly(next)) li++; break; } } }
+    else if(next&&/^\(/.test(next)&&isLabelOnly(next)){ lr+=" "+next; li++; }   // „(effective)“ in der Zeile darunter
+    pend=[];
+    if(!hit) continue; const k=hit[0];
+    if(k==="grosse"){ const j=/^(frame|rahmen)$/i.test(toks[0])&&toks[1]?2:1; const sz=toks.slice(j).filter(t=>!/^\(?(cm|mm|zoll|inch)\)?$/i.test(t)).filter(t=>/^[A-Za-z0-9.,\/-]{1,6}$/.test(t)).map(t=>t.replace(/cm$/i,"")); if(sz.length>res.sizes.length) res.sizes=sz; continue; }
     if((k==="steuerrohr"||k==="sitzrohr"||k==="oberrohr")&&/angle|winkel/i.test(label)) continue;
     const nums=(i0<0?[]:toks.slice(i0)).filter(t=>!/^(mm|cm|°|-|–)$/i.test(t)&&/[0-9A-Za-z]/.test(t)).map(geoNum); if(!nums.some(x=>isFinite(x))) continue;   /* unlesbare Zellen bleiben als Lücke stehen, damit die Spalten nicht verrutschen */
-    const prio=k==="oberrohr"?(/effective|eff|horizont|virtu|ett/i.test(labelRaw)?2:/actual|tatsächl|real/i.test(labelRaw)?0:1):1;   // effektives Oberrohr bevorzugen
+    seenRow=true;
+    const prio=k==="oberrohr"?(/effective|eff|horizont|virtu|ett/i.test(lr)?2:/actual|tatsächl|real/i.test(lr)?0:1):1;   // effektives Oberrohr bevorzugen
     if(best[k]!==undefined&&best[k]>=prio) continue; best[k]=prio; res.werte[k]=nums;
   }
   return geoFix(res);
