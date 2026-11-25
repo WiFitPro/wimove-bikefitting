@@ -2925,7 +2925,7 @@ const GEO_ALIAS=[
 function geoNum(t){ t=String(t).replace(/[°˚º]|mm|cm/gi,"").trim(); if(/\d/.test(t)&&/^[0-9sSoOlIBZ.,]+$/.test(t)) t=t.replace(/[sS]/g,"5").replace(/[oO]/g,"0").replace(/[lI]/g,"1").replace(/B/g,"8").replace(/Z/g,"2"); /* typische Lesefehler der Texterkennung */ if(/^\d{1,2}[.,]\d{3}$/.test(t)) t=t.replace(/[.,]/,""); t=t.replace(",","."); const x=parseFloat(t); return /^-?\d+(\.\d+)?$/.test(t)&&isFinite(x)?x:NaN; }
 /* Texterkennung (OCR) zeilenweise auswerten: Beschriftung links, Zahlen je Größe rechts.
    Beschriftungen über mehrere Zeilen („Head / Angle“) und eine Größenzeile ohne Beschriftung („42cm 44cm …“) werden zusammengeführt. */
-const GEO_SIZE_TOK=/^(\d{2,3}([.,]\d)?(cm)?|x{0,3}[sml]|xx?s|xx?l|x{1,3}l|m)$/i;
+const GEO_SIZE_ONE=/^(\d{2,3}([.,]\d)?(cm)?|x{0,3}[sml]|xx?s|xx?l|x{1,3}l|m)$/i, GEO_SIZE_TOK={test:t=>t.split("/").every(x=>GEO_SIZE_ONE.test(x))};   // auch „XXS/47“
 function geoParseText(txt){
   const res={marke:"",modell:"",sizes:[],werte:{}}, best={};
   const L=String(txt).split(/\n/).map(raw=>raw.replace(/[|\[\]{}]/g," ").replace(/\s+/g," ").trim().replace(/^[A-Z]\.?\s+(?=[A-Za-zÄÖÜ]{2})/,"")).filter(Boolean);
@@ -2951,7 +2951,7 @@ function geoParseText(txt){
     if((k==="steuerrohr"||k==="sitzrohr"||k==="oberrohr")&&/angle|winkel/i.test(label)) continue;
     const nums=(i0<0?[]:toks.slice(i0)).filter(t=>!/^(mm|cm|°|-|–)$/i.test(t)&&/[0-9A-Za-z]/.test(t)).map(geoNum); if(!nums.some(x=>isFinite(x))) continue;   /* unlesbare Zellen bleiben als Lücke stehen, damit die Spalten nicht verrutschen */
     seenRow=true;
-    const prio=k==="oberrohr"?(/effective|eff|horizont|virtu|ett/i.test(lr)?2:/actual|tatsächl|real/i.test(lr)?0:1):1;   // effektives Oberrohr bevorzugen
+    const prio=k==="oberrohr"?(/effective|eff|horizont|virtu|ett/i.test(lr)?2:/actual|tatsächl|real/i.test(lr)?0:1):k==="sitzrohr"?(/c-?t\b|center.?top|mitte.?oberkante/i.test(lr)?2:/c-?c\b|center.?center/i.test(lr)?0:1):1;   // effektives Oberrohr, Sitzrohr Mitte–Oberkante bevorzugen   // effektives Oberrohr bevorzugen
     if(best[k]!==undefined&&best[k]>=prio) continue; best[k]=prio; res.werte[k]=nums;
   }
   return geoFix(res);
@@ -2964,7 +2964,10 @@ function geoFix(r){
   if(r.sizes.length<n) r.sizes=[...r.sizes,...Array.from({length:n-r.sizes.length},(_,i)=>"Gr. "+(r.sizes.length+i+1))];
   for(const [k] of GEO_F){ const a=(r.werte[k]||[]).map(x=>x==null||x===""?NaN:Number(x));
     if(!/winkel/.test(k)&&a.length&&a.every(x=>!isFinite(x)||x<120)&&k!=="tretlageroffset") for(let i=0;i<a.length;i++) if(isFinite(a[i])) a[i]=Math.round(a[i]*10);
-    if(/winkel/.test(k)) for(let i=0;i<a.length;i++) if(isFinite(a[i])&&a[i]>100&&a[i]<1000) a[i]=a[i]/10;   // 725 → 72,5 (Komma nicht erkannt)
+    if(/winkel/.test(k)) for(let i=0;i<a.length;i++) if(isFinite(a[i])&&a[i]>100&&a[i]<1000) a[i]=a[i]/10;
+    if(k==="tretlageroffset") for(let i=0;i<a.length;i++) if(isFinite(a[i])) a[i]=Math.abs(a[i]);   // „-74“ → 74
+    { const v=a.filter(x=>isFinite(x)).sort((x,y)=>x-y), med=v.length?v[Math.floor(v.length/2)]:NaN;   // verlorenes Komma: 5223 zwischen lauter ~500 → 522,3
+      if(isFinite(med)&&med>0) for(let i=0;i<a.length;i++) if(isFinite(a[i])&&a[i]>med*1.8&&a[i]/10>med*0.6&&a[i]/10<med*1.6) a[i]=a[i]/10; }   // 725 → 72,5 (Komma nicht erkannt)
     r.werte[k]=Array.from({length:n},(_,i)=>isFinite(a[i])?a[i]:NaN); }
   /* Kettenstrebe fehlt, aber Front-Center, Radstand und Tretlagerabsenkung sind angegeben: aus dem Hinterbau berechnen */
   const fc=(r.werte.frontcenter||[]).map(Number);
@@ -2976,7 +2979,7 @@ async function geoByClaude(blob){
   if(!sample) return null; try{ const lim=sample.limits?await sample.limits():null; if(lim&&!lim.images) return null; }catch(e){}
   const prompt=`Lies die Fahrrad-Geometrietabelle im Bild aus. Antworte NUR mit JSON in genau dieser Form:
 {"marke":"","modell":"","sizes":["S","M"],"werte":{"frontcenter":[],"reach":[],"stack":[],"steuerwinkel":[],"sitzwinkel":[],"oberrohr":[],"steuerrohr":[],"sitzrohr":[],"kettenstrebe":[],"radstand":[],"tretlageroffset":[]}}
-Regeln: eine Zahl je Größe in derselben Reihenfolge wie "sizes"; Längen in mm (cm umrechnen), Winkel in Grad; oberrohr = effektives/horizontales Oberrohr; steuerrohr und sitzrohr = Rohrlängen (nicht Winkel); sitzwinkel = effektiver Sitzwinkel; tretlageroffset = Tretlagerabsenkung (BB drop) als positive Zahl in mm; frontcenter = Front Center (falls angegeben, sonst null); Kennbuchstaben vor den Zeilen (A, B, C …) und Abkürzungen beachten: TT = Oberrohr, HT angle = Steuerwinkel, HT = Steuerrohr, ST = Sitzrohr; Gabelvorlauf, Nachlauf und Gabellänge weglassen; fehlende Werte als null; marke/modell nur, wenn im Bild erkennbar, sonst "".`;
+Regeln: eine Zahl je Größe in derselben Reihenfolge wie "sizes"; Längen in mm (cm umrechnen), Winkel in Grad; oberrohr = effektives/horizontales Oberrohr; steuerrohr und sitzrohr = Rohrlängen (nicht Winkel); sitzwinkel = effektiver Sitzwinkel; tretlageroffset = Tretlagerabsenkung (BB drop) als positive Zahl in mm; frontcenter = Front Center (falls angegeben, sonst null); Kennbuchstaben vor den Zeilen (A, B, C …) und Abkürzungen beachten: TT = Oberrohr, HT angle = Steuerwinkel, HT = Steuerrohr, ST = Sitzrohr; Gabelvorlauf, Nachlauf und Gabellänge weglassen; Größen genau wie im Bild (z. B. „XXS/47“); sitzrohr = Mitte–Oberkante (C-T), nicht C-C; fehlende Werte als null; marke/modell nur, wenn im Bild erkennbar, sonst "".`;
   const out=await sample.json(prompt,{images:[blob],modelTier:"default"});
   const r={marke:String(out&&out.marke||""),modell:String(out&&out.modell||""),sizes:(out&&Array.isArray(out.sizes)?out.sizes:[]).map(String),werte:{}};
   for(const k of [...GEO_F.map(f=>f[0]),"frontcenter"]) r.werte[k]=(out&&out.werte&&Array.isArray(out.werte[k])?out.werte[k]:[]).map(x=>x==null?NaN:geoNum(x));
