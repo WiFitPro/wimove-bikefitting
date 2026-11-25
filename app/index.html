@@ -2827,7 +2827,7 @@ function afterPartChange(){ for(const k of ["bar","stem","lever","pedal","shoe"]
 const BM_F=[["reach","Reach"],["stack","Stack"],["hta","Steuerwinkel"],["sta","Sitzwinkel"],["ett","Oberrohr (eff.)"],["htl","Steuerrohr"],["stl","Sitzrohr"],["cs","Kettenstrebe"],["wheelbase","Radstand"],["bbDrop","Tretlagerabsenkung"]];
 const BM_CUSTOM={reach:"reach",stack:"stack",hta:"steuerwinkel",sta:"sitzwinkel",ett:"oberrohr",htl:"steuerrohr",stl:"sitzrohr",cs:"kettenstrebe",wheelbase:"radstand",bbDrop:"tretlageroffset"};
 const bkKey=x=>`${x.b}|${x.m}|${x.s}`;
-let bmSel=null;
+let bmSel=null, bmCat=null;   // bmCat: angezeigte Radkategorie in „Räder verwalten“ (Standard: aktuelle Radart)
 function applyBikeOverrides(){
   if(!(S.bikeDel&&S.bikeDel.length)&&!S.bikeFix&&!S.bikeRename) return;
   for(const x of DB.bikes){ x._orig=bkKey(x); const r=S.bikeRename&&S.bikeRename[x._orig]; if(r){ x.b=r.b; x.m=r.m; x.s=r.s; } }
@@ -2837,12 +2837,16 @@ function applyBikeOverrides(){
 }
 function renderBikeManager(){
   const box=$("bmBox"); if(!box||!DB) return;
-  if(!bmSel||!DB.models[bmSel.b]||!DB.models[bmSel.b].includes(bmSel.m)) bmSel={b:S.sel.b,m:S.sel.m};
+  const cat=BTYPES[bmCat]?bmCat:btype(), LB=DB.byT[cat]||{brands:[],models:{}};
+  const inL=(b,m)=>LB.models[b]&&LB.models[b].includes(m);
+  if(!bmSel||!inL(bmSel.b,bmSel.m)) bmSel=inL(S.sel.b,S.sel.m)?{b:S.sel.b,m:S.sel.m}:LB.brands.length?{b:LB.brands[0],m:LB.models[LB.brands[0]][0]}:{b:"",m:""};
   const sizes=sizesOf(bmSel.b,bmSel.m), own=new Set((S.customBikes||[]).map(o=>`${o.marke}|${o.modell}|${o.grosse}`));
-  let h=`<div class="pmhead"><select id="bmB">${DB.brands.map(b=>`<option${b===bmSel.b?" selected":""}>${esc(b)}</option>`).join("")}</select>
-    <select id="bmM">${(DB.models[bmSel.b]||[]).map(m=>`<option${m===bmSel.m?" selected":""}>${esc(m)}</option>`).join("")}</select></div>`;
+  let h=`<div class="row" style="margin:0 0 8px;align-items:center"><label class="f" for="bmCat" style="margin:0">Kategorie anzeigen</label><select id="bmCat" style="width:auto;flex:0 1 220px">${Object.entries(BTYPES).map(([k,l])=>`<option value="${k}"${k===cat?" selected":""}>${l} (${(DB.byT[k]||{brands:[]}).brands.reduce((n,b)=>n+DB.byT[k].models[b].length,0)})</option>`).join("")}</select></div>`;
+  if(!LB.brands.length){ box.innerHTML=h+`<p class="note">In dieser Kategorie sind noch keine Räder angelegt.</p>`; $("bmCat").onchange=e=>{ bmCat=e.target.value; bmSel=null; renderBikeManager(); }; return; }
+  h+=`<div class="pmhead"><select id="bmB">${LB.brands.map(b=>`<option${b===bmSel.b?" selected":""}>${esc(b)}</option>`).join("")}</select>
+    <select id="bmM">${(LB.models[bmSel.b]||[]).map(m=>`<option${m===bmSel.m?" selected":""}>${esc(m)}</option>`).join("")}</select></div>`;
   h+=`<div class="row" style="margin:0 0 8px"><input class="bfi" id="bmRb" value="${esc(bmSel.b)}" aria-label="Marke" style="flex:1"><input class="bfi" id="bmRm" value="${esc(bmSel.m)}" aria-label="Modell" style="flex:1.4"><button class="btn ghost small" id="bmRen">Umbenennen</button></div>
-    <div class="row" style="margin:0 0 8px;align-items:center"><label class="f" for="bmT" style="margin:0">Radkategorie</label><select id="bmT" style="width:auto;flex:0 1 220px">${Object.entries(BTYPES).map(([k,l])=>`<option value="${k}"${k===((sizes[0]||{}).t||"road")?" selected":""}>${l}</option>`).join("")}</select></div>`;
+    <div class="row" style="margin:0 0 8px;align-items:center"><label class="f" for="bmT" style="margin:0">Kategorie dieses Modells</label><select id="bmT" style="width:auto;flex:0 1 220px">${Object.entries(BTYPES).map(([k,l])=>`<option value="${k}"${k===((sizes[0]||{}).t||"road")?" selected":""}>${l}</option>`).join("")}</select></div>`;
   h+=`<div class="bmwrap"><table class="bmtab"><thead><tr><th>Größe</th>${sizes.map(x=>`<th><input type="text" class="bms" data-bms="${esc(bkKey(x))}" value="${esc(String(x.s))}" aria-label="Größe"></th>`).join("")}</tr><tr><th></th>${sizes.map(x=>`<th>${own.has(bkKey(x))?'<br><small class="src edit">eigen</small>':""}${S.bikeFix&&S.bikeFix[bkKey(x)]?'<br><small class="src edit">geändert</small>':""}</th>`).join("")}</tr></thead><tbody>`;
   for(const [k,l] of BM_F) h+=`<tr><th>${l}</th>${sizes.map(x=>`<td><input type="text" inputmode="decimal" data-bm="${esc(bkKey(x))}|${k}" value="${isFinite(x.raw[k])?x.raw[k]:""}" placeholder="–"></td>`).join("")}</tr>`;
   h+=`<tr><th></th>${sizes.map(x=>`<td><button type="button" class="suback" data-bmdel="${esc(bkKey(x))}" title="Größe entfernen" aria-label="Größe ${esc(String(x.s))} entfernen">✕</button></td>`).join("")}</tr></tbody></table></div>`;
@@ -2851,7 +2855,8 @@ function renderBikeManager(){
     <button class="btn ghost small" id="bmDelM">Modell entfernen</button>${delCnt?`<button class="btn ghost small" id="bmRestore">${delCnt} entfernte Größen von ${esc(bmSel.b)} wiederherstellen</button>`:""}</div>
     <p class="note" id="bmNote">Werte ändern und mit „Speichern“ sichern – gilt sofort für Zeichnung, Vorschlag und Bike Set Up. Leere Felder werden aus den übrigen Werten berechnet.</p>`;
   const fk=focusKey(box,"bm"); box.innerHTML=h; restoreFocus(box,"bm",fk);
-  $("bmB").onchange=e=>{ bmSel={b:e.target.value,m:(DB.models[e.target.value]||[])[0]}; renderBikeManager(); };
+  $("bmCat").onchange=e=>{ bmCat=e.target.value; bmSel=null; renderBikeManager(); };
+  $("bmB").onchange=e=>{ bmSel={b:e.target.value,m:(LB.models[e.target.value]||[])[0]}; renderBikeManager(); };
   $("bmM").onchange=e=>{ bmSel={b:bmSel.b,m:e.target.value}; renderBikeManager(); };
   box.querySelectorAll("[data-bm]").forEach(el=>el.onchange=()=>{
     const parts=el.dataset.bm.split("|"), k=parts.pop(), key=parts.join("|"), raw=el.value.trim(), x=raw===""?NaN:num(raw);
@@ -2862,7 +2867,7 @@ function renderBikeManager(){
     setTimeout(()=>{ reloadData(); renderBikeManager(); },0);
   });
   $("bmT").onchange=e=>{ S.bikeType=S.bikeType||{}; S.bikeType[bmSel.b+"|"+bmSel.m]=e.target.value; for(const x of DB.bikes) if(x.b===bmSel.b&&x.m===bmSel.m) x.t=e.target.value;
-    const msg=`Radkategorie geändert: ${bmSel.b} ${bmSel.m} erscheint jetzt unter „${BTYPES[e.target.value]}“.`+(e.target.value!==btype()?" In dieser Radart ist es nicht mehr in der Liste.":"");
+    const msg=`Radkategorie geändert: ${bmSel.b} ${bmSel.m} erscheint jetzt unter „${BTYPES[e.target.value]}“.`; bmCat=e.target.value;   // Ansicht folgt dem Rad
     reloadData(); renderOwnBikes(); renderBikeManager(); $("bmNote").textContent=msg; };
   $("bmRen").onclick=()=>{
     const nb=$("bmRb").value, nm=$("bmRm").value;
