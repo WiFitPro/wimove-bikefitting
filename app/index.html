@@ -2965,14 +2965,14 @@ function geoParseText(txt){
 function geoTransposed(L){
   const rows=[];
   for(const line of L){
-    const toks=line.split(" "), idx=toks.findIndex(t=>/\d/.test(t)&&isFinite(geoNum(t)));
+    const toks=line.replace(/([°˚º])(?=\d)/g,"$1 ").split(" "), idx=toks.findIndex(t=>/\d/.test(t)&&isFinite(geoNum(t)));
     if(idx<0) continue;
     const nums=toks.slice(idx).filter(t=>/\d/.test(t)).map(t=>({v:geoNum(t),deg:/[°˚º]/.test(t)}));
     if(nums.filter(x=>isFinite(x.v)).length<5) continue;
-    const label=toks.slice(0,idx).join(" ").replace(/\(.*?\)/g,"").trim();
-    if(GEO_ALIAS.some(([k,re])=>k!=="grosse"&&re.test(label))) return null;   // normale Tabelle: Maße als Zeilen
-    if(GEO_ALIAS.some(([k,re])=>k==="grosse"&&re.test(label))) continue;
-    const sz=toks.slice(0,idx).map(t=>t==="$"?"S":t).filter(t=>GEO_SIZE_TOK.test(t));
+    const label=toks.slice(0,idx).join(" ").replace(/\(.*?\)/g,"").trim(), fin=nums.map(x=>x.v).filter(x=>isFinite(x)&&x>0);
+    const mixed=nums.some(x=>x.deg)||(fin.length&&Math.max(...fin)/Math.min(...fin)>4);   // Zeile mit Winkeln und Längen gemischt = eine Größe mit allen Maßen
+    if(!mixed){ if(GEO_ALIAS.some(([k,re])=>k!=="grosse"&&re.test(label))) return null; continue; }   // normale Tabelle: Maße als Zeilen
+    const sz=toks.slice(0,idx).map(t=>t==="$"?"S":t.replace(/[^\w\/.,]/g,"")).filter(t=>t&&GEO_SIZE_TOK.test(t));
     rows.push({size:sz.length?sz[sz.length-1]:"",nums});
   }
   if(rows.length<2) return null;
