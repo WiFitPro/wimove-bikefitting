@@ -256,8 +256,8 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .btGroup button:focus-visible{outline:2px solid var(--frame);outline-offset:-2px}
 .barHide{display:none!important}
 .geoSec[hidden]{display:none!important}
-.stdCard{border:1px solid var(--rule);border-left:4px solid var(--frame);border-radius:10px;background:color-mix(in srgb,var(--field) 70%,transparent);padding:10px 14px 12px;margin:14px 0}
-.stdCard>h3{margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--rule);font-size:16px;color:var(--ink)}
+.stdCard{margin:26px 0 0}.stdCard:first-child{margin-top:8px}
+.stdCard>h3{margin:0 0 8px;padding-bottom:6px;border-bottom:1.5px solid var(--rule);font-size:16px;color:var(--ink)}
 .geoSmp{font-size:13px;color:#4A5560;white-space:nowrap;padding:3px 10px!important}.geoColSel{font-size:13px;min-width:170px;padding:4px 6px}.geoColT th{text-align:left}
 .geoDrop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin:6px 0 10px;padding:22px 12px;border:2px dashed var(--rule);border-radius:10px;background:var(--field);cursor:pointer;text-align:center;transition:border-color .15s,background .15s}
 .geoDrop span{font-size:13px;color:#6B7785}.geoDrop:hover,.geoDrop:focus-visible{border-color:var(--frame);outline:none}
@@ -2247,8 +2247,8 @@ const COMP_FITM=["Lenkerbreite","Kurbellänge"];   // diese Gruppen stehen im Ta
 /* Tabelle im Tab Bauteile: Lenkerfaktor sowie Hüft- und Kniewinkel-Minimum (Kurbellänge) je Disziplin */
 function discCompTable(tag){   // Lenker-Faktor je Disziplin – Zeilen in der Gruppe „Lenkerbreite“
   const bt=admBt(), ref=bt==="mtb"?"Körpergröße":"Schulterbreite";
-  return DISC_T[bt].map(([k,l],i)=>{ const key="dbar_"+bt+"_"+k;
-    return `<label for="cm_${key}">${DISC_T[bt].length>1?esc(l)+": ":""}Lenker-Faktor × ${ref}<small>${i===0?`Lenkerbreite = ${ref} × Faktor × Faktor der Sitzposition, gerundet auf 20 mm`:""}</small></label><div class="fitmIn"><input class="bfi" type="number" step="0.005" id="cm_${key}" data-fitm="${key}" value="${FITM[key]}" style="max-width:90px"><span class="note" style="margin:0"></span>${tag(key)}</div>`; }).join(""); }
+  return `<p class="note" style="grid-column:1/-1;margin:10px 0 0">Lenkerbreite = ${ref} × Faktor × Faktor der Sitzposition, gerundet auf 20 mm</p>`+DISC_T[bt].map(([k,l],i)=>{ const key="dbar_"+bt+"_"+k;
+    return `<label for="cm_${key}">${DISC_T[bt].length>1?esc(l)+": ":""}Lenker-Faktor × ${ref}</label><div class="fitmIn"><input class="bfi" type="number" step="0.005" id="cm_${key}" data-fitm="${key}" value="${FITM[key]}" style="max-width:90px"><span class="note" style="margin:0"></span>${tag(key)}</div>`; }).join(""); }
 const DISC_FITM=["Disziplin Rennrad","Disziplin Triathlon","Disziplin MTB"];   // diese Gruppen stehen unter Person → Richtwerte je Fahrstil
 function renderFitModel(){ renderFitBox("fitModelBox","fm",g=>!COMP_FITM.includes(g)&&!DISC_FITM.includes(g),true); try{ renderDiscStd(); }catch(e){} renderFitBox("compModelBox","cm",g=>COMP_FITM.includes(g)||g==="_disc",false,undefined,discCompTable); }
 function renderFitBox(boxId,pf,filt,full,note,extra){
