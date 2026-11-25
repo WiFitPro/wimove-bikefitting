@@ -2941,6 +2941,9 @@ function geoParseText(txt){
     const line=L[li], {toks,i0,labelRaw}=split(line);
     /* Größenzeile ohne Beschriftung, z. B. „42cm 44cm 46.5cm …“ oder „XS S M L XL“ */
     if(!res.sizes.length&&!seenRow&&toks.length>=3&&toks.every(t=>GEO_SIZE_TOK.test(t))&&(toks.some(t=>/cm$|[a-z]/i.test(t))||i0===0&&!pend.length)){ res.sizes=toks.map(t=>t.replace(/cm$/i,"")); pend=[]; continue; }
+    /* Kopfzeile mit Beschriftung davor, z. B. „length: mm // angle: degree XXS XS S M L XL“ */
+    if(!res.sizes.length&&!seenRow){ const tk=toks.map(t=>/^(S[s$5]|\$)$/.test(t)?"S":t); let j=tk.length; while(j>0&&GEO_SIZE_TOK.test(tk[j-1])) j--; const suf=tk.slice(j);
+      if(suf.length>=3&&(suf.some(t=>/^(x{0,3}[sml]|x{1,3}l)$/i.test(t))||/size|gr[öo]ss?e|rahmen|frame|taille|maat|mm|cm/i.test(toks.slice(0,j).join(" ")))&&!GEO_ALIAS.some(([k,re])=>k!=="grosse"&&re.test(toks.slice(0,j).join(" ")))){ res.sizes=suf.map(t=>t.replace(/cm$/i,"")); pend=[]; continue; } }
     if(i0<0){ const hitG=GEO_ALIAS.find(([k,re])=>k==="grosse"&&re.test(line)); if(!hitG){ pend.push(line); if(pend.length>3) pend.shift(); continue; } }
     let label=labelRaw.replace(/\(.*?\)/g,"").trim(), lr=labelRaw;
     const next=L[li+1], nextLab=next&&isLabelOnly(next)&&!(L[li+2]&&split(L[li+2]).i0===0&&!split(L[li+2]).labelRaw)?next:"";
@@ -2954,10 +2957,11 @@ function geoParseText(txt){
     if(!hit) continue; const k=hit[0];
     if(k==="grosse"){ const j=/^(frame|rahmen)$/i.test(toks[0])&&toks[1]?2:1; const sz=toks.slice(j).filter(t=>!/^\(?(cm|mm|zoll|inch)\)?$/i.test(t)).filter(t=>/^[A-Za-z0-9.,\/-]{1,6}$/.test(t)).map(t=>t.replace(/cm$/i,"")); if(sz.length>res.sizes.length) res.sizes=sz; continue; }
     if((k==="steuerrohr"||k==="sitzrohr"||k==="oberrohr")&&/angle|winkel/i.test(label)) continue;
-    const nums=(i0<0?[]:toks.slice(i0)).filter(t=>!/^(mm|cm|°|-|–)$/i.test(t)&&/[0-9A-Za-z]/.test(t)).map(geoNum); if(!nums.some(x=>isFinite(x))) continue;   /* unlesbare Zellen bleiben als Lücke stehen, damit die Spalten nicht verrutschen */
-    seenRow=true;
+    const nums=(i0<0?[]:toks.slice(i0)).filter(t=>!/^(mm|cm|°|-|–)$/i.test(t)&&/[0-9A-Za-z]/.test(t)).map(t=>/\d/.test(t)&&/^[0-9IliTOo.,°]+$/.test(t)?geoNum(t.replace(/[IliT]/g,"1").replace(/[Oo]/g,"0")):geoNum(t));   // typische Verwechsler: „Ti4“ = 114 if(!nums.some(x=>isFinite(x))) continue;   /* unlesbare Zellen bleiben als Lücke stehen, damit die Spalten nicht verrutschen */
+    if(nums.filter(x=>isFinite(x)).length>=3) seenRow=true;   // einzelne Zahlen aus der Zeichnung zählen nicht als Tabellenzeile
     const prio=k==="oberrohr"?(/effective|eff|horizont|virtu|ett/i.test(lr)?2:/actual|tatsächl|real/i.test(lr)?0:1):k==="sitzrohr"?(/c-?t\b|center.?top|mitte.?oberkante/i.test(lr)?2:/c-?c\b|center.?center/i.test(lr)?0:1):1;   // effektives Oberrohr, Sitzrohr Mitte–Oberkante bevorzugen   // effektives Oberrohr bevorzugen
-    if(best[k]!==undefined&&best[k]>=prio) continue; best[k]=prio; res.werte[k]=nums;
+    const nf=nums.filter(x=>isFinite(x)).length;   /* bei gleicher Priorität gewinnt die Zeile mit mehr lesbaren Werten (Beschriftungen aus der Zeichnung verlieren) */
+    if(best[k]!==undefined&&(best[k].p>prio||best[k].p===prio&&best[k].n>=nf)) continue; best[k]={p:prio,n:nf}; res.werte[k]=nums;
   }
   return geoFix(res);
 }
@@ -3052,26 +3056,46 @@ Regeln: eine Zahl je Größe in derselben Reihenfolge wie "sizes"; Längen in mm
   for(const k of [...GEO_F.map(f=>f[0]),"frontcenter"]) r.werte[k]=(out&&out.werte&&Array.isArray(out.werte[k])?out.werte[k]:[]).map(x=>x==null?NaN:geoNum(x));
   return geoFix(r);
 }
-let tessP=null;
-async function geoByOcr(blob,note){
-  if(!window.Tesseract){ tessP=tessP||new Promise((ok,no)=>{ const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"; s.onload=ok; s.onerror=()=>no(new Error("Texterkennung konnte nicht geladen werden")); document.head.appendChild(s); }); await tessP; }
-  note("Texterkennung läuft … (beim ersten Mal werden Sprachdaten geladen)");
+/* Bild für die Texterkennung aufbereiten. v=0: klassisch (ganze Linien weg), v=1: für Tabellen mit grauen Zeilen und Zeichnung darüber */
+function geoPrep(img,v){
   /* Bild vergrößern und in Graustufen mit hartem Kontrast umwandeln – Tabellen werden so deutlich besser gelesen */
-  const img=await createImageBitmap(blob), sc=Math.min(4,Math.max(1,2400/Math.max(img.width,1))), cv=document.createElement("canvas");
+  const sc=Math.min(4,Math.max(1,2400/Math.max(img.width,1))), cv=document.createElement("canvas");
   cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc); const cx=cv.getContext("2d"); cx.imageSmoothingQuality="high"; cx.drawImage(img,0,0,cv.width,cv.height);
   const id=cx.getImageData(0,0,cv.width,cv.height), d=id.data; for(let i=0;i<d.length;i+=4) d[i]=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
   /* kachelweise: dunkle Bereiche (weiße Schrift auf dunklem Grund) umkehren, dann je Kachel schwarz/weiß trennen */
   { const W0=cv.width, H0=cv.height, T=Math.max(32,Math.round(40*sc));
     for(let ty=0;ty<H0;ty+=T) for(let tx=0;tx<W0;tx+=T){ let sm=0,c=0; const x1=Math.min(W0,tx+T), y1=Math.min(H0,ty+T);
-      for(let y=ty;y<y1;y++) for(let x=tx;x<x1;x++){ sm+=d[(y*W0+x)*4]; c++; } let m=sm/c; const inv=m<110; if(inv) m=255-m;
-      for(let y=ty;y<y1;y++) for(let x=tx;x<x1;x++){ const j=(y*W0+x)*4; let g=d[j]; if(inv) g=255-g; g=g<Math.min(m*0.8,170)?0:255; d[j]=d[j+1]=d[j+2]=g; } } }
+      let mn=255,mx=0; for(let y=ty;y<y1;y++) for(let x=tx;x<x1;x++){ const g=d[(y*W0+x)*4]; sm+=g; c++; if(g<mn) mn=g; if(g>mx) mx=g; } let m=sm/c; const inv=m<110; if(inv){ m=255-m; const t=mn; mn=255-mx; mx=255-t; }
+      /* grauer Zeilenhintergrund (z. B. jede zweite Tabellenzeile): Schwelle mittig zwischen Schrift und Hintergrund, sonst wird die Schrift zu fett */
+      const thr=v&&m<200&&m-mn>60?Math.max((mn+m)/2,m*0.6):Math.min(m*0.8,170);
+      for(let y=ty;y<y1;y++) for(let x=tx;x<x1;x++){ const j=(y*W0+x)*4; let g=d[j]; if(inv) g=255-g; g=g<thr?0:255; d[j]=d[j+1]=d[j+2]=g; } } }
   /* Tabellenlinien entfernen: Zeilen/Spalten, die überwiegend schwarz sind, weiß machen */
   const W=cv.width, Hh=cv.height, blk=(x,y)=>d[(y*W+x)*4]===0, wht=(x,y)=>{ const j=(y*W+x)*4; d[j]=d[j+1]=d[j+2]=255; };
-  for(let y=0;y<Hh;y++){ let run=0,mx=0; for(let x=0;x<W;x++){ run=blk(x,y)?run+1:0; if(run>mx) mx=run; } if(mx>W*0.25) for(let x=0;x<W;x++) wht(x,y); }
-  for(let x=0;x<W;x++){ let run=0,mx=0; for(let y=0;y<Hh;y++){ run=blk(x,y)?run+1:0; if(run>mx) mx=run; } if(mx>Math.min(Hh*0.25,120*sc)) for(let y=0;y<Hh;y++) wht(x,y); }
+  /* nur die langen Linienstücke selbst löschen – nicht die ganze Bildzeile/-spalte (sonst werden Ziffern unter einer Linie der Zeichnung zerschnitten) */
+  if(!v){ for(let y=0;y<Hh;y++){ let run=0,mx=0; for(let x=0;x<W;x++){ run=blk(x,y)?run+1:0; if(run>mx) mx=run; } if(mx>W*0.25) for(let x=0;x<W;x++) wht(x,y); }
+    for(let x=0;x<W;x++){ let run=0,mx=0; for(let y=0;y<Hh;y++){ run=blk(x,y)?run+1:0; if(run>mx) mx=run; } if(mx>Math.min(Hh*0.25,120*sc)) for(let y=0;y<Hh;y++) wht(x,y); } }
+  else { for(let y=0;y<Hh;y++){ let x=0; while(x<W){ if(!blk(x,y)){ x++; continue; } let x2=x; while(x2<W&&blk(x2,y)) x2++; if(x2-x>W*0.25) for(let xx=x;xx<x2;xx++) wht(xx,y); x=x2; } }
+    for(let x=0;x<W;x++){ let y=0; const lim=Math.min(Hh*0.25,120*sc); while(y<Hh){ if(!blk(x,y)){ y++; continue; } let y2=y; while(y2<Hh&&blk(x,y2)) y2++; if(y2-y>lim) for(let yy=y;yy<y2;yy++) wht(x,yy); y=y2; } } }
+  /* kurze, dünne senkrechte Striche (Spaltenlinien in farbigen Zeilen) entfernen – Ziffern sind breiter */
+  if(v){ const L0=Math.round(30*sc/1.5)+12;
+    for(let x=0;x<W;x++){ let y=0; while(y<Hh){ if(!blk(x,y)){ y++; continue; } let y2=y; while(y2<Hh&&blk(x,y2)) y2++; const len=y2-y;
+      if(len>=L0){ let wd=0; for(let yy=y;yy<y2;yy++){ let l=x,r=x; while(l>0&&blk(l-1,yy)) l--; while(r<W-1&&blk(r+1,yy)) r++; wd+=r-l+1; } wd/=len;
+        if(wd<=Math.max(3,1.6*sc)){ for(let yy=y;yy<y2;yy++){ let l=x,r=x; while(l>0&&blk(l-1,yy)) l--; while(r<W-1&&blk(r+1,yy)) r++; if(r-l<=Math.max(4,2.5*sc)) for(let xx=l;xx<=r;xx++) wht(xx,yy); } } }
+      y=y2; } } }
   cx.putImageData(id,0,0);
-  const big=await new Promise(ok=>cv.toBlob(ok,"image/png"));
-  const w=await Tesseract.createWorker(["deu","eng"]); try{ await w.setParameters({tessedit_pageseg_mode:"6",preserve_interword_spaces:"1"}); const {data}=await w.recognize(big); return geoParseText(data.text||""); } finally{ try{ await w.terminate(); }catch(e){} }
+  return new Promise(ok=>cv.toBlob(ok,"image/png"));
+}
+/* Güte eines Ergebnisses: plausible Werte zählen, erkannte Größennamen belohnen */
+function geoScore(r){ if(!r) return -1; let sc=0; for(const [k,vs] of Object.entries(r.werte||{})){ const [a,b]=GEO_RANGE[k]||[-1e9,1e9]; for(const x of vs) if(isFinite(x)) sc+=x>=a&&x<=b?1:-1; } if((r.sizes||[]).length&&!(r.sizes||[]).some(x=>/^Gr\. /.test(x))) sc+=4; return sc; }
+let tessP=null;
+async function geoByOcr(blob,note){
+  if(!window.Tesseract){ tessP=tessP||new Promise((ok,no)=>{ const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"; s.onload=ok; s.onerror=()=>no(new Error("Texterkennung konnte nicht geladen werden")); document.head.appendChild(s); }); await tessP; }
+  note("Texterkennung läuft … (beim ersten Mal werden Sprachdaten geladen)");
+  const img=await createImageBitmap(blob);
+  const w=await Tesseract.createWorker(["deu","eng"]); try{ await w.setParameters({tessedit_pageseg_mode:"6",preserve_interword_spaces:"1"});
+    let best=null, bs=-1;
+    for(const v of [0,1]){ const {data}=await w.recognize(await geoPrep(img,v)); const r=geoParseText(data.text||""), s=geoScore(r); if(s>bs){ best=r; bs=s; } }
+    return best; } finally{ try{ await w.terminate(); }catch(e){} }
 }
 function renderGeoImg(){
   const box=$("geoImgBox"); if(!box) return; if($("newBikeBox")) $("newBikeBox").innerHTML="";
