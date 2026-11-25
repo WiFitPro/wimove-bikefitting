@@ -2173,7 +2173,7 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["barFacRoad","_alt","Rennrad/Gravel: Faktor × Schulterbreite","",0.945,0.005,"Lenkerbreite (Mitte–Mitte) = Schulterbreite × Faktor, gerundet auf 20 mm"],
   ["barFacTri","_alt","Triathlon: Faktor × Schulterbreite","",1,0.005,"Basislenker = Schulterbreite × Faktor, gerundet auf 20 mm"],
   ["barFacMtb","_alt","MTB: Faktor × Körpergröße","",0.42,0.005,"Lenkerbreite = Körpergröße × Faktor, gerundet auf 20 mm"],
-  ...STYLE_KEYS.map(st=>["barSt_"+st,"Lenkerbreite",`Sitzposition ${st}: Faktor`,"",BAR_STYLE_DEF[st],0.005,st==="comfort"?"wird mit dem Lenker-Faktor (Zeilen darunter) multipliziert":""]),
+  ...STYLE_KEYS.map(st=>["barSt_"+st,"Lenkerbreite",`Sitzposition ${st}: Faktor`,"",BAR_STYLE_DEF[st],0.005,""]),
   ...DISC_T.mtb.map(([k,l,,b])=>["discBar_mtb_"+k,"_alt",`MTB ${l}: Faktor`,"",b,0.005,""]),
   ...DISC_KEYS.flatMap(([bt,k])=>[["dbar_"+bt+"_"+k,"_disc","","",DISC_BAR_DEF[bt][k],0.005,""],["dhip_"+bt+"_"+k,"_disc","","°",bt==="tri"?45:48,1,""],["dknee_"+bt+"_"+k,"_disc","","°",58,1,""]]),
   ["crankHipRoad","_alt","Rennrad/Gravel: Hüfte geschlossen mindestens","°",48,1,"längste Kurbel, bei der der kleinste Hüftwinkel (oberer Totpunkt) nicht darunter fällt"],
@@ -2261,6 +2261,7 @@ function renderFitBox(boxId,pf,filt,full,note,extra){
   h+=`<div class="fitmGrid">`;
   for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){ if(!filt(g)||g[0]==="_"||(g==="Radart"&&bt!=="mtb")) continue;
     if(g!==grp){ if(grp==="Lenkerbreite"&&extra) h+=extra(tag); grp=g; h+=`<div class="suh">${g}${g==="Lenkerbreite"?ib(`Lenkerbreite = ${bt==="mtb"?"Körpergröße":"Schulterbreite"} × Lenker-Faktor der Disziplin × Faktor der Sitzposition, gerundet auf 20 mm`):""}</div>`; }
+    if(k==="barSt_comfort") h+=`<div style="grid-column:1/-1;margin:6px 0 0;font-size:14px;font-weight:600;color:var(--muted)">Faktor je Sitzposition</div>`;
     h+=`<label for="${pf}_${k}">${esc(lab)}${expl?ib(expl):""}</label><div class="fitmIn">${inp(k,fitmOf(bt,k),step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
   }
   if(grp==="Lenkerbreite"&&extra) h+=extra(tag);
