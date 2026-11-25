@@ -745,7 +745,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
     <div class="panel" id="tab-admin" hidden>
       <section><h2>Admin</h2><p class="note info" style="margin-top:0">Alle festgelegten Richtwerte und Modelle an einer Stelle. Änderungen gelten sofort für alle Fittings; mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern.</p>
-        <div class="frow"><label class="f" for="admBt">Radart bearbeiten</label><select id="admBt" style="width:auto;min-width:200px"></select></div><p class="note" style="margin-top:4px">Gilt für alle Werte unten, die sich je Radart unterscheiden (Richtwerte, Disziplinen, Vorbau/Spacer je Sitzposition).</p></section>
+        <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div><p class="note" style="margin-top:6px">Jede Radart hat ihre eigene, unabhängige Einstellungsseite: Richtwerte, Disziplinen, Bewertungsmodell, Lenkerbreite und Kurbellänge. Gemeinsam für alle Radarten bleiben nur das Personenmodell und die Farben der Größenempfehlung.</p></section>
       <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
       <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Feinwerte des Körpermodells (gelten als Grundwerte für jede Person).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
       <div id="admMore"></div>
@@ -2189,12 +2189,18 @@ const STEM_FACTORY={comfort:90,endurance:100,sportlich:105,ambitioniert:115,prof
 const STEM_FACTORY_T={road:STEM_FACTORY,gravel:{comfort:80,endurance:90,sportlich:95,ambitioniert:105,professional:115},tri:{comfort:80,endurance:85,sportlich:90,ambitioniert:100,professional:110},mtb:{comfort:50,endurance:55,sportlich:60,ambitioniert:70,professional:80}};
 const SPACER_FACTORY_T={road:SPACER_FACTORY,gravel:{comfort:30,endurance:25,sportlich:20,ambitioniert:15,professional:10},tri:{comfort:30,endurance:25,sportlich:20,ambitioniert:10,professional:5},mtb:{comfort:20,endurance:15,sportlich:10,ambitioniert:5,professional:0}};
 let ADM_BT=null; const admBt=()=>BTYPES[ADM_BT]?ADM_BT:btype();   // im Admin-Tab bearbeitete Radart (Standard: aktuelle)
-function renderAdmBt(){ const sel=$("admBt"); if(!sel) return; const b=admBt(); sel.innerHTML=Object.entries(BTYPES).map(([k,l])=>`<option value="${k}"${k===b?" selected":""}>${l}${k===btype()?" (aktuell)":""}</option>`).join("");
-  sel.onchange=e=>{ ADM_BT=e.target.value; try{ renderStyleStd(); }catch(x){} try{ renderFitModel(); }catch(x){} }; }
+function renderAdmBt(){ const g=$("admBt"); if(!g) return; const b=admBt();
+  g.innerHTML=Object.entries(BTYPES).map(([k,l])=>`<button type="button" data-adm="${k}" aria-pressed="${k===b}" style="flex:1 1 auto"${k===btype()?' title="Radart des aktuellen Fittings"':""}>${l}${k===btype()?" •":""}</button>`).join("");
+  g.querySelectorAll("[data-adm]").forEach(x=>x.onclick=()=>{ ADM_BT=x.dataset.adm; try{ renderStyleStd(); }catch(e){} try{ renderFitModel(); }catch(e){} }); }
 const STEM_T={}, SPACER_T={}, kpT=bt=>bt==="road"?"":bt+"_";   // Schlüssel: stem_comfort (Rennrad), tri_stem_comfort, mtb_stem_comfort …
+/* Jede Radart hat ihre eigenen Modellwerte (Schlüssel „radart__wert“); solange nicht eigens gesetzt, gilt der frühere gemeinsame Wert */
+const FITM_TYPED=new Set(FITM_DEF.filter(x=>x[1][0]!=="_"&&x[1]!=="Farben"&&!/^Disziplin/.test(x[1])).map(x=>x[0]));
+const fitmKeyT=(bt,k)=>FITM_TYPED.has(k)?bt+"__"+k:k;
+function fitmOf(bt,k){ const o=S.fitOv||{}, d=(S.modelStd&&S.modelStd.fitModel)||{}, x=FITM_DEF.find(e=>e[0]===k), def=x?x[4]:NaN, t=fitmKeyT(bt,k);
+  return isFinite(o[t])?o[t]:isFinite(d[t])?d[t]:isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:def; }
 function applyFitModel(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
   const o=S.fitOv||{}, d=(S.modelStd&&S.modelStd.fitModel)||{}, pick=(k,def)=>isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:def;
-  for(const x of FITM_DEF) FITM[x[0]]=pick(x[0],x[4]);
+  for(const x of FITM_DEF) FITM[x[0]]=FITM_TYPED.has(x[0])?fitmOf(btype(),x[0]):pick(x[0],x[4]);
   /* Werte je Disziplin: solange nicht eigens gesetzt, aus den bisherigen Einstellungen je Radart übernehmen */
   const has=k=>isFinite(o[k])||isFinite(d[k]);
   for(const [bt,k] of DISC_KEYS){ const B="dbar_"+bt+"_"+k, Hk="dhip_"+bt+"_"+k, Kk="dknee_"+bt+"_"+k;
@@ -2209,7 +2215,7 @@ function applyFitModel(){   // Reihenfolge: aktuelle Änderung > gespeicherte We
   Object.assign(STEM_BY_STYLE,STEM_T[btype()]); Object.assign(SPACER_BY_STYLE,SPACER_T[btype()]);
 }
 const fitModelKey=()=>JSON.stringify([FITM,STEM_BY_STYLE,SPACER_BY_STYLE,btype()]);
-function fitModelVals(){ const v={...FITM}; for(const bt of Object.keys(BTYPES)) for(const st of Object.keys(STEM_FACTORY)){ v[kpT(bt)+"stem_"+st]=STEM_T[bt][st]; v[kpT(bt)+"spacer_"+st]=SPACER_T[bt][st]; } return v; }
+function fitModelVals(){ const v={...FITM}; for(const k of FITM_TYPED){ delete v[k]; for(const bt of Object.keys(BTYPES)) v[bt+"__"+k]=fitmOf(bt,k); }   /* je Radart getrennt speichern */ for(const bt of Object.keys(BTYPES)) for(const st of Object.keys(STEM_FACTORY)){ v[kpT(bt)+"stem_"+st]=STEM_T[bt][st]; v[kpT(bt)+"spacer_"+st]=SPACER_T[bt][st]; } return v; }
 function fitModelChanged(){ sugCache.key=""; cmpFit={}; sizeFitCache.key=""; try{ updateSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp(); }catch(e){} try{ render(); }catch(e){} save(); }
 const COMP_FITM=["Lenkerbreite","Kurbellänge"];   // diese Gruppen stehen im Tab Bauteile, der Rest unter Rad
 /* Tabelle im Tab Bauteile: Lenkerfaktor sowie Hüft- und Kniewinkel-Minimum (Kurbellänge) je Disziplin */
@@ -2217,35 +2223,36 @@ function discCompTable(tag){
   const cell=(k,st)=>`<div><input class="bfi" type="number" step="${st}" data-fitm="${k}" value="${FITM[k]}" aria-label="${k}">${tag(k)||'<small class="src">&nbsp;</small>'}</div>`;
   let h=`<h3 style="margin:16px 0 4px">Je Disziplin</h3><p class="note" style="margin-top:0">Lenker: Rennrad, Gravel und Triathlon × Schulterbreite, MTB × Körpergröße – danach × Faktor der Sitzposition, gerundet auf 20 mm. Kurbellänge kommt aus der Schrittlänge (Formel oben); Knie min: Warnung im Vorschlag, wenn dieser Winkel im oberen Totpunkt unterschritten wird (Hüfte min steht bei den Richtwerten je Fahrstil).</p>
     <div class="bfg styleGrid discGrid"><span></span><b>Lenker-Faktor</b><b>Knie min (°)</b><span></span><span></span>`;
-  for(const bt of Object.keys(BTYPES)){ h+=`<div class="suh" style="grid-column:1/-1;align-items:flex-start;margin-top:8px">${BTYPES[bt]}</div>`;
+  for(const bt of [admBt()]){ h+=`<div class="suh" style="grid-column:1/-1;align-items:flex-start;margin-top:8px">${BTYPES[bt]}</div>`;
     for(const [k,l] of DISC_T[bt]) h+=`<span>${esc(l)}</span>${cell("dbar_"+bt+"_"+k,0.005)}${cell("dknee_"+bt+"_"+k,1)}<span></span><span></span>`; }
   return h+`</div>`; }
 const DISC_FITM=["Disziplin Rennrad","Disziplin Triathlon","Disziplin MTB"];   // diese Gruppen stehen unter Person → Richtwerte je Fahrstil
 function renderFitModel(){ renderFitBox("fitModelBox","fm",g=>!COMP_FITM.includes(g)&&!DISC_FITM.includes(g),true); try{ renderDiscStd(); }catch(e){} renderFitBox("compModelBox","cm",g=>COMP_FITM.includes(g)||g==="_disc",false,undefined,discCompTable); }
 function renderFitBox(boxId,pf,filt,full,note,extra){
   const box=$(boxId); if(!box) return; applyFitModel();
-  const tag=k=>S.fitOv&&isFinite(S.fitOv[k])?'<small class="src edit">geändert</small>':S.modelStd&&S.modelStd.fitModel&&isFinite(S.modelStd.fitModel[k])?'<small class="src">Standard</small>':'';
-  const inp=(k,v,st)=>`<input class="bfi" type="number" step="${st}" data-fitm="${k}" value="${v}" style="max-width:90px">`;
   const bt=admBt(), kp=kpT(bt);
+  const tag=k0=>{ const k=fitmKeyT(bt,k0); return S.fitOv&&isFinite(S.fitOv[k])?'<small class="src edit">geändert</small>':S.modelStd&&S.modelStd.fitModel&&isFinite(S.modelStd.fitModel[k])?'<small class="src">Standard</small>':''; };
+  const inp=(k,v,st)=>`<input class="bfi" type="number" step="${st}" data-fitm="${fitmKeyT(bt,k)}" value="${v}" style="max-width:90px">`;
   let h=note!==undefined?note:!full?`<p class="note info" style="margin-top:0">Grundlage für den Vorschlag von Lenkerbreite und Kurbellänge (Tab Sitzposition) und den Report.</p>`:`<p class="note info" style="margin-top:0">Für jede Größe wird zuerst die beste Position berechnet (${BTYPES[bt]}: Vorbau ${STEM_RANGE_T[bt][0]}–${STEM_RANGE_T[bt][1]} mm, Spacer 0–40 mm, Vorbauwinkel ${STEM_ANGLES_T[bt].map(a=>(a>0?"+":a<0?"−":"")+Math.abs(a)).join("/")}°${bt==="tri"?", Armpad-Höhe 30–130 mm":""}). Score = Strafpunkte + Feinabstimmung; die Größe mit dem niedrigsten Score ist die Empfehlung.</p>`;
   let grp="";
   h+=`<div class="fitmGrid">`;
-  for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){ if(!filt(g)||g[0]==="_") continue;
+  for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){ if(!filt(g)||g[0]==="_"||(g==="Radart"&&bt!=="mtb")) continue;
     if(g!==grp){ grp=g; h+=`<div class="suh">${g}</div>`; }
-    h+=`<label for="${pf}_${k}">${esc(lab)}<small>${esc(expl)}</small></label><div class="fitmIn">${inp(k,FITM[k],step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
+    h+=`<label for="${pf}_${k}">${esc(lab)}<small>${esc(expl)}</small></label><div class="fitmIn">${inp(k,fitmOf(bt,k),step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
   }
   h+=`</div>`; if(full) h+=`<h3 style="margin:14px 0 4px">Vorlieben je Sitzposition – ${BTYPES[bt]}</h3><div class="bfg styleGrid" style="grid-template-columns:minmax(90px,120px) repeat(2,minmax(64px,92px))"><span></span><b>Vorbau (mm)</b><b>Spacer (mm)</b>`+
     Object.keys(STEM_FACTORY).map(st=>`<span>${st}</span><div>${inp(kp+"stem_"+st,STEM_T[bt][st],5)}${tag(kp+"stem_"+st)||'<small class="src">&nbsp;</small>'}</div><div>${inp(kp+"spacer_"+st,SPACER_T[bt][st],5)}${tag(kp+"spacer_"+st)||'<small class="src">&nbsp;</small>'}</div>`).join("")+`</div>`;
   if(extra) h+=extra(tag);
   h+=`<div class="row" style="margin-top:10px"><button class="btn small" type="button" id="${pf}Save">Als Standard speichern</button><button class="btn ghost small" type="button" id="${pf}Reset">Auf App-Grundwerte zurücksetzen</button></div><p class="note" id="${pf}Note">Änderungen wirken sofort${full?" auf die Größenempfehlung":" auf den Vorschlag"}. „Als Standard speichern“ macht sie zur Werkseinstellung für alle Geräte.</p>`;
   box.innerHTML=h;
-  box.querySelectorAll("[data-fitm]").forEach(el=>el.onchange=()=>{ const k=el.dataset.fitm, x=num(el.value); if(!isFinite(x)||(x<0&&!/^disc_/.test(k))||(/Per$|^soft/.test(k)&&x<=0)){ renderFitModel(); return; }
+  box.querySelectorAll("[data-fitm]").forEach(el=>el.onchange=()=>{ const k=el.dataset.fitm, kb=k.replace(/^[a-z]+__/,""), x=num(el.value); if(!isFinite(x)||(x<0&&!/^disc_/.test(kb))||(/Per$|^soft/.test(kb)&&x<=0)){ renderFitModel(); return; }
     (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); renderFitModel(); });
   $(pf+"Save").onclick=()=>{ applyFitModel(); S.modelStd=S.modelStd||{}; S.modelStd.fitModel=fitModelVals(); delete S.fitOv; S.modelStdAt=Date.now(); save(); renderFitModel(); $(pf+"Note").textContent="Speichere …";
     factorySave().then(ok=>{ $(pf+"Note").textContent=ok?"Als Werkseinstellung gespeichert. Gilt ab jetzt überall, wo die App geöffnet wird.":"In diesem Browser gespeichert. Für alle Geräte die App über ihren Link öffnen und erneut speichern."; }); };
-  $(pf+"Reset").onclick=()=>{ const ks=FITM_DEF.filter(d=>filt(d[1])).map(d=>d[0]);   // nur die Werte dieses Bereichs zurücksetzen
-    for(const k of ks){ if(S.fitOv) delete S.fitOv[k]; if(S.modelStd&&S.modelStd.fitModel) delete S.modelStd.fitModel[k]; }
-    if(full){ for(const k of Object.keys((S.modelStd&&S.modelStd.fitModel)||{})) if(/stem_|spacer_/.test(k)) delete S.modelStd.fitModel[k]; for(const k of Object.keys(S.fitOv||{})) if(/stem_|spacer_/.test(k)) delete S.fitOv[k]; }
+  $(pf+"Reset").onclick=()=>{ const ks=FITM_DEF.filter(d=>filt(d[1]));   // nur die Werte dieses Bereichs und dieser Radart zurücksetzen
+    S.modelStd=S.modelStd||{}; S.modelStd.fitModel=S.modelStd.fitModel||{};
+    for(const [k,,,,def] of ks){ const t=fitmKeyT(bt,k); if(S.fitOv) delete S.fitOv[t]; if(t!==k) S.modelStd.fitModel[t]=def; else delete S.modelStd.fitModel[k]; }
+    if(full){ const re=new RegExp("^"+kp+"(stem|spacer)_"); for(const k of Object.keys(S.modelStd.fitModel)) if(re.test(k)) delete S.modelStd.fitModel[k]; for(const k of Object.keys(S.fitOv||{})) if(re.test(k)) delete S.fitOv[k]; }
     S.modelStdAt=Date.now(); applyFitModel(); fitModelChanged(); renderFitModel();
     factorySave().then(ok=>{ $(pf+"Note").textContent=ok?"App-Grundwerte wiederhergestellt (auch als Werkseinstellung).":"App-Grundwerte wiederhergestellt (in diesem Browser)."; }); };
 }
