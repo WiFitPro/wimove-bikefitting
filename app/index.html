@@ -635,7 +635,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <details class="acc"><summary>Berechnet</summary><div class="res" id="results"></div></details>
       <details class="acc adminOnly" id="fitModelDetails"><summary>Bewertungsmodell Größenempfehlung</summary><div id="fitModelBox"></div></details>
       <details class="acc"><summary>Rahmenfarbe <span class="note" id="colorName" style="margin:0 auto 0 10px;font-weight:400"></span></summary><div class="swatches" id="swatches" style="flex-wrap:wrap"></div></details>
-      <section class="geoSec adminOnly"><div class="row"><button class="btn ghost small" id="geoImgBtn" title="Screenshot einer Geometrietabelle auslesen und als Rad anlegen">Geometrie aus Bild …</button></div><div id="geoImgBox"></div></section>
+      <section class="geoSec adminOnly"><div class="row"></div><div id="geoImgBox"></div></section>
       <details class="acc adminOnly" id="bmDetails"><summary>Räder verwalten</summary><p class="note dbstat" style="margin-top:0"></p>
         <div class="row"><button class="btn ghost small" id="newBikeBtn">+ Rad anlegen</button></div>
         <div id="newBikeBox"></div>
@@ -2573,17 +2573,17 @@ function markBasic(){
   adv.forEach(e=>e&&e.classList.add("adv"));
 }
 /* „Geometrie aus Bild“: in WiFitPro unter „Räder verwalten“, in WiFitBasic als eigener Bereich (dort ist „Räder verwalten“ ausgeblendet) */
-function placeGeo(){
-  const b=$("geoImgBtn"), bx=$("geoImgBox"), sec=document.querySelector(".geoSec"), row=document.querySelector("#bmDetails .row"); if(!b||!bx||!sec||!row) return;
-  if(S.basic){ sec.querySelector(".row").appendChild(b); sec.appendChild(bx); sec.hidden=false; }
-  else { row.appendChild(b); row.after(bx); sec.hidden=true; }
+function placeGeo(){   /* „+ Rad anlegen“ samt Formular: in WiFitPro unter „Räder verwalten“, in WiFitBasic als eigener Bereich */
+  const b=$("newBikeBtn"), gx=$("geoImgBox"), nb=$("newBikeBox"), sec=document.querySelector(".geoSec"), row=document.querySelector("#bmDetails .row"); if(!b||!gx||!nb||!sec||!row) return;
+  if(S.basic){ sec.querySelector(".row").appendChild(b); sec.appendChild(gx); sec.appendChild(nb); sec.hidden=false; }
+  else { row.appendChild(b); row.after(gx); gx.after(nb); sec.hidden=true; }
 }
 /* Erklärtexte als kleiner i-Button: Beschreibung erscheint beim Darüberfahren (Touch: antippen) */
 function infoize(root=document){
   root.querySelectorAll("p.note.info:not([data-done])").forEach(p=>{
     const txt=p.textContent.replace(/\s+/g," ").trim(); if(!txt) return; p.dataset.done="1";
     const b=document.createElement("button"); b.type="button"; b.className="infoBtn"; b.textContent="i"; b.dataset.tip=txt; b.setAttribute("aria-label","Info: "+txt);
-    const host=p.previousElementSibling;
+    let host=p.previousElementSibling; if(host&&!/^(H2|H3|SUMMARY)$/.test(host.tagName)) host=host.querySelector(":scope>h2,:scope>h3")||host;   // Überschrift in einer Zeile mit Buttons
     if(host&&/^(H2|H3|SUMMARY)$/.test(host.tagName)) host.appendChild(b);
     else { const d=document.createElement("div"); d.className="infoRow"; d.appendChild(b); p.before(d); }
     p.hidden=true;
@@ -3010,7 +3010,7 @@ async function geoByOcr(blob,note){
   const w=await Tesseract.createWorker(["deu","eng"]); try{ await w.setParameters({tessedit_pageseg_mode:"6",preserve_interword_spaces:"1"}); const {data}=await w.recognize(big); return geoParseText(data.text||""); } finally{ try{ await w.terminate(); }catch(e){} }
 }
 function renderGeoImg(){
-  const box=$("geoImgBox"); if(!box) return;
+  const box=$("geoImgBox"); if(!box) return; if($("newBikeBox")) $("newBikeBox").innerHTML="";
   box.innerHTML=`<div class="suadd"><h3 style="margin:0 0 6px">Geometrie aus Bild</h3>
     <p class="note info" style="margin-top:0">Screenshot einer Geometrietabelle wählen oder mit Strg/⌘+V einfügen. Die Werte werden erkannt und zum Prüfen angezeigt – erst „Speichern“ legt die Räder an.</p>
     <label class="geoDrop" id="geoDrop" tabindex="0"><input type="file" accept="image/*" id="geoFile" hidden><b>Bild hierher ziehen</b><span>oder klicken zum Auswählen · Strg/⌘+V zum Einfügen</span></label>
@@ -3072,15 +3072,17 @@ function renderBikeForm(boxId="newBikeBox",onSaved=null){
   const box=$(boxId); if(!box) return;
   const cb=findBike(S.sel), v=vals||{};
   const pre={marke:cb?cb.b:"",reach:v.reach,stack:v.stack,steuerwinkel:v.hta,sitzwinkel:v.sta,steuerrohr:v.htl,sitzrohr:v.stl,kettenstrebe:v.cs,tretlageroffset:v.bbDrop};
-  box.innerHTML=`<div class="suadd"><h3 style="margin:0 0 6px">Rad anlegen</h3><p class="note info" style="margin-top:0">Vorausgefüllt mit dem aktuellen Rad – Werte überschreiben.</p><div class="two">${BIKE_F.map(([k,l,t])=>`<div><label class="f" for="nb_${k}">${l}</label><input class="bfi" id="nb_${k}" ${t?"":'inputmode="decimal"'} value="${t?"":(isFinite(pre[k])?Math.round(pre[k]*10)/10:"")}"></div>`).join("")}</div>
+  if(boxId==="newBikeBox"&&$("geoImgBox")) $("geoImgBox").innerHTML="";
+  box.innerHTML=`<div class="suadd"><div class="row" style="justify-content:space-between;align-items:center;margin:0 0 6px"><h3 style="margin:0">Rad anlegen</h3>${boxId==="newBikeBox"?'<button class="btn small" type="button" id="nbGeo" title="Screenshot einer Geometrietabelle auslesen – alle Größen auf einmal">Geometrie aus Bild …</button>':""}</div><p class="note info" style="margin-top:0">Vorausgefüllt mit dem aktuellen Rad – Werte überschreiben. Oder mit „Geometrie aus Bild“ eine Geometrietabelle einlesen.</p><div class="two">${BIKE_F.map(([k,l,t])=>`<div><label class="f" for="nb_${k}">${l}</label><input class="bfi" id="nb_${k}" ${t?"":'inputmode="decimal"'} value="${t?"":(isFinite(pre[k])?Math.round(pre[k]*10)/10:"")}"></div>`).join("")}</div>
     <div class="row" style="margin-top:10px"><button class="btn small" id="nbSave">Speichern und auswählen</button><button class="btn ghost small" id="nbCancel">Abbrechen</button></div><p class="note warn" id="nbErr"></p></div>`;
+  if($("nbGeo")) $("nbGeo").onclick=()=>{ box.innerHTML=""; renderGeoImg(); };   // stattdessen Tabelle aus Bild einlesen
   $("nbCancel").onclick=()=>{ box.innerHTML=""; };
   $("nbSave").onclick=()=>{
     const o={}; for(const [k,l,t] of BIKE_F){ const raw=$("nb_"+k).value.trim(); if(t) o[k]=raw; else if(raw!==""){ const x=num(raw); if(!isFinite(x)){ $("nbErr").textContent=`„${l}“ ist keine Zahl.`; return; } o[k]=x; } }
     for(const k of ["marke","modell","grosse","reach","stack","steuerwinkel","sitzwinkel"]) if(o[k]===undefined||o[k]===""){ $("nbErr").textContent="Bitte mindestens Marke, Modell, Größe, Reach, Stack, Steuer- und Sitzwinkel angeben."; return; }
     if(DB.bikes.some(x=>norm(x.b)===norm(o.marke)&&norm(x.m)===norm(o.modell)&&norm(x.s)===norm(o.grosse))){ $("nbErr").textContent="Dieses Rad gibt es schon."; return; }
     o.radart=btype();   // neues Rad gehört zur gerade gewählten Radart
-    S.customBikes=S.customBikes||[]; S.customBikes.push(o); box.innerHTML="";
+    S.customBikes=S.customBikes||[]; S.customBikes.push(o); box.innerHTML=""; if(S.basic) setTimeout(()=>{ try{ libSaveNow(); }catch(e){} },0);   // WiFitBasic: gleich zentral speichern
     reloadData(); if(onSaved) onSaved(o); else selectMain(o.marke,o.modell,String(o.grosse)); renderOwnBikes(); bmSel={b:o.marke,m:o.modell}; renderBikeManager();
   };
 }
@@ -4611,7 +4613,6 @@ $("evBtn").onclick=()=>$("evIn").click();
 $("evIn").onchange=e=>{ const f=e.target.files[0]; if(f) evImport(f); e.target.value=""; };
 $("cpIn").onchange=e=>{ const f=e.target.files[0]; if(f) cpImport(f); e.target.value=""; };
 $("newBikeBtn").onclick=()=>renderBikeForm();
-$("geoImgBtn").onclick=()=>renderGeoImg();
 $("bmDetails").addEventListener("toggle",()=>{ if($("bmDetails").open) renderBikeManager(); });
 $("exportBtn").onclick=exportData;
 $("importBtn").onclick=()=>$("importIn").click();
