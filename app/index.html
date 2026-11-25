@@ -245,7 +245,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .startBtn:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .startBtns[hidden]{display:none}
 .startBtns.types{gap:1.8cqi;margin-top:.5cqi}
-.startBtns.types .startBtn{padding:2cqi 3.5cqi;font-size:5.2cqi}
+.startBtns.types .startBtn{padding:2cqi 3cqi;font-size:4.4cqi}
 .startBtns.types .startBtn:hover,.startBtns.types .startBtn:focus-visible{background:#fff;color:#0389B8}
 .modeRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 .modeRow #basicBtn{margin-bottom:0}
@@ -430,7 +430,8 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <button class="startBtn basic" type="button" id="startBasic">WiFitBasic</button>
     </div>
     <div class="startBtns types" id="startTypes" hidden>
-      <button class="startBtn basic" type="button" data-bt="road">Rennrad/Gravel</button>
+      <button class="startBtn basic" type="button" data-bt="road" data-disc="rennrad">Rennrad</button>
+      <button class="startBtn basic" type="button" data-bt="road" data-disc="gravel">Gravel</button>
       <button class="startBtn basic" type="button" data-bt="tri">Triathlonrad</button>
       <button class="startBtn basic" type="button" data-bt="mtb">Mountainbike</button>
     </div>
@@ -2692,7 +2693,7 @@ window.addEventListener("beforeunload",e=>{
   const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; $("startTypes").hidden=true; scr.querySelector(".startBtns:not(.types)").hidden=false; $("startQ").textContent="Welches Fitting möchtest du machen?"; showTab(S.basic?"person":"befund"); try{ $("basicBtn").focus(); }catch(e){} };   /* WiFitPro startet bei Befund, Basic bei Person (je 30/70) */
   /* zweiter Schritt: Radart wählen (Rennrad/Gravel, Triathlonrad, Mountainbike) */
   const askType=()=>{ scr.querySelector(".startBtns:not(.types)").hidden=true; const t=$("startTypes"); t.hidden=false; $("startQ").textContent="Welches Rad wird gefittet?";
-    t.querySelectorAll("[data-bt]").forEach(b=>{ b.classList.remove("pro"); b.classList.add("basic"); b.onclick=()=>{ setBtype(b.dataset.bt); done(); }; });
+    t.querySelectorAll("[data-bt]").forEach(b=>{ b.classList.remove("pro"); b.classList.add("basic"); b.onclick=()=>{ setBtype(b.dataset.bt); done(); if(b.dataset.disc){ S.person["disc_"+b.dataset.bt]=b.dataset.disc; applyStyleStd(); sugCache.key=""; sizeFitCache.key=""; try{ renderDisc(); syncPerson(); render(); }catch(e){} save(); } }; });   // Gravel = Rennrad-Rahmenart mit Disziplin Gravel
     };
   $("startBasic").onclick=()=>{ S.basic=true; try{ sessionStorage.removeItem("wimove-pro"); }catch(e){} applyBasic(); save(); askType(); };
   $("startPro").onclick=()=>{ if(!proAllowed()) return; if(proLocked()){ askPassword(()=>{ S.basic=false; applyBasic(); save(); askType(); }); return; } S.basic=false; applyBasic(); save(); askType(); };
