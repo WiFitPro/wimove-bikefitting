@@ -112,7 +112,7 @@ aside{background-image:linear-gradient(color-mix(in srgb,var(--panel) 95%,transp
 .chip.pchip{font:500 13px Barlow,sans-serif;min-width:0;padding:4px 9px;text-align:left}
 .plist{margin-top:12px;display:grid;gap:6px}
 .pentry{display:flex;gap:8px;justify-content:space-between;align-items:flex-start;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--field);font-size:13px}
-.pmhead{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+select,input,textarea{box-sizing:border-box;max-width:100%}.pmhead>*{min-width:0}.pmhead{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-bottom:8px}
 .pmhead select{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink)}
 .pmtable{display:grid;gap:3px 6px;align-items:center;font-size:13px;max-height:420px;overflow:auto}
 .pmtable b{font-size:12px;color:var(--muted);position:sticky;top:0;background:var(--panel);padding:2px 0;line-height:1.2}
@@ -121,7 +121,7 @@ aside{background-image:linear-gradient(color-mix(in srgb,var(--panel) 95%,transp
 .bmwrap{overflow-x:auto;max-width:100%}
 .bmtab{border-collapse:collapse;font-size:13px}
 .bmtab th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;padding:3px 6px;white-space:nowrap;vertical-align:bottom}
-.bmtab td{padding:2px 3px}
+.bmtab td{padding:2px 3px}.bmtab tbody th{vertical-align:middle}
 .bmtab .bms{width:62px;font-weight:600}
 input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink);width:100%;min-width:0}
 .bmtab input{width:62px;font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--rule);border-radius:6px;background:var(--field);color:var(--ink)}
