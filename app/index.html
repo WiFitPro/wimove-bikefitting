@@ -249,11 +249,11 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .startBtns.types .startBtn:hover,.startBtns.types .startBtn:focus-visible{background:#fff;color:#0389B8}
 .modeRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 .modeRow #basicBtn{margin-bottom:0}
-.btGroup{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--field)}
-.btGroup button{font:inherit;font-size:15px;font-weight:500;padding:9px 12px;border:0;background:transparent;color:var(--ink);cursor:pointer}
-.btGroup button+button{border-left:1px solid var(--rule)}
-.btGroup button[aria-pressed="true"]{background:var(--frame);color:#fff;font-weight:600}
-.btGroup button:focus-visible{outline:2px solid var(--frame);outline-offset:-2px}
+.btGroup{display:inline-flex;flex-wrap:wrap;gap:8px}   /* einzelne Buttons statt verbundener Leiste */
+.btGroup button{font:inherit;font-size:15px;font-weight:500;padding:9px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--field);color:var(--ink);cursor:pointer}.btGroup button:hover{border-color:var(--frame)}
+
+.btGroup button[aria-pressed="true"]{background:var(--frame);border-color:var(--frame);color:#fff;font-weight:600}
+.btGroup button:focus-visible{outline:2px solid var(--frame);outline-offset:2px}
 .barHide{display:none!important}
 .geoSec[hidden]{display:none!important}
 .stdCard{margin:26px 0 0}.stdCard:first-child{margin-top:8px}
