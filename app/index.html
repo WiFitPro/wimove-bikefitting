@@ -674,11 +674,6 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="row" style="margin-top:8px"><button class="btn small" id="acPwBtn" type="button">Passwort ändern</button><button class="btn ghost small wfOut" type="button">Abmelden</button></div>
         <p class="note" id="acNote"></p>
       </section>
-      <details class="acc adminOnly"><summary>Benutzerverwaltung</summary>
-        <p class="note" style="margin-top:0">Neue Konten registrieren sich selbst und können erst arbeiten, wenn du sie freischaltest. Unter „Zugang“ legst du fest, ob jemand WiFitPro und WiFitBasic oder nur WiFitBasic nutzen darf. Admins haben immer beides und dürfen zusätzlich Teile, Räder und Standardwerte ändern und Benutzer verwalten. Gesperrte Konten kommen nicht mehr in die App; ganz löschen kannst du ein Konto in Supabase unter „Authentication → Users“.</p>
-        <div class="row"><button class="btn ghost small" id="userReload" type="button">Liste aktualisieren</button></div>
-        <div id="userAdmin"></div>
-      </details>
       <section hidden>
         <h2>Passwort für WiFitPro</h2>
         <p class="note" id="pwNote" style="margin-top:0"></p>
@@ -686,10 +681,6 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
           <div><label class="f" for="pwNew2">Wiederholen</label><input class="bfi" id="pwNew2" type="password" autocomplete="new-password"></div></div>
         <div class="row" style="margin-top:8px"><button class="btn small" id="pwSet">Passwort festlegen</button><button class="btn ghost small" id="pwRemove">Sperre aufheben</button></div>
       </section>
-      <details class="acc"><summary>Bericht: Logo und Kontaktdaten</summary>
-        <p class="note info" style="margin-top:0">Gilt für dein Konto: Die Kontaktdaten und dein Logo erscheinen im PDF in der Fußzeile jeder Seite und auf der letzten Seite. Leere Zeilen und kein Logo = Standard (wimove / Wildrad).</p>
-        <div id="brandBox"></div>
-      </details>
       <details class="acc"><summary>Datensicherung</summary>
         <p class="note info" style="margin-top:0">Alle Daten liegen in diesem Browser. Mit einer Sicherung kannst du sie archivieren oder auf einem anderen Gerät weiterarbeiten.</p>
         <div class="row"><button class="btn small" id="exportBtn">Daten sichern (.json)</button><button class="btn ghost small" id="importBtn">Sicherung laden</button><input type="file" id="importIn" accept=".json,application/json" hidden></div>
@@ -725,6 +716,10 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <button class="btn" id="pdfBtn">PDF erstellen</button>
         <p class="note" id="pdfNote"></p>
       </section>
+      <details class="acc"><summary>Bericht: Logo und Kontaktdaten</summary>
+        <p class="note info" style="margin-top:0">Gilt für dein Konto: Die Kontaktdaten und dein Logo erscheinen im PDF in der Fußzeile jeder Seite und auf der letzten Seite. Leere Zeilen und kein Logo = Standard (wimove / Wildrad).</p>
+        <div id="brandBox"></div>
+      </details>
     </div>
 
     <div class="panel" id="tab-befund" hidden>
@@ -751,6 +746,11 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
       <div id="admMore"></div>
       <div id="admStdBox"></div>
+      <details class="acc adminOnly" style="margin-top:18px"><summary>Benutzerverwaltung</summary>
+        <p class="note" style="margin-top:0">Neue Konten registrieren sich selbst und können erst arbeiten, wenn du sie freischaltest. Unter „Zugang“ legst du fest, ob jemand WiFitPro und WiFitBasic oder nur WiFitBasic nutzen darf. Admins haben immer beides und dürfen zusätzlich Teile, Räder und Standardwerte ändern und Benutzer verwalten. Gesperrte Konten kommen nicht mehr in die App; ganz löschen kannst du ein Konto in Supabase unter „Authentication → Users“.</p>
+        <div class="row"><button class="btn ghost small" id="userReload" type="button">Liste aktualisieren</button></div>
+        <div id="userAdmin"></div>
+      </details>
     </div>
   </aside>
 </div>
