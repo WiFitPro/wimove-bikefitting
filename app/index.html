@@ -256,6 +256,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .btGroup button:focus-visible{outline:2px solid var(--frame);outline-offset:-2px}
 .barHide{display:none!important}
 .geoSec[hidden]{display:none!important}
+.geoSmp{font-size:13px;color:#4A5560;white-space:nowrap;padding:3px 10px!important}.geoColSel{font-size:13px;min-width:170px;padding:4px 6px}.geoColT th{text-align:left}
 .geoDrop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin:6px 0 10px;padding:22px 12px;border:2px dashed var(--rule);border-radius:10px;background:var(--field);cursor:pointer;text-align:center;transition:border-color .15s,background .15s}
 .geoDrop span{font-size:13px;color:#6B7785}.geoDrop:hover,.geoDrop:focus-visible{border-color:var(--frame);outline:none}
 .geoDrop.over{border-color:var(--frame);background:color-mix(in srgb,var(--frame) 10%,var(--field))}
@@ -2930,6 +2931,7 @@ function geoNum(t){ t=String(t).replace(/[°˚º]|mm|cm/gi,"").trim(); if(/\d/.t
    Beschriftungen über mehrere Zeilen („Head / Angle“) und eine Größenzeile ohne Beschriftung („42cm 44cm …“) werden zusammengeführt. */
 const GEO_SIZE_ONE=/^(\d{2,3}([.,]\d)?(cm)?|x{0,3}[sml]|xx?s|xx?l|x{1,3}l|m)$/i, GEO_SIZE_TOK={test:t=>t.split("/").every(x=>GEO_SIZE_ONE.test(x))};   // auch „XXS/47“
 function geoParseText(txt){
+  { const tr=geoTransposed(String(txt).split(/\n/).map(raw=>raw.replace(/[|\[\]{}]/g," ").replace(/\s+/g," ").trim()).filter(Boolean)); if(tr) return tr; }
   const res={marke:"",modell:"",sizes:[],werte:{}}, best={};
   const L=String(txt).split(/\n/).map(raw=>raw.replace(/[|\[\]{}]/g," ").replace(/\s+/g," ").trim().replace(/^[A-Z]\.?\s+(?=[A-Za-zÄÖÜ]{2})/,"")).filter(Boolean);
   const split=line=>{ const toks=line.split(" "), i0=toks.findIndex(t=>isFinite(geoNum(t))&&!/^[A-Za-zÄÖÜäöüß(]/.test(t)); return {toks,i0,labelRaw:i0<0?line:toks.slice(0,i0).join(" ")}; };
@@ -2959,6 +2961,68 @@ function geoParseText(txt){
   }
   return geoFix(res);
 }
+/* Tabelle „gekippt“: Größen als Zeilen, Maße als Spalten (oft nur Kennbuchstaben, die in der Zeichnung erklärt sind) */
+function geoTransposed(L){
+  const rows=[];
+  for(const line of L){
+    const toks=line.split(" "), idx=toks.findIndex(t=>/\d/.test(t)&&isFinite(geoNum(t)));
+    if(idx<0) continue;
+    const nums=toks.slice(idx).filter(t=>/\d/.test(t)).map(t=>({v:geoNum(t),deg:/[°˚º]/.test(t)}));
+    if(nums.filter(x=>isFinite(x.v)).length<5) continue;
+    const label=toks.slice(0,idx).join(" ").replace(/\(.*?\)/g,"").trim();
+    if(GEO_ALIAS.some(([k,re])=>k!=="grosse"&&re.test(label))) return null;   // normale Tabelle: Maße als Zeilen
+    if(GEO_ALIAS.some(([k,re])=>k==="grosse"&&re.test(label))) continue;
+    const sz=toks.slice(0,idx).map(t=>t==="$"?"S":t).filter(t=>GEO_SIZE_TOK.test(t));
+    rows.push({size:sz.length?sz[sz.length-1]:"",nums});
+  }
+  if(rows.length<2) return null;
+  const cnt={}; for(const r of rows) cnt[r.nums.length]=(cnt[r.nums.length]||0)+1;
+  const nC=+Object.entries(cnt).sort((a,b)=>b[1]-a[1]||b[0]-a[0])[0][0], use=rows.filter(r=>r.nums.length===nC); if(use.length<2||nC<5) return null;
+  const cols=Array.from({length:nC},(_,j)=>({vals:use.map(r=>{ let x=r.nums[j].v; if(r.nums[j].deg&&x>100&&x<1000) x/=10; return x; }),deg:use.some(r=>r.nums[j].deg)}));
+  geoGuessCols(cols);
+  const res={marke:"",modell:"",sizes:use.map((r,i)=>r.size||"Gr. "+(i+1)),werte:{},cols};
+  return geoApplyCols(res);
+}
+/* Spalten anhand typischer Wertebereiche und Zusammenhänge vorschlagen – wird in der Prüfansicht per Auswahl korrigiert */
+function geoGuessCols(cols){
+  const st=cols.map((c,j)=>{ const v=c.vals.filter(x=>isFinite(x)); const mean=v.reduce((a,b)=>a+b,0)/(v.length||1), span=v.length?Math.max(...v)-Math.min(...v):0; return {j,mean,span,inc:v.length?v[v.length-1]-v[0]:0,deg:c.deg}; });
+  const free=new Set(st.map(s=>s.j)), take=(j,k)=>{ cols[j].f=k; free.delete(j); };
+  cols.forEach(c=>c.f="");
+  const ang=st.filter(s=>s.mean>=60&&s.mean<=85&&(s.deg||s.span<6));
+  if(ang.length>=2){ const [a,b]=ang; const hta=a.inc>b.inc?a:b.inc>a.inc?b:a; take(hta.j,"steuerwinkel"); take((hta===a?b:a).j,"sitzwinkel"); } else if(ang.length===1) take(ang[0].j,"steuerwinkel");
+  const pick=(fn,k)=>{ const c=st.filter(s=>free.has(s.j)&&fn(s)); if(c.length) take(c[0].j,k); return c[0]; };
+  pick(s=>s.mean>=900&&s.mean<=1350,"radstand");
+  pick(s=>s.mean>=55&&s.mean<=95&&s.span<=12,"tretlageroffset");
+  st.filter(s=>free.has(s.j)&&s.mean>=30&&s.mean<=60&&s.span<=10).forEach(s=>free.delete(s.j));   // Gabelvorlauf
+  pick(s=>s.mean>=60&&s.mean<=280&&s.span>=10,"steuerrohr");
+  { const cs=st.filter(s=>free.has(s.j)&&s.mean>=390&&s.mean<=470&&s.span<=15).sort((a,b)=>Math.abs(a.mean-415)-Math.abs(b.mean-415)); if(cs.length) take(cs[0].j,"kettenstrebe"); }
+  const reach=st.filter(s=>free.has(s.j)&&s.mean>=320&&s.mean<=460&&s.span>=4).sort((a,b)=>b.span-a.span)[0]; if(reach) take(reach.j,"reach");
+  st.filter(s=>free.has(s.j)&&s.span<4&&s.mean>=340&&s.mean<=400).forEach(s=>free.delete(s.j));   // Gabellänge
+  const big=st.filter(s=>free.has(s.j)&&s.mean>=400&&s.mean<=760);
+  const sta=cols.find(c=>c.f==="sitzwinkel"), R=reach?cols[reach.j].vals:null;
+  const colOf=k=>cols.find(c=>c.f===k), H=colOf("steuerrohr"), A=colOf("steuerwinkel"), D=colOf("tretlageroffset");
+  const fit=(X,est)=>cols[X.j].vals.reduce((a,x,i)=>{ const e=est(i); return a+(isFinite(x)&&isFinite(e)?Math.abs(x-e):99); },0)/cols[X.j].vals.length;
+  if(big.length&&R&&H&&A){   /* Stack aus Steuerrohr schätzen: Tretlagerabsenkung + (Steuerrohr + Gabel ≈ 385) · sin(Lenkwinkel) − Vorlauf · cos(Lenkwinkel) */
+    const estS=i=>(D?D.vals[i]:70)+(H.vals[i]+385)*Math.sin(A.vals[i]*Math.PI/180)-45*Math.cos(A.vals[i]*Math.PI/180);
+    const S1=big.map(X=>({X,e:fit(X,estS)})).sort((a,b)=>a.e-b.e)[0];
+    if(S1&&S1.e<40){ take(S1.X.j,"stack");
+      const estT=i=>R[i]+cols[S1.X.j].vals[i]/Math.tan((sta?sta.vals[i]:73.5)*Math.PI/180);
+      const T1=big.filter(X=>free.has(X.j)).map(X=>({X,e:fit(X,estT)})).sort((a,b)=>a.e-b.e)[0]; if(T1&&T1.e<40) take(T1.X.j,"oberrohr"); }
+  }
+  if(big.length&&R&&!colOf("stack")){   /* Stack/Oberrohr-Paar: Oberrohr ≈ Reach + Stack / tan(Sitzwinkel) */
+    let best=null;
+    for(const X of big) for(const Y of big){ if(X===Y) continue;
+      const e=cols[X.j].vals.reduce((a,x,i)=>{ const s=sta?sta.vals[i]:73.5, y=cols[Y.j].vals[i]; return a+(isFinite(x)&&isFinite(y)&&isFinite(R[i])?Math.abs(y-(R[i]+x/Math.tan(s*Math.PI/180))):99); },0)/cols[X.j].vals.length;
+      if(!best||e<best.e) best={e,X,Y}; }
+    if(best&&best.e<45){ take(best.X.j,"stack"); take(best.Y.j,"oberrohr"); } else { const s=big.sort((a,b)=>b.mean-a.mean)[0]; take(s.j,"stack"); }
+  }
+  const rest=st.filter(s=>free.has(s.j)&&s.mean>=380&&s.mean<=760&&s.span>=4).sort((a,b)=>a.mean-b.mean);
+  if(rest.length){ take(rest[0].j,"sitzrohr"); if(rest[1]) take(rest[rest.length-1].j,"frontcenter"); }
+}
+function geoApplyCols(r){
+  r.werte={}; for(const c of r.cols) if(c.f&&!r.werte[c.f]) r.werte[c.f]=c.vals.slice();
+  delete r.derived; return geoFix(r);
+}
 /* cm → mm, Spaltenzahl angleichen */
 function geoFix(r){
   const lens=Object.values(r.werte).map(a=>a.length).filter(x=>x>0), cnt={}; for(const x of lens) cnt[x]=(cnt[x]||0)+1;
@@ -2982,7 +3046,7 @@ async function geoByClaude(blob){
   if(!sample) return null; try{ const lim=sample.limits?await sample.limits():null; if(lim&&!lim.images) return null; }catch(e){}
   const prompt=`Lies die Fahrrad-Geometrietabelle im Bild aus. Antworte NUR mit JSON in genau dieser Form:
 {"marke":"","modell":"","sizes":["S","M"],"werte":{"frontcenter":[],"reach":[],"stack":[],"steuerwinkel":[],"sitzwinkel":[],"oberrohr":[],"steuerrohr":[],"sitzrohr":[],"kettenstrebe":[],"radstand":[],"tretlageroffset":[]}}
-Regeln: eine Zahl je Größe in derselben Reihenfolge wie "sizes"; Längen in mm (cm umrechnen), Winkel in Grad; oberrohr = effektives/horizontales Oberrohr; steuerrohr und sitzrohr = Rohrlängen (nicht Winkel); sitzwinkel = effektiver Sitzwinkel; tretlageroffset = Tretlagerabsenkung (BB drop) als positive Zahl in mm; frontcenter = Front Center (falls angegeben, sonst null); Kennbuchstaben vor den Zeilen (A, B, C …) und Abkürzungen beachten: TT = Oberrohr, HT angle = Steuerwinkel, HT = Steuerrohr, ST = Sitzrohr; Gabelvorlauf, Nachlauf und Gabellänge weglassen; Größen genau wie im Bild (z. B. „XXS/47“); sitzrohr = Mitte–Oberkante (C-T), nicht C-C; fehlende Werte als null; marke/modell nur, wenn im Bild erkennbar, sonst "".`;
+Regeln: eine Zahl je Größe in derselben Reihenfolge wie "sizes"; Längen in mm (cm umrechnen), Winkel in Grad; oberrohr = effektives/horizontales Oberrohr; steuerrohr und sitzrohr = Rohrlängen (nicht Winkel); sitzwinkel = effektiver Sitzwinkel; tretlageroffset = Tretlagerabsenkung (BB drop) als positive Zahl in mm; frontcenter = Front Center (falls angegeben, sonst null); Kennbuchstaben vor den Zeilen (A, B, C …) und Abkürzungen beachten: TT = Oberrohr, HT angle = Steuerwinkel, HT = Steuerrohr, ST = Sitzrohr; Gabelvorlauf, Nachlauf und Gabellänge weglassen; Größen genau wie im Bild (z. B. „XXS/47“); stehen die Größen als Zeilen und die Maße als Spalten mit Kennbuchstaben, ordne die Buchstaben über die Maßlinien in der Zeichnung zu; sitzrohr = Mitte–Oberkante (C-T), nicht C-C; fehlende Werte als null; marke/modell nur, wenn im Bild erkennbar, sonst "".`;
   const out=await sample.json(prompt,{images:[blob],modelTier:"default"});
   const r={marke:String(out&&out.marke||""),modell:String(out&&out.modell||""),sizes:(out&&Array.isArray(out.sizes)?out.sizes:[]).map(String),werte:{}};
   for(const k of [...GEO_F.map(f=>f[0]),"frontcenter"]) r.werte[k]=(out&&out.werte&&Array.isArray(out.werte[k])?out.werte[k]:[]).map(x=>x==null?NaN:geoNum(x));
@@ -3040,12 +3104,18 @@ async function geoRun(blob){
 }
 function geoTable(r){
   const cell=(k,i,v)=>{ const [a,b]=GEO_RANGE[k]||[-1e9,1e9], bad=isFinite(v)&&(v<a||v>b); return `<input class="bfi geoIn${bad?" geoBad":""}" data-k="${k}" data-i="${i}" inputmode="decimal" value="${isFinite(v)?String(v).replace(".",","):""}">`; };
-  $("geoRes").innerHTML=`<div class="two" style="margin-top:6px"><div><label class="f" for="geoMarke">Marke</label><input class="bfi" id="geoMarke" value="${esc(r.marke)}"></div>
+  const FOPT=[["","– nicht verwenden –"],...GEO_F.map(f=>[f[0],f[1]]),["frontcenter","Front-Center (für Kettenstrebe)"]];
+  const colBox=r.cols?`<div class="geoCols"><p class="note" style="margin:8px 0 4px"><b>Spalten zuordnen:</b> Die Tabelle hat die Größen als Zeilen und die Maße als Spalten. Die Zuordnung ist geschätzt – bitte prüfen (Buchstaben siehe Zeichnung).</p>
+    <div class="geoWrap"><table class="geoT geoColT"><thead><tr><th>Spalte</th><th>Werte (${r.sizes.map(esc).join(" · ")})</th><th>Maß</th></tr></thead><tbody>
+    ${r.cols.map((c,j)=>`<tr><th>${j+1}</th><td class="geoSmp">${c.vals.map(v=>isFinite(v)?String(v).replace(".",","):"–").join(" · ")}</td><td><select class="geoColSel" data-j="${j}">${FOPT.map(([k,l])=>`<option value="${k}"${c.f===k?" selected":""}>${l}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table></div></div>`:"";
+  $("geoRes").innerHTML=colBox+`<div class="two" style="margin-top:6px"><div><label class="f" for="geoMarke">Marke</label><input class="bfi" id="geoMarke" value="${esc(r.marke)}"></div>
     <div><label class="f" for="geoModell">Modell</label><input class="bfi" id="geoModell" value="${esc(r.modell)}"></div>
     <div><label class="f" for="geoArt">Radart</label><select id="geoArt">${Object.entries(BTYPES).map(([k,l])=>`<option value="${k}"${k===btype()?" selected":""}>${l}</option>`).join("")}</select></div></div>
     <div class="geoWrap"><table class="geoT"><thead><tr><th>Größe</th>${r.sizes.map((s,i)=>`<th><input class="bfi geoIn" data-k="grosse" data-i="${i}" value="${esc(s)}"></th>`).join("")}</tr></thead>
     <tbody>${GEO_F.map(([k,l,u])=>`<tr><th>${l}${u?" ("+u+")":" (mm)"}</th>${r.sizes.map((_,i)=>`<td>${cell(k,i,r.werte[k][i])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
     <div class="row" style="margin-top:10px"><button class="btn small" type="button" id="geoSave">Alle Größen speichern</button></div><p class="note warn" id="geoErr"></p>`;
+  $("geoRes").querySelectorAll(".geoColSel").forEach(el=>el.onchange=()=>{ r.marke=$("geoMarke").value; r.modell=$("geoModell").value; r.sizes=r.sizes.map((s,i)=>{ const e=$("geoRes").querySelector(`.geoIn[data-k="grosse"][data-i="${i}"]`); return e?e.value:s; });
+    r.cols[+el.dataset.j].f=el.value; geoApplyCols(r); geoTable(r); });
   $("geoRes").querySelectorAll(".geoIn").forEach(el=>el.oninput=()=>{ const k=el.dataset.k, v=geoNum(el.value), [a,b]=GEO_RANGE[k]||[-1e9,1e9]; el.classList.toggle("geoBad",k!=="grosse"&&el.value.trim()!==""&&(!isFinite(v)||v<a||v>b)); });
   $("geoSave").onclick=()=>{
     const marke=$("geoMarke").value.trim(), modell=$("geoModell").value.trim(), art=$("geoArt").value;
