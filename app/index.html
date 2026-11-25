@@ -745,9 +745,10 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     </div>
     <div class="panel" id="tab-admin" hidden>
       <section><h2>Admin</h2><p class="note info" style="margin-top:0">Alle festgelegten Richtwerte und Modelle an einer Stelle. Änderungen gelten sofort für alle Fittings; mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern.</p>
-        <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div><p class="note" style="margin-top:6px">Jede Radart hat ihre eigene, unabhängige Einstellungsseite: Richtwerte, Disziplinen, Bewertungsmodell, Lenkerbreite und Kurbellänge. Gemeinsam für alle Radarten bleiben nur das Personenmodell und die Farben der Größenempfehlung.</p></section>
+        <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div><p class="note" style="margin-top:6px">Jede Radart hat ihre eigene, unabhängige Einstellungsseite: Richtwerte, Disziplinen, Bewertungsmodell, Lenkerbreite und Kurbellänge. Gemeinsam für alle Radarten bleiben nur die Farben der Größenempfehlung.</p>
+        <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="admCopy">Änderungen für alle Radarten übernehmen</button></div><p class="note" id="admCopyNote"></p></section>
       <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
-      <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Feinwerte des Körpermodells (gelten als Grundwerte für jede Person).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
+      <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
       <div id="admMore"></div>
       <div id="admStdBox"></div>
     </div>
@@ -1093,7 +1094,10 @@ function personFrom(){
 const isFem=()=>!!(S.person&&S.person.sex==="weiblich");
 /* Modellwerte, die als eigener Standard gespeichert werden können (bleiben bei neuen Excel-Dateien erhalten) */
 const MODEL_KEYS=["hipStand","hipFwd","sitBack","sink","shoulderDrop","protr","kneeBack","ankleH","footAngle","armAdd"];   // Ellbogenwinkel kommt aus den Richtwerten je Fahrstil   // Hüftgelenk über Sattel folgt immer Hüftgelenk über Schritthöhe
-const stdVal=k=>S.modelStd&&isFinite(S.modelStd[k])?S.modelStd[k]:NaN;
+/* Modellwerte (Segmente/Haltung) je Radart: Änderung im Admin-Tab > gespeicherter Standard der Radart > früherer gemeinsamer Standard */
+const stdValT=(bt,k)=>{ const T=S.segOvT&&S.segOvT[bt]; if(T&&isFinite(T[k])) return T[k]; const B=S.modelStd&&S.modelStd.byT&&S.modelStd.byT[bt]; if(B&&isFinite(B[k])) return B[k];
+  return S.modelStd&&isFinite(S.modelStd[k])?S.modelStd[k]:NaN; };
+const stdVal=k=>stdValT(btype(),k);
 /* Fehlende Messwerte: geschlechtsspezifische Normwerte wie in den Spalten I (männlich) und M (weiblich) von „Peronendaten“ */
 function measures(){
   const p=S.person, w=p.sex==="weiblich", m={...p};
@@ -2010,8 +2014,6 @@ function initControls(){
   { const sb=document.getElementById("styleStdBox"); if(sb) sb.classList.add("adminOnly"); }
   /* eigener Admin-Tab: alle festgelegten Richtwerte und Modelle dorthin verschieben */
   { const mv=(el,to)=>{ if(el&&$(to)) $(to).appendChild(el); };
-    for(const k of ["hipStand","ankleH","sitBack","sink","hipFwd","hipSit","shoulderDrop","protr","kneeBack","armAdd"]){ const n=document.getElementById("pn_"+k); if(n) mv(n.closest(".param"),"admSegBox"); }
-    for(const k of ["elbowT","footAngle"]){ const n=document.getElementById("pn_"+k); if(n) mv(n.closest(".param"),"admHaltBox"); }
     mv($("pCleat"),"admCleatBox"); mv($("styleStdBox"),"admStyleBox"); mv($("fitModelDetails"),"admMore"); mv($("compModelDetails"),"admMore"); mv($("stdBox"),"admStdBox"); }
   syncPerson=()=>{ s1();s1b();s1c();s2();s3();s3b();s4();s5(); try{ decorateNorms(); }catch(e){} markPending(); };
   try{ applyBtypeUI(); }catch(e){}
@@ -2189,9 +2191,27 @@ const STEM_FACTORY={comfort:90,endurance:100,sportlich:105,ambitioniert:115,prof
 const STEM_FACTORY_T={road:STEM_FACTORY,gravel:{comfort:80,endurance:90,sportlich:95,ambitioniert:105,professional:115},tri:{comfort:80,endurance:85,sportlich:90,ambitioniert:100,professional:110},mtb:{comfort:50,endurance:55,sportlich:60,ambitioniert:70,professional:80}};
 const SPACER_FACTORY_T={road:SPACER_FACTORY,gravel:{comfort:30,endurance:25,sportlich:20,ambitioniert:15,professional:10},tri:{comfort:30,endurance:25,sportlich:20,ambitioniert:10,professional:5},mtb:{comfort:20,endurance:15,sportlich:10,ambitioniert:5,professional:0}};
 let ADM_BT=null; const admBt=()=>BTYPES[ADM_BT]?ADM_BT:btype();   // im Admin-Tab bearbeitete Radart (Standard: aktuelle)
+function renderSegStd(){ const box=$("admSegBox"); if(!box) return; const bt=admBt(), P0=body();
+  const tag=k=>S.segOvT&&S.segOvT[bt]&&isFinite(S.segOvT[bt][k])?'<small class="src edit">geändert</small>':isFinite(stdValT(bt,k))?'<small class="src">Standard</small>':'<small class="src">App-Wert</small>';
+  box.innerHTML=`<div class="fitmGrid">`+MODEL_KEYS.map(k=>{ const d=PERS.find(x=>x.key===k); if(!d) return ""; const v=isFinite(stdValT(bt,k))?stdValT(bt,k):d.f(P0);
+    return `<label for="sg_${k}">${esc(d.label)}</label><div class="fitmIn"><input class="bfi" id="sg_${k}" type="number" step="${d.step||1}" data-seg="${k}" value="${Math.round(v*10)/10}" style="max-width:90px"><span class="note" style="margin:0">${d.unit||"mm"}</span>${tag(k)}</div>`; }).join("")+`</div>`;
+  box.querySelectorAll("[data-seg]").forEach(el=>el.onchange=()=>{ const k=el.dataset.seg, d=PERS.find(x=>x.key===k), x=num(el.value); if(!isFinite(x)||x<d.min||x>d.max){ renderSegStd(); return; }
+    S.segOvT=S.segOvT||{}; (S.segOvT[bt]=S.segOvT[bt]||{})[k]=x; if(bt===btype()&&S.person.ov) delete S.person.ov[k];
+    sugCache.key=""; sizeFitCache.key=""; renderSegStd(); setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
+/* geänderte Werte der gezeigten Radart auf alle anderen Radarten übertragen */
+function admCopyAll(){ const bt=admBt(), others=Object.keys(BTYPES).filter(b=>b!==bt); let n=0;
+  for(const [k,v] of Object.entries(S.fitOv||{})){ let m;
+    if(k.startsWith(bt+"__")){ for(const o of others) S.fitOv[o+"__"+k.slice(bt.length+2)]=v; n++; }
+    else if((m=k.match(/^(?:([a-z]+)_)?(stem|spacer)_(\w+)$/))&&(m[1]||"road")===(bt==="road"?"road":bt)&&kpT(bt)===(m[1]?m[1]+"_":"")){ for(const o of others) S.fitOv[kpT(o)+m[2]+"_"+m[3]]=v; n++; } }
+  const O=styleOvOf(bt); for(const [st,vals] of Object.entries(O)) for(const [k,v] of Object.entries(vals||{})){ if(!isFinite(v)) continue; n++;
+    for(const o of others){ let O2; if(o==="road") O2=S.styleOv=S.styleOv||{}; else { S.styleOvT=S.styleOvT||{}; O2=S.styleOvT[o]=S.styleOvT[o]||{}; } (O2[st]=O2[st]||{})[k]=v; } }
+  const G=(S.segOvT||{})[bt]||{}; for(const [k,v] of Object.entries(G)){ n++; for(const o of others) (S.segOvT[o]=S.segOvT[o]||{})[k]=v; if(S.person.ov) delete S.person.ov[k]; }
+  applyFitModel(); applyStyleStd(); fitModelChanged(); renderStyleStd(); renderSegStd(); syncPerson(); render(); save();
+  $("admCopyNote").textContent=n?`${n} geänderte Werte von „${BTYPES[bt]}“ auf alle Radarten übertragen. Mit „Modellwerte als Standard speichern“ (unten) dauerhaft sichern.`:`Auf der Seite „${BTYPES[bt]}“ gibt es keine geänderten Werte (markiert mit „geändert“) zum Übertragen.`; }
 function renderAdmBt(){ const g=$("admBt"); if(!g) return; const b=admBt();
   g.innerHTML=Object.entries(BTYPES).map(([k,l])=>`<button type="button" data-adm="${k}" aria-pressed="${k===b}" style="flex:1 1 auto"${k===btype()?' title="Radart des aktuellen Fittings"':""}>${l}${k===btype()?" •":""}</button>`).join("");
-  g.querySelectorAll("[data-adm]").forEach(x=>x.onclick=()=>{ ADM_BT=x.dataset.adm; try{ renderStyleStd(); }catch(e){} try{ renderFitModel(); }catch(e){} }); }
+  g.querySelectorAll("[data-adm]").forEach(x=>x.onclick=()=>{ ADM_BT=x.dataset.adm; try{ renderStyleStd(); }catch(e){} try{ renderFitModel(); }catch(e){} try{ renderSegStd(); }catch(e){} $("admCopyNote").textContent=""; });
+  const cb=$("admCopy"); if(cb){ cb.textContent=`Änderungen von „${BTYPES[b]}“ für alle Radarten übernehmen`; cb.onclick=admCopyAll; } try{ renderSegStd(); }catch(e){} }
 const STEM_T={}, SPACER_T={}, kpT=bt=>bt==="road"?"":bt+"_";   // Schlüssel: stem_comfort (Rennrad), tri_stem_comfort, mtb_stem_comfort …
 /* Jede Radart hat ihre eigenen Modellwerte (Schlüssel „radart__wert“); solange nicht eigens gesetzt, gilt der frühere gemeinsame Wert */
 const FITM_TYPED=new Set(FITM_DEF.filter(x=>x[1][0]!=="_"&&x[1]!=="Farben"&&!/^Disziplin/.test(x[1])).map(x=>x[0]));
@@ -2581,10 +2601,14 @@ $("saveStd").onclick=()=>{
   let n=0;
   for(const k of keys){
     /* Modellwerte und von Hand geänderte Längen festschreiben; berechnete Längen bleiben von der Person abhängig */
-    if(MODEL_KEYS.includes(k)||isFinite(S.person.ov[k])){ S.modelStd[k]=B[k]; n++; }
+    if(MODEL_KEYS.includes(k)){ if(isFinite(S.person.ov[k])){ const by=S.modelStd.byT=S.modelStd.byT||{}; (by[btype()]=by[btype()]||{})[k]=S.person.ov[k]; n++; } }   // Modellwerte je Radart (Feinwert der Person → Standard dieser Radart)
+    else if(isFinite(S.person.ov[k])){ S.modelStd[k]=B[k]; n++; }
     else delete S.modelStd[k];
     delete S.person.ov[k];
   }
+  for(const [bt,vals] of Object.entries(S.segOvT||{})){ const by=S.modelStd.byT=S.modelStd.byT||{}; by[bt]=Object.assign(by[bt]||{},vals); n+=Object.keys(vals).length; } delete S.segOvT;   // Grundwerte je Radart aus dem Admin-Tab
+  for(const bt of Object.keys(BTYPES)){ const by=S.modelStd.byT=S.modelStd.byT||{}; by[bt]=by[bt]||{}; for(const k of MODEL_KEYS) if(!isFinite(by[bt][k])&&isFinite(S.modelStd[k])) by[bt][k]=S.modelStd[k]; }   // jede Radart bekommt eigene, vollständige Werte
+  try{ renderSegStd(); }catch(e){}
   S.modelStd.cleat=S.comp.cleat; if(S.compBase) S.compBase.cleat=S.comp.cleat;
   applyStyleStd(); S.modelStd.styleStd=JSON.parse(JSON.stringify(STYLE_T.road)); S.modelStd.styleStdT=JSON.parse(JSON.stringify(Object.fromEntries(Object.keys(BTYPES).filter(b=>b!=="road").map(b=>[b,STYLE_T[b]])))); delete S.styleOv; delete S.styleOvT; renderStyleStd();
   applyFitModel(); S.modelStd.fitModel=fitModelVals(); delete S.fitOv; renderFitModel();   // Bewertungsmodell mitspeichern   // Richtwerte je Fahrstil mitspeichern
@@ -2598,7 +2622,7 @@ $("saveStd").onclick=()=>{
 $("resetStd").onclick=()=>{
   /* gespeicherte Segmentlängen verwerfen: Längen wieder aus den Messwerten, Modellwerte auf Werksstandard; Cleat bleibt */
   const keep=S.modelStd&&isFinite(S.modelStd.cleat)?{cleat:S.modelStd.cleat}:{};
-  S.modelStd=keep; S.modelStdAt=Date.now(); delete S.styleOv; applyStyleStd(); renderStyleStd(); delete S.fitOv; applyFitModel(); renderFitModel(); for(const d of PERS) if(d.g==="Segmente") delete S.person.ov[d.key];
+  S.modelStd=keep; S.modelStdAt=Date.now(); delete S.styleOv; delete S.styleOvT; delete S.segOvT; try{ renderSegStd(); }catch(e){} applyStyleStd(); renderStyleStd(); delete S.fitOv; applyFitModel(); renderFitModel(); for(const d of PERS) if(d.g==="Segmente") delete S.person.ov[d.key];
   sugCache.key=""; syncPerson(); render(); save(); factorySave();
   $("stdNote").textContent="Ursprüngliche App-Werte wiederhergestellt; sie sind jetzt die Werkseinstellung.";
 };
