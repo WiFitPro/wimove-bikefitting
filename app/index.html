@@ -1724,6 +1724,10 @@ function crankAdvice(){
   const val={L:pick.L,hip:pick.hip,knee:pick.knee,hipT,kneeT,rows,anyOk:ok.length>0,inseamL:ins};
   crankCache={key,val}; return val;
 }
+/* Kurbellänge aus der Schrittlänge (Grundwert + Faktor × Schrittlänge, auf 2,5 mm gerundet) – wird übernommen, solange die Kurbel nicht von Hand gewählt wurde */
+const crankByInseam=()=>{ const ins=S.person&&S.person.inseam, M=FITM; if(!isFinite(ins)||ins<=0) return NaN;
+  const L=Math.round(((M.crankBase??110)+ins*(M.crankPct||0.0725))/2.5)*2.5; return Math.min(M.crankMaxL||180,Math.max(M.crankMinL||150,L)); };
+function autoCrank(){ if(S.crankManual||(S.person.entered&&!S.person.entered.inseam)) return;   /* nur echte, eingegebene Schrittlänge */ const L=crankByInseam(); if(isFinite(L)&&L!==S.comp.crank){ S.comp.crank=L; try{ if(!updateSelPart("crank",L)) clearSelFor("crank"); syncComp(); }catch(e){} } }
 const shWithCrank=sh=>{ const a=crankAdvice(); return a&&isFinite(a.L)?Math.round(sh+(S.comp.crank-a.L)):sh; };   // Sattelhöhe passend zur empfohlenen Kurbel
 const crankTxt=a=>a?`Kurbel <b>${String(a.L).replace(".",",")} mm</b> (Hüfte ${Math.round(a.hip)}° / Knie ${Math.round(a.knee)}° oben${a.anyOk?"":" – auch die kürzeste Kurbel erreicht die Mindestwinkel nicht"}${isFinite(a.inseamL)?`; nach Schrittlänge ${String(a.inseamL).replace(".",",")} mm`:""})`:"";
 function renderSug(){
@@ -1955,7 +1959,7 @@ function initControls(){
   const cSet=(p,x)=>{
       if(p.key==="saddleY") S.comp.saddleH=Math.round(Math.hypot(S.comp.setback,x)*10)/10;
       else if(p.key==="gripX"||p.key==="gripY"){ const gr=compute(vals,S.comp).grip; setGrip(p.key==="gripX"?x:gr.x,p.key==="gripY"?x:gr.y); }
-      else { S.comp[p.key]=x; if(p.key==="cap") suSet(["c",S.compBaseName==="Optimiert"?"opt":"ist","cap"],x); }   // Kappe auch im Bike Set Up nachführen
+      else { S.comp[p.key]=x; if(p.key==="crank") S.crankManual=true; if(p.key==="cap") suSet(["c",S.compBaseName==="Optimiert"?"opt":"ist","cap"],x); }   // Kappe auch im Bike Set Up nachführen
       if(!updateSelPart(p.key,S.comp[p.key])) clearSelFor(p.key); syncComp(); render(); save(); };
   const cTag=p=>{ const o=S.compBase?compGet(S.compBase,p.key):NaN, v=compGet(S.comp,p.key); return isFinite(o)&&Math.abs(o-v)>0.05?["geändert",true]:[S.compBaseName||"Standard",false]; };
   const EXTRA=["stemHeight","barReach","leverReach","pedalStack","sole"];   // Polsterdicke kommt nur aus der Excel
@@ -1968,6 +1972,7 @@ function initControls(){
   syncFitGrip=makeControls("fitGrip","gr",COMP.filter(p=>["gripX","gripY"].includes(p.key)).map(p=>({...p,g:""})),cGet,cSet,cTag);
   const pGet=p=>body()[p.key], pSet=(p,x)=>{ const wasReady=personReady();
     if(P_REQ.includes(p.key)&&S.person.entered) S.person.entered[p.key]=true;
+    if(p.key==="inseam"){ S.person.inseam=x; autoCrank(); }   // Kurbel passend zur Schrittlänge
     if(p.f) S.person.ov[p.key]=x; else S.person[p.key]=x;
     if(!wasReady&&personReady()) setTimeout(onPersonComplete,0); if(p.key==="backAngle"){S.person.autoBack=false; document.getElementById("autoBack").checked=false;} syncPerson(); render(); save(); };
   const pick=(keys)=>keys.map(k=>PERS.find(d=>d.key===k)).filter(Boolean).map(d=>({...d,g:""}));   // Reihenfolge wie angegeben
@@ -2699,7 +2704,8 @@ window.addEventListener("beforeunload",e=>{
     S.cmp={b:"",m:"",s:""}; S.cmpX=[]; delete S.cmpN; cmpRowsN=0; try{ fillCmp(); renderBikeResults(); }catch(e){}   /* beim Öffnen kein Rahmenvergleich */
     /* manuell eingegebene Bauteilmaße beim Start auf die Standardwerte (Lenker-Reach 60, Bremsgriff-Reach 50, Pedal 16 …) */
     try{ for(const [k,[,keys]] of Object.entries(MANUAL)) if(!S.compSel[k]) for(const key of keys){ const d=COMP.find(x=>x.key===key); if(d) S.comp[key]=d.def; } syncComp(); render(); }catch(e){}   /* PDF: Voreinstellung des Kontos (Standard: nichts ausgewählt) */
-    S.show.targets=false; $("tTargets").checked=false;   /* Fadenkreuze beim Öffnen aus */ try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent=""; };
+    S.show.targets=false; $("tTargets").checked=false;   /* Fadenkreuze beim Öffnen aus */ try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent="";
+    S.comp.crank=170; S.crankManual=false; try{ if(!updateSelPart("crank",170)) clearSelFor("crank"); syncComp(); render(); save(); }catch(e){} };   /* beim Öffnen 170 mm, nach Eingabe der Schrittlänge die passende Länge */
   const scr=$("startScr"), done=()=>{ startFresh(); scr.hidden=true; $("startTypes").hidden=true; scr.querySelector(".startBtns:not(.types)").hidden=false; $("startQ").textContent="Welches Fitting möchtest du machen?"; showTab(S.basic?"person":"befund"); try{ $("basicBtn").focus(); }catch(e){} };   /* WiFitPro startet bei Befund, Basic bei Person (je 30/70) */
   /* zweiter Schritt: Radart wählen (Rennrad/Gravel, Triathlonrad, Mountainbike) */
   const askType=()=>{ scr.querySelector(".startBtns:not(.types)").hidden=true; const t=$("startTypes"); t.hidden=false; $("startQ").textContent="Welches Rad wird gefittet?";
@@ -3303,7 +3309,7 @@ function setupEmpty(){
 }
 /* alle Messwerte da: ohne Bike Set Up direkt Standardrad in passender Größe und Vorschlag übernehmen */
 function onPersonComplete(){
-  render(); syncPerson();
+  autoCrank(); render(); syncPerson();
   if(!setupEmpty()) return;
   const sizes=sizesOf(stdBike().b,stdBike().m).filter(x=>x.hasData); if(!sizes.length) return;
   const hgt=body().height, guess=hgt<1650?"XS":hgt<1720?"S":hgt<1790?"M":hgt<1860?"L":"XL", order=["XS","S","M","L","XL","XXL"];
