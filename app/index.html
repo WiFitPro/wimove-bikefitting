@@ -256,6 +256,8 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .btGroup button:focus-visible{outline:2px solid var(--frame);outline-offset:-2px}
 .barHide{display:none!important}
 .geoSec[hidden]{display:none!important}
+.stdCard{border:1px solid var(--rule);border-left:4px solid var(--frame);border-radius:10px;background:color-mix(in srgb,var(--field) 70%,transparent);padding:10px 14px 12px;margin:14px 0}
+.stdCard>h3{margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--rule);font-size:16px;color:var(--ink)}
 .geoSmp{font-size:13px;color:#4A5560;white-space:nowrap;padding:3px 10px!important}.geoColSel{font-size:13px;min-width:170px;padding:4px 6px}.geoColT th{text-align:left}
 .geoDrop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin:6px 0 10px;padding:22px 12px;border:2px dashed var(--rule);border-radius:10px;background:var(--field);cursor:pointer;text-align:center;transition:border-color .15s,background .15s}
 .geoDrop span{font-size:13px;color:#6B7785}.geoDrop:hover,.geoDrop:focus-visible{border-color:var(--frame);outline:none}
@@ -1726,17 +1728,17 @@ let crankCache={key:"",val:null};
 function crankAdvice(){
   if(!personReady()) return null;
   const r=suggest(), p=r.parts, c0=S.comp.crank, bt=btype(), M=FITM;
-  const dd=discOf(bt), stH=STYLE_T[bt]&&STYLE_T[bt][S.person.style||"sportlich"], hipT=stH&&isFinite(stH.hip)?stH.hip:M["dhip_"+bt+"_"+dd], kneeT=M["dknee_"+bt+"_"+dd];   // Hüfte min je Fahrstil, Knie min je Disziplin   // Grenzwerte je Disziplin
-  const key=JSON.stringify([p,r.grip,r.back,c0,hipT,kneeT,M.crankMinL,M.crankMaxL,M.crankPct,M.crankBase,S.person.inseam,S.bar]);
+  const dd=discOf(bt), stH=STYLE_T[bt]&&STYLE_T[bt][S.person.style||"sportlich"], hipT=stH&&isFinite(stH.hip)?stH.hip:M["dhip_"+bt+"_"+dd];   // Hüfte min je Fahrstil   // Grenzwerte je Disziplin
+  const key=JSON.stringify([p,r.grip,r.back,c0,hipT,M.crankMinL,M.crankMaxL,M.crankPct,M.crankBase,S.person.inseam,S.bar]);
   if(crankCache.key===key) return crankCache.val;
   const list=[]; for(let L=Math.max(140,M.crankMinL||160);L<=Math.min(190,M.crankMaxL||175)+0.01;L+=2.5) list.push(L);
   const ins=crankByInseam(); if(isFinite(ins)&&!list.includes(ins)){ list.push(ins); list.sort((a,b)=>a-b); }
   const rows=list.map(L=>{ const sh=p.saddleH+(c0-L), sy=Math.sqrt(Math.max(0,sh*sh-p.setback*p.setback)); S.comp.crank=L;
     let e=null; try{ e=evalPos({x:-p.setback,y:sy},r.grip,r.back); }catch(err){} S.comp.crank=c0;
-    return {L,hip:e?e.hipMin:NaN,knee:e?e.kneeMin:NaN,ok:!!e&&e.hipMin>=hipT&&e.kneeMin>=kneeT}; });
+    return {L,hip:e?e.hipMin:NaN,knee:e?e.kneeMin:NaN,ok:!!e&&e.hipMin>=hipT}; });
   /* Empfehlung = Formel aus der Schrittlänge; Hüft-/Kniewinkel nur noch als Hinweis */
   const ok=rows.filter(x=>x.ok), byIns=rows.find(x=>x.L===ins), pick=byIns||(ok.length?ok[ok.length-1]:rows[0]);
-  const val={L:pick.L,hip:pick.hip,knee:pick.knee,hipT,kneeT,rows,anyOk:ok.length>0,inseamL:ins,ok:pick.ok,byInseam:!!byIns};
+  const val={L:pick.L,hip:pick.hip,knee:pick.knee,hipT,rows,anyOk:ok.length>0,inseamL:ins,ok:pick.ok,byInseam:!!byIns};
   crankCache={key,val}; return val;
 }
 /* Kurbellänge aus der Schrittlänge (Grundwert + Faktor × Schrittlänge, auf 2,5 mm gerundet) – wird übernommen, solange die Kurbel nicht von Hand gewählt wurde */
@@ -1744,7 +1746,7 @@ const crankByInseam=()=>{ const ins=S.person&&S.person.inseam, M=FITM; if(!isFin
   const L=Math.round(((M.crankBase??110)+ins*(M.crankPct||0.0725))/2.5)*2.5; return Math.min(M.crankMaxL||180,Math.max(M.crankMinL||150,L)); };
 function autoCrank(){ if(S.crankManual||(S.person.entered&&!S.person.entered.inseam)) return;   /* nur echte, eingegebene Schrittlänge */ const L=crankByInseam(); if(isFinite(L)&&L!==S.comp.crank){ S.comp.crank=L; try{ if(!updateSelPart("crank",L)) clearSelFor("crank"); syncComp(); }catch(e){} } }
 const shWithCrank=sh=>{ const a=crankAdvice(); return a&&isFinite(a.L)?Math.round(sh+(S.comp.crank-a.L)):sh; };   // Sattelhöhe passend zur empfohlenen Kurbel
-const crankTxt=a=>a?`Kurbel <b>${String(a.L).replace(".",",")} mm</b> (${a.byInseam?"nach Schrittlänge; ":""}Hüfte ${String(a.ok?Math.round(a.hip):Math.floor(a.hip*10)/10).replace(".",",")}° / Knie ${String(a.ok?Math.round(a.knee):Math.floor(a.knee*10)/10).replace(".",",")}° oben${a.ok?"":` – <span class="bad">unter dem Mindestwert (Hüfte ${a.hipT}° / Knie ${a.kneeT}°), kürzere Kurbel prüfen</span>`})`:"";
+const crankTxt=a=>a?`Kurbel <b>${String(a.L).replace(".",",")} mm</b> (${a.byInseam?"nach Schrittlänge; ":""}Hüfte ${String(a.ok?Math.round(a.hip):Math.floor(a.hip*10)/10).replace(".",",")}° oben${a.ok?"":` – <span class="bad">unter dem Mindestwert (Hüfte ${a.hipT}°), kürzere Kurbel prüfen</span>`})`:"";
 function renderSug(){
   const T=sugT();
   for(const [id,k] of [["tKnee","knee"],["tKops","kops"],["tBack","back"],["tShoulder","shoulder"],["tElbow","elbow"]]){ const el=$(id); if(document.activeElement!==el) el.value=isFinite(T[k])?T[k]:(k==="back"?styleBack():""); }
@@ -2171,7 +2173,7 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["barFacRoad","_alt","Rennrad/Gravel: Faktor × Schulterbreite","",0.945,0.005,"Lenkerbreite (Mitte–Mitte) = Schulterbreite × Faktor, gerundet auf 20 mm"],
   ["barFacTri","_alt","Triathlon: Faktor × Schulterbreite","",1,0.005,"Basislenker = Schulterbreite × Faktor, gerundet auf 20 mm"],
   ["barFacMtb","_alt","MTB: Faktor × Körpergröße","",0.42,0.005,"Lenkerbreite = Körpergröße × Faktor, gerundet auf 20 mm"],
-  ...STYLE_KEYS.map(st=>["barSt_"+st,"Lenkerbreite",`Sitzposition ${st}: Faktor`,"",BAR_STYLE_DEF[st],0.005,st==="comfort"?"wird mit dem Lenker-Faktor der Disziplin (Tabelle unten) multipliziert":""]),
+  ...STYLE_KEYS.map(st=>["barSt_"+st,"Lenkerbreite",`Sitzposition ${st}: Faktor`,"",BAR_STYLE_DEF[st],0.005,st==="comfort"?"wird mit dem Lenker-Faktor (Zeilen darunter) multipliziert":""]),
   ...DISC_T.mtb.map(([k,l,,b])=>["discBar_mtb_"+k,"_alt",`MTB ${l}: Faktor`,"",b,0.005,""]),
   ...DISC_KEYS.flatMap(([bt,k])=>[["dbar_"+bt+"_"+k,"_disc","","",DISC_BAR_DEF[bt][k],0.005,""],["dhip_"+bt+"_"+k,"_disc","","°",bt==="tri"?45:48,1,""],["dknee_"+bt+"_"+k,"_disc","","°",58,1,""]]),
   ["crankHipRoad","_alt","Rennrad/Gravel: Hüfte geschlossen mindestens","°",48,1,"längste Kurbel, bei der der kleinste Hüftwinkel (oberer Totpunkt) nicht darunter fällt"],
@@ -2243,13 +2245,10 @@ function fitModelVals(){ const v={...FITM}; for(const k of FITM_TYPED){ delete v
 function fitModelChanged(){ sugCache.key=""; cmpFit={}; sizeFitCache.key=""; try{ updateSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp(); }catch(e){} try{ render(); }catch(e){} save(); }
 const COMP_FITM=["Lenkerbreite","Kurbellänge"];   // diese Gruppen stehen im Tab Bauteile, der Rest unter Rad
 /* Tabelle im Tab Bauteile: Lenkerfaktor sowie Hüft- und Kniewinkel-Minimum (Kurbellänge) je Disziplin */
-function discCompTable(tag){
-  const cell=(k,st)=>`<div><input class="bfi" type="number" step="${st}" data-fitm="${k}" value="${FITM[k]}" aria-label="${k}">${tag(k)||'<small class="src">&nbsp;</small>'}</div>`;
-  let h=`<h3 style="margin:16px 0 4px">Je Disziplin</h3><p class="note" style="margin-top:0">Lenker: Rennrad, Gravel und Triathlon × Schulterbreite, MTB × Körpergröße – danach × Faktor der Sitzposition, gerundet auf 20 mm. Kurbellänge kommt aus der Schrittlänge (Formel oben); Knie min: Warnung im Vorschlag, wenn dieser Winkel im oberen Totpunkt unterschritten wird (Hüfte min steht bei den Richtwerten je Fahrstil).</p>
-    <div class="bfg styleGrid discGrid"><span></span><b>Lenker-Faktor</b><b>Knie min (°)</b><span></span><span></span>`;
-  for(const bt of [admBt()]){ h+=`<div class="suh" style="grid-column:1/-1;align-items:flex-start;margin-top:8px">${BTYPES[bt]}</div>`;
-    for(const [k,l] of DISC_T[bt]) h+=`<span>${esc(l)}</span>${cell("dbar_"+bt+"_"+k,0.005)}${cell("dknee_"+bt+"_"+k,1)}<span></span><span></span>`; }
-  return h+`</div>`; }
+function discCompTable(tag){   // Lenker-Faktor je Disziplin – Zeilen in der Gruppe „Lenkerbreite“
+  const bt=admBt(), ref=bt==="mtb"?"Körpergröße":"Schulterbreite";
+  return DISC_T[bt].map(([k,l],i)=>{ const key="dbar_"+bt+"_"+k;
+    return `<label for="cm_${key}">${DISC_T[bt].length>1?esc(l)+": ":""}Lenker-Faktor × ${ref}<small>${i===0?`Lenkerbreite = ${ref} × Faktor × Faktor der Sitzposition, gerundet auf 20 mm`:""}</small></label><div class="fitmIn"><input class="bfi" type="number" step="0.005" id="cm_${key}" data-fitm="${key}" value="${FITM[key]}" style="max-width:90px"><span class="note" style="margin:0"></span>${tag(key)}</div>`; }).join(""); }
 const DISC_FITM=["Disziplin Rennrad","Disziplin Triathlon","Disziplin MTB"];   // diese Gruppen stehen unter Person → Richtwerte je Fahrstil
 function renderFitModel(){ renderFitBox("fitModelBox","fm",g=>!COMP_FITM.includes(g)&&!DISC_FITM.includes(g),true); try{ renderDiscStd(); }catch(e){} renderFitBox("compModelBox","cm",g=>COMP_FITM.includes(g)||g==="_disc",false,undefined,discCompTable); }
 function renderFitBox(boxId,pf,filt,full,note,extra){
@@ -2261,12 +2260,12 @@ function renderFitBox(boxId,pf,filt,full,note,extra){
   let grp="";
   h+=`<div class="fitmGrid">`;
   for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){ if(!filt(g)||g[0]==="_"||(g==="Radart"&&bt!=="mtb")) continue;
-    if(g!==grp){ grp=g; h+=`<div class="suh">${g}</div>`; }
+    if(g!==grp){ if(grp==="Lenkerbreite"&&extra) h+=extra(tag); grp=g; h+=`<div class="suh">${g}</div>`; }
     h+=`<label for="${pf}_${k}">${esc(lab)}<small>${esc(expl)}</small></label><div class="fitmIn">${inp(k,fitmOf(bt,k),step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
   }
+  if(grp==="Lenkerbreite"&&extra) h+=extra(tag);
   h+=`</div>`; if(full) h+=`<h3 style="margin:14px 0 4px">Vorlieben je Sitzposition – ${BTYPES[bt]}</h3><div class="bfg styleGrid" style="grid-template-columns:minmax(90px,120px) repeat(2,minmax(64px,92px))"><span></span><b>Vorbau (mm)</b><b>Spacer (mm)</b>`+
     Object.keys(STEM_FACTORY).map(st=>`<span>${st}</span><div>${inp(kp+"stem_"+st,STEM_T[bt][st],5)}${tag(kp+"stem_"+st)||'<small class="src">&nbsp;</small>'}</div><div>${inp(kp+"spacer_"+st,SPACER_T[bt][st],5)}${tag(kp+"spacer_"+st)||'<small class="src">&nbsp;</small>'}</div>`).join("")+`</div>`;
-  if(extra) h+=extra(tag);
   h+=`<div class="row" style="margin-top:10px"><button class="btn small" type="button" id="${pf}Save">Als Standard speichern</button><button class="btn ghost small" type="button" id="${pf}Reset">Auf App-Grundwerte zurücksetzen</button></div><p class="note" id="${pf}Note">Änderungen wirken sofort${full?" auf die Größenempfehlung":" auf den Vorschlag"}. „Als Standard speichern“ macht sie zur Werkseinstellung für alle Geräte.</p>`;
   box.innerHTML=h;
   box.querySelectorAll("[data-fitm]").forEach(el=>el.onchange=()=>{ const k=el.dataset.fitm, kb=k.replace(/^[a-z]+__/,""), x=num(el.value); if(!isFinite(x)||(x<0&&!/^disc_/.test(kb))||(/Per$|^soft/.test(kb)&&x<=0)){ renderFitModel(); return; }
@@ -5013,7 +5012,8 @@ const hipMinDef=bt=>fitmNum(`dhip_${bt}_${DISC_DEF[bt]}`,bt==="tri"?45:48);
 function applyStyleStd(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
   for(const bt of Object.keys(BTYPES)){ const fac=bt==="road"?STYLE_FACTORY:STYLE_T_DEF[bt], O=styleOvOf(bt), D=styleStdOf(bt); STYLE_T[bt]={};
     for(const st of Object.keys(STYLE_FACTORY)){ const o=O[st]||{}, d=D[st]||{}; STYLE_T[bt][st]={};
-      const def={hip:hipMinDef(bt),kneeT:145,kneeLo:140,kneeHi:150,kops:KOPS_T[bt],elbowLo:145,elbowHi:165,ankleLo:100,ankleHi:120,backR:5,shR:10};
+      const eT0=isFinite(o.elbow)?o.elbow:isFinite(d.elbow)?d.elbow:fac[st].elbow, aero=bt==="tri"||bt==="mtb";   // Triathlon/MTB: Ellbogenbereich um das eigene Ziel
+      const def={hip:hipMinDef(bt),kneeT:145,kneeLo:140,kneeHi:150,kops:KOPS_T[bt],elbowLo:aero?eT0-10:145,elbowHi:aero?eT0+10:165,ankleLo:100,ankleHi:120,backR:5,shR:10};
       for(const k of STYLE_ALL) STYLE_T[bt][st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:k in def?def[k]:fac[st][k]; } }
   const off=discBackOff();   // Disziplin (Triathlon/MTB) verschiebt das Rücken-Ziel
   for(const st of Object.keys(STYLE_FACTORY)){ Object.assign(STYLE_STD[st],STYLE_T[btype()][st]); STYLE_STD[st].back=Math.round((STYLE_T[btype()][st].back+off)*10)/10; { const r=isFinite(STYLE_T[btype()][st].backR)?STYLE_T[btype()][st].backR:5; STYLE_BACK[st]=[STYLE_STD[st].back-r,STYLE_STD[st].back+r]; } }
@@ -5034,8 +5034,8 @@ function renderStyleStd(){
   const tag=(st,k)=>O[st]&&isFinite(O[st][k])?'<small class="src edit">geändert</small>'
     :D[st]&&isFinite(D[st][k])?'<small class="src">Standard</small>':'<small class="src">&nbsp;</small>';
   const STS=["comfort","endurance","sportlich","ambitioniert","professional"];
-  const grid=(title,cols)=>`<h3 style="margin:14px 0 4px">${title}</h3><div class="bfg styleGrid"><span></span>${cols.map(([,l])=>`<b>${l}</b>`).join("")}${"<span></span>".repeat(4-cols.length)}`+
-    STS.map(st=>`<span>${st}</span>${cols.map(([k,l,stp])=>`<div><input class="bfi" type="number" step="${stp}" data-stylestd="${st}|${k}" value="${STYLE_T[bt][st][k]}" aria-label="${l} ${st}">${tag(st,k)}</div>`).join("")}${"<span></span>".repeat(4-cols.length)}`).join("")+`</div>`;
+  const grid=(title,cols)=>`<div class="stdCard"><h3>${title}</h3><div class="bfg styleGrid"><span></span>${cols.map(([,l])=>`<b>${l}</b>`).join("")}${"<span></span>".repeat(4-cols.length)}`+
+    STS.map(st=>`<span>${st}</span>${cols.map(([k,l,stp])=>`<div><input class="bfi" type="number" step="${stp}" data-stylestd="${st}|${k}" value="${STYLE_T[bt][st][k]}" aria-label="${l} ${st}">${tag(st,k)}</div>`).join("")}${"<span></span>".repeat(4-cols.length)}`).join("")+`</div></div>`;
   box.innerHTML=grid("Oberkörper",[["back","Rücken (°)",0.5],["backR","Rücken ± (°)",0.5],["shoulder","Schulter (°)",0.5],["shR","Schulter ± (°)",0.5]])+
     grid("Arme",[["elbow","Ellbogen Ziel (°)",1],["elbowLo","Ellbogen von (°)",1],["elbowHi","Ellbogen bis (°)",1]])+
     grid("Beine",[["kneeT","Knie gestreckt Ziel (°)",0.5],["kneeLo","Knie von (°)",0.5],["kneeHi","Knie bis (°)",0.5],["hip","Hüfte min (°)",1]])+
