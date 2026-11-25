@@ -2059,6 +2059,7 @@ function renderManual(){
     let box=document.getElementById("man_"+k); if(!box){ box=document.createElement("div"); box.id="man_"+k; sel.insertAdjacentElement("afterend",box); }
     if(S.compSel[k]){ box.innerHTML=""; continue; }
     if(box.contains(document.activeElement)) continue;   // nicht während der Eingabe neu aufbauen
+    { const ex=[...box.querySelectorAll("[data-man]")]; if(ex.length===keys.length&&ex.every((e,i)=>e.dataset.man===keys[i])){ ex.forEach(e=>{ const v=S.comp[e.dataset.man], t=isFinite(v)?String(v):""; if(e.value!==t) e.value=t; }); continue; } }   // Felder behalten (Pfeile bleiben bedienbar), nur Werte setzen
     box.innerHTML=keys.map(key=>{ const p=COMP.find(x=>x.key===key), v=S.comp[key];
       return `<div class="param manParam" style="padding:3px 0"><label class="lbl" for="man_${key}" style="font-size:13px">${esc(p.label)}${p.unit?` (${p.unit})`:" (mm)"}</label><input type="number" id="man_${key}" data-man="${key}" step="${p.step||1}" value="${isFinite(v)?v:""}"></div>`; }).join("");
     box.querySelectorAll("[data-man]").forEach(el=>el.onchange=()=>{ const x=num(el.value); if(!isFinite(x)) return; S.comp[el.dataset.man]=x; syncComp(); render(); save(); });
@@ -2203,7 +2204,7 @@ function renderSegStd(){ const box=$("admSegBox"); if(!box) return; const bt=adm
   box.querySelectorAll("[data-seg]").forEach(el=>el.onchange=()=>{ const k=el.dataset.seg, d=dOf(k), x=num(el.value); if(!isFinite(x)||x<d.min||x>d.max){ renderSegStd(); return; }
     S.segOvT=S.segOvT||{}; (S.segOvT[bt]=S.segOvT[bt]||{})[k]=x; if(bt===btype()&&S.person.ov) delete S.person.ov[k];
     if(k==="cleat"&&bt===btype()){ S.comp.cleat=x; if(S.compBase) S.compBase.cleat=x; try{ syncComp(); }catch(e){} }
-    sugCache.key=""; sizeFitCache.key=""; renderSegStd(); setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
+    sugCache.key=""; sizeFitCache.key=""; markEdited(el); setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
 /* geänderte Werte der gezeigten Radart auf alle anderen Radarten übertragen */
 function admCopyAll(){ const bt=admBt(), others=Object.keys(BTYPES).filter(b=>b!==bt); let n=0;
   for(const [k,v] of Object.entries(S.fitOv||{})){ let m;
@@ -2270,7 +2271,7 @@ function renderFitBox(boxId,pf,filt,full,note,extra){
   h+=`<div class="row" style="margin-top:10px"><button class="btn small" type="button" id="${pf}Save">Als Standard speichern</button><button class="btn ghost small" type="button" id="${pf}Reset">Auf App-Grundwerte zurücksetzen</button>${ib(`Änderungen wirken sofort${full?" auf die Größenempfehlung":" auf den Vorschlag"}. „Als Standard speichern“ macht sie zur Werkseinstellung für alle Geräte.`)}</div><p class="note" id="${pf}Note"></p>`;
   box.innerHTML=h;
   box.querySelectorAll("[data-fitm]").forEach(el=>el.onchange=()=>{ const k=el.dataset.fitm, kb=k.replace(/^[a-z]+__/,""), x=num(el.value); if(!isFinite(x)||(x<0&&!/^disc_/.test(kb))||(/Per$|^soft/.test(kb)&&x<=0)){ renderFitModel(); return; }
-    (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); renderFitModel(); });
+    (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); markEdited(el); });
   $(pf+"Save").onclick=()=>{ applyFitModel(); S.modelStd=S.modelStd||{}; S.modelStd.fitModel=fitModelVals(); delete S.fitOv; S.modelStdAt=Date.now(); save(); renderFitModel(); $(pf+"Note").textContent="Speichere …";
     factorySave().then(ok=>{ $(pf+"Note").textContent=ok?"Als Werkseinstellung gespeichert. Gilt ab jetzt überall, wo die App geöffnet wird.":"In diesem Browser gespeichert. Für alle Geräte die App über ihren Link öffnen und erneut speichern."; }); };
   $(pf+"Reset").onclick=()=>{ const ks=FITM_DEF.filter(d=>filt(d[1]));   // nur die Werte dieses Bereichs und dieser Radart zurücksetzen
@@ -2691,6 +2692,9 @@ function placeGeo(){   /* „+ Rad anlegen“ samt Formular: in WiFitPro unter �
   else { row.appendChild(b); row.after(gx); gx.after(nb); sec.hidden=true; }
 }
 /* Erklärtexte als kleiner i-Button: Beschreibung erscheint beim Darüberfahren (Touch: antippen) */
+/* Feld nach einer Änderung nur als „geändert“ markieren statt den ganzen Bereich neu aufzubauen –
+   sonst wird das Feld unter der Maus ersetzt und die Pfeile reagieren beim nächsten Klick nicht bzw. die Zahl wird markiert */
+function markEdited(el){ const p=el.parentElement; if(!p) return; let t=p.querySelector("small.src"); if(!t){ t=document.createElement("small"); p.appendChild(t); } t.className="src edit"; t.textContent="geändert"; }
 const ib=t=>`<button type="button" class="infoBtn" data-tip="${esc(t)}" aria-label="Info: ${esc(t)}">i</button>`;   // kleiner i-Button mit Beschreibung
 function infoize(root=document){
   root.querySelectorAll("p.note.info:not([data-done])").forEach(p=>{
@@ -5027,7 +5031,7 @@ function renderDiscStd(){ const box=$("discStdBox"); if(!box) return; const bt=a
     L.map(([k,l])=>{ const key=`disc_${bt}_${k}`; return `<span>${esc(l)}</span><div><input class="bfi" type="number" step="0.5" data-discstd="${key}" value="${FITM[key]}" aria-label="Rücken ${esc(l)}">${tag(key)}</div><span></span><span></span><span></span>`; }).join("")+
     `</div>`;
   box.querySelectorAll("[data-discstd]").forEach(el=>el.onchange=()=>{ const k=el.dataset.discstd, x=num(el.value); if(!isFinite(x)||Math.abs(x)>30){ renderDiscStd(); return; }
-    (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); renderFitModel(); delete S.person.ov.backAngle; sugCache.key=""; setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
+    (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); markEdited(el); delete S.person.ov.backAngle; sugCache.key=""; setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
 function renderStyleStd(){
   try{ renderFitModel(); }catch(e){}   // Werkseinstellung kann auch das Bewertungsmodell enthalten (Cache-Schlüssel enthalten das Modell)
   const box=$("styleStdBox"); if(!box) return;
@@ -5050,7 +5054,7 @@ function renderStyleStd(){
     const eb=admBt(); let O2; if(eb==="road") O2=S.styleOv=S.styleOv||{}; else { S.styleOvT=S.styleOvT||{}; O2=S.styleOvT[eb]=S.styleOvT[eb]||{}; }
     (O2[st]=O2[st]||{})[k]=x;
     applyStyleStd(); delete S.person.ov.backAngle; sugCache.key=""; sizeFitCache.key="";
-    setTimeout(()=>{ syncPerson(); render(); renderStyleStd(); save(); },0);
+    markEdited(el); setTimeout(()=>{ syncPerson(); render(); save(); },0);
   });
 }
 
