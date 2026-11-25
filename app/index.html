@@ -5043,8 +5043,8 @@ function renderStyleStd(){
   const grid=(title,cols)=>`<div class="stdCard"><h3>${title}</h3><div class="bfg styleGrid"><span></span>${cols.map(([,l])=>`<b>${l}</b>`).join("")}${"<span></span>".repeat(4-cols.length)}`+
     STS.map(st=>`<span>${st}</span>${cols.map(([k,l,stp])=>`<div><input class="bfi" type="number" step="${stp}" data-stylestd="${st}|${k}" value="${STYLE_T[bt][st][k]}" aria-label="${l} ${st}">${tag(st,k)}</div>`).join("")}${"<span></span>".repeat(4-cols.length)}`).join("")+`</div></div>`;
   box.innerHTML=grid("Oberkörper",[["back","Rücken (°)",0.5],["backR","Rücken ± (°)",0.5],["shoulder","Schulter (°)",0.5],["shR","Schulter ± (°)",0.5]])+
-    grid("Arme",[["elbow","Ellbogen Ziel (°)",1],["elbowLo","Ellbogen von (°)",1],["elbowHi","Ellbogen bis (°)",1]])+
-    grid("Beine",[["kneeT","Knie gestreckt Ziel (°)",0.5],["kneeLo","Knie von (°)",0.5],["kneeHi","Knie bis (°)",0.5],["hip","Hüfte min (°)",1]])+
+    grid("Arme",[["elbow","Ellbogen (°)",1],["elbowLo","Ellbogen von (°)",1],["elbowHi","Ellbogen bis (°)",1]])+
+    grid("Beine",[["kneeT","Knie gestreckt (°)",0.5],["kneeLo","Knie von (°)",0.5],["kneeHi","Knie bis (°)",0.5],["hip","Hüfte min (°)",1]])+
     grid("Fuß und Knielot",[["kops","Knielot (mm)",1],["ankleLo","Sprunggelenk von (°)",1],["ankleHi","Sprunggelenk bis (°)",1]])+
     `<p class="note info">Ziele steuern den Vorschlag (Sitzposition), die Bereiche die Bewertung grün/rot in Gelenkwinkeln, Kopfzeile und PDF. Rücken/Schulter ±: Breite des grünen Bereichs um das Ziel. Knie gestreckt: größter Kniewinkel unten. Hüfte min: kleinster Hüftwinkel oben (auch Warnung bei der Kurbel). Knielot: + vor / − hinter der Pedalachse bei 3 Uhr. Sprunggelenk: gestreckt unten (90° = rechtwinklig). Mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern.</p>`;
   (box.querySelector(".stdCard")||box).insertAdjacentHTML("beforeend",'<div id="discStdBox"></div>'); renderDiscStd();   // Rückenwinkel je Disziplin gehört zum Oberkörper
