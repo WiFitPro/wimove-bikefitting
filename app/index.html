@@ -525,9 +525,9 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div id="fitSaddle"></div>
       </section>
       <section>
-        <h2>Griffposition</h2>
+        <h2>Griffposition<button type="button" class="infoBtn" data-tip="Griff X/Y wird über Vorbaulänge und Spacer eingestellt; Lenker, Griff-Reach und Winkel bleiben gleich." aria-label="Info: Griff X/Y wird über Vorbaulänge und Spacer eingestellt; Lenker, Griff-Reach und Winkel bleiben gleich.">i</button></h2>
         <div id="fitGrip"></div>
-        <p class="note" id="gripNote">Griff X/Y wird über Vorbaulänge und Spacer eingestellt; Lenker, Griff-Reach und Winkel bleiben gleich.</p>
+        <p class="note" id="gripNote" hidden></p>
       </section>
       <details class="acc" id="angDetails"><summary>Gelenkwinkel</summary>
         <div id="angTable"></div>
@@ -1973,6 +1973,7 @@ function initControls(){
     const sp=(r.x*sd.y-r.y*sd.x)/det, L=(u.x*r.y-u.y*r.x)/det;
     c.spacer=Math.round(sp*10)/10; c.stemLen=Math.round(L*10)/10;
     const n=document.getElementById("gripNote");
+    if(n) n.hidden=false;
     if(n) n.innerHTML=`Eingestellt über Vorbau <b>${c.stemLen} mm</b> und Spacer <b>${c.spacer} mm</b>.`+(c.spacer<0?" <span class=\"bad\">Negative Spacer sind nicht möglich – Vorbauwinkel oder Rahmen ändern.</span>":"")+(c.stemLen<40||c.stemLen>150?" <span class=\"bad\">Vorbaulänge außerhalb üblicher Maße.</span>":"");
   };
   setGripFn=setGrip;
