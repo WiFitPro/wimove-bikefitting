@@ -560,7 +560,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <h2>Teile aus deinen Listen</h2>
         <div class="frow barSelRow"><label class="f" for="selBar">Lenker</label><label class="toggle barAllT"><input type="checkbox" id="barAll"> alle Lenker</label><select id="selBar"></select></div>
         <p class="note" id="barBrandNote" hidden></p>
-        <div id="stemWrap"><label class="f" for="selStem">Vorbau</label><select id="selStem"></select></div>
+        <div id="stemWrap"><div class="frow barSelRow"><label class="f" for="selStem">Vorbau</label><label class="toggle barAllT"><input type="checkbox" id="stemAll"> alle Vorbauten</label><select id="selStem"></select></div><p class="note" id="stemBrandNote" hidden></p></div>
         <label class="f" for="selLever">Schalt-/Bremsgriffe</label><select id="selLever"></select>
         <div class="two">
           <div><label class="f" for="selPedal">Pedale</label><select id="selPedal"></select></div>
@@ -2048,22 +2048,31 @@ function clearSelFor(k){ const s=SEL_OF[k]; if(s){ S.compSel[s]=""; if(s==="stem
 /* Lenkerauswahl: nur Lenker der Radmarke (plus Standard und den aktuell gewählten); Haken „alle Lenker“ zeigt alle */
 /* Hausmarken der Radhersteller für Lenker/Cockpits (Radmarke → Lenkermarken) */
 const BAR_HOUSE={pinarello:["Talon","MOST"],scott:["Syncros"],specialized:["Roval"],trek:["Bontrager"],giant:["Contact"],liv:["Giant","Contact"],
-  factor:["Black Inc"],cube:["Acid","Cubeparts"],ridley:["Forza","4ZA"],orbea:["OC "],cannondale:["HollowGram"]};
-function barsForBrand(all){
-  const b=S.sel&&S.sel.b; if(S.barAll||!b||b==="Standard") return all;
-  const nb=norm(b), lev=(a,c)=>{ if(Math.abs(a.length-c.length)>1) return 2; let d=0,i=0,j=0; while(i<a.length&&j<c.length){ if(a[i]===c[j]){i++;j++;continue;} if(++d>1) return 2; if(a.length>c.length) i++; else if(c.length>a.length) j++; else {i++;j++;} } return d+(a.length-i)+(c.length-j); };
-  const house=(BAR_HOUSE[nb]||[]).map(norm);
-  const hit=x=>{ const n=norm(x.name), w=norm(String(x.name).split(/\s+/)[0]); return n.startsWith(nb)||(nb.length>=5&&lev(w,nb)<=1)||house.some(h=>h&&n.startsWith(h)); };
-  const own=all.filter(hit); if(!own.length) return all;
-  return all.filter(x=>hit(x)||x.name==="Standard"||x.name===S.compSel.bar);
+  factor:["Black Inc"],cube:["Acid","Cubeparts","Newmen"],ridley:["Forza","4ZA"],orbea:["OC "],cannondale:["HollowGram"]};
+/* Teile nach Radmarke: eigene Marke, Hausmarke (BAR_HOUSE) oder in „Teile verwalten“ zugeordnet (S.partBrands) */
+function partMatchesBrand(t,x,b){
+  const nb=norm(b); if(!nb) return false;
+  const pb=(S.partBrands&&S.partBrands[t]&&S.partBrands[t][x.name])||[]; if(pb.some(y=>norm(y)===nb)) return true;
+  const lev=(a,c)=>{ if(Math.abs(a.length-c.length)>1) return 2; let d=0,i=0,j=0; while(i<a.length&&j<c.length){ if(a[i]===c[j]){i++;j++;continue;} if(++d>1) return 2; if(a.length>c.length) i++; else if(c.length>a.length) j++; else {i++;j++;} } return d+(a.length-i)+(c.length-j); };
+  const n=norm(x.name), w=norm(String(x.name).split(/\s+/)[0]), house=(BAR_HOUSE[nb]||[]).map(norm);
+  return n.startsWith(nb)||(nb.length>=5&&lev(w,nb)<=1)||house.some(h=>h&&n.startsWith(h));
 }
+function partsForBrand(t,all,showAll,cur){
+  const b=S.sel&&S.sel.b; if(showAll||!b||b==="Standard") return all;
+  const own=all.filter(x=>partMatchesBrand(t,x,b)); if(!own.length) return all;
+  return all.filter(x=>partMatchesBrand(t,x,b)||x.name==="Standard"||x.name===cur);
+}
+const barsForBrand=all=>partsForBrand("bars",all,S.barAll,S.compSel.bar);
 function fillCompSelects(){
   const L=FIT.lists, nv=x=>isFinite(x)?x:"–", o=(arr,cur,fmt)=>`<option value="">Werte manuell eingeben</option>`+arr.map(x=>`<option value="${esc(x.name)}"${x.name===cur?" selected":""}>${esc(x.name)} · ${fmt(x)}</option>`).join("")+`<option value="__add">+ Bauteil hinzufügen …</option>`;
   const bars=barsForBrand(L.bars), bn=document.getElementById("barBrandNote"), ba=document.getElementById("barAll");
   if(ba) ba.checked=!!S.barAll;
   if(bn){ const b=S.sel&&S.sel.b; bn.hidden=!(b&&b!=="Standard"&&!S.barAll&&bars.length===L.bars.length); bn.textContent=bn.hidden?"":`Keine Lenker der Marke ${b} hinterlegt – alle Lenker werden angezeigt.`; }
   document.getElementById("selBar").innerHTML=o(bars,S.compSel.bar,x=>`Reach ${nv(x.reach)}${isFinite(x.angle)?`, integriert ${x.angle}°`:""}`);
-  document.getElementById("selStem").innerHTML=o(L.stems,S.compSel.stem,x=>`${nv(x.angle)}°, Höhe ${nv(x.height)}`);
+  const stems=partsForBrand("stems",L.stems,S.stemAll,S.compSel.stem), sn=document.getElementById("stemBrandNote"), sa=document.getElementById("stemAll");
+  if(sa) sa.checked=!!S.stemAll;
+  if(sn){ const b=S.sel&&S.sel.b; sn.hidden=!(b&&b!=="Standard"&&!S.stemAll&&stems.length===L.stems.length); sn.textContent=sn.hidden?"":`Keine Vorbauten der Marke ${b} hinterlegt – alle Vorbauten werden angezeigt.`; }
+  document.getElementById("selStem").innerHTML=o(stems,S.compSel.stem,x=>`${nv(x.angle)}°, Höhe ${nv(x.height)}`);
   document.getElementById("selLever").innerHTML=o(L.levers,S.compSel.lever,x=>`Reach ${x.reach}`);
   document.getElementById("selPedal").innerHTML=o(L.pedals,S.compSel.pedal,x=>`${x.stack} mm`);
   document.getElementById("selShoe").innerHTML=o(L.shoes,S.compSel.shoe,x=>`${x.sole} mm`);
@@ -2544,6 +2553,7 @@ function showTab(t){ S.tab=t; document.querySelectorAll(".tab").forEach(b=>b.set
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 $("brandSel").onchange=e=>selectMain(e.target.value,"",S.sel.s);
 $("barAll").onchange=e=>{ S.barAll=e.target.checked; fillCompSelects(); save(); };
+$("stemAll").onchange=e=>{ S.stemAll=e.target.checked; fillCompSelects(); save(); };
 $("modelSel").onchange=e=>selectMain(S.sel.b,e.target.value,S.sel.s);
 $("sizeChips").onclick=e=>{ const c=e.target.closest(".chip"); if(c&&!c.disabled) selectMain(S.sel.b,S.sel.m,c.dataset.s); };
 function cmpSetupBike(which){
@@ -2860,16 +2870,20 @@ function mergeCustomParts(){
 /* ================= Teileverwaltung ================= */
 const PM_TYPES=[["bars","Lenker / Cockpits",[["reach","Reach"],["angle","Winkel Cockpit"],["height","Höhe Cockpit"]]],["stems","Vorbauten",[["angle","Winkel"],["height","Höhe"]]],
   ["levers","Schalt-/Bremsgriffe",[["reach","Reach"]]],["pedals","Pedale",[["stack","Stack Height"]]],["shoes","Schuhe",[["sole","Sohlendicke"]]],["saddles","Sättel",[]]];
-let pmType="bars", pmQuery="";
+let pmType="bars", pmQuery="", pmBrand=null;   // pmBrand null = Marke des gewählten Rads
 function renderPartsManager(){
   const box=$("pmBox"); if(!box||!FIT) return;
   const [t,lab,fields]=PM_TYPES.find(x=>x[0]===pmType), L=FIT.lists[t]||[];
   const q=norm(pmQuery), items=L.filter(x=>!q||norm(t==="saddles"?x:x.name).includes(q));
   const isCustom=x=>t==="saddles"?(S.customParts&&(S.customParts.saddles||[]).includes(x)):!!x.custom;
   let hh=`<div class="pmhead"><select id="pmType">${PM_TYPES.map(([k,l])=>`<option value="${k}"${k===t?" selected":""}>${l}</option>`).join("")}</select><input class="bfi" id="pmQ" placeholder="Suchen …" value="${esc(pmQuery)}"></div>`;
-  hh+=`<div class="pmtable" style="grid-template-columns:minmax(0,1.6fr) ${fields.map(()=>"58px").join(" ")} 28px"><b>Bezeichnung</b>${fields.map(([,l])=>`<b>${l}</b>`).join("")}<span></span>`;
+  const canBrand=t==="bars"||t==="stems", pbW=pmBrand===null?(S.sel&&S.sel.b):pmBrand, pb=canBrand&&pbW&&pbW!=="Standard"&&DB&&DB.brands.includes(pbW)?pbW:"";
+  if(canBrand) hh+=`<div class="frow" style="margin:0 0 8px"><label class="f" for="pmBrand">Radmarke zuordnen${infoH("Radmarke wählen und die passenden "+(t==="bars"?"Lenker":"Vorbauten")+" anhaken. Bei einem Rad dieser Marke werden dann nur diese Teile angezeigt (plus Standard). Teile mit dem Markennamen oder der Hausmarke (z. B. Syncros bei Scott) sind automatisch zugeordnet.")}</label><select id="pmBrand" style="width:auto;flex:0 1 220px"><option value="">– keine –</option>${(DB?DB.brands:[]).filter(b=>b!=="Standard").map(b=>`<option${b===pb?" selected":""}>${esc(b)}</option>`).join("")}</select></div>`;
+  hh+=`<div class="pmtable" style="grid-template-columns:${pb?"28px ":""}minmax(0,1.6fr) ${fields.map(()=>"58px").join(" ")} 28px">${pb?`<b title="gehört zu ${esc(pb)}">✓</b>`:""}<b>Bezeichnung</b>${fields.map(([,l])=>`<b>${l}</b>`).join("")}<span></span>`;
   for(const x of items.slice(0,200)){
     const name=t==="saddles"?x:x.name;
+    if(pb){ const ex=((S.partBrands&&S.partBrands[t]&&S.partBrands[t][name])||[]).includes(pb), au=!ex&&partMatchesBrand(t,{name},pb);
+      hh+=`<input type="checkbox" data-pmbr="${esc(name)}"${ex||au?" checked":""}${au?' disabled title="automatisch über Marken-/Hausmarkennamen"':` title="${esc(name)} gehört zu ${esc(pb)}"`} aria-label="${esc(name)} gehört zu ${esc(pb)}" style="width:auto">`; }
     hh+=`<input type="text" class="pmname" data-pmname="${esc(name)}" value="${esc(name)}" title="${esc(name)}${isCustom(x)?" (eigenes Teil)":""}" aria-label="Bezeichnung">`;
     for(const [f] of fields) hh+=`<input type="text" inputmode="decimal" data-pm="${esc(name)}|${f}" value="${t==="saddles"||!isFinite(x[f])?"":x[f]}" placeholder="–">`;
     hh+=`<button type="button" class="suback" data-pmdel="${esc(name)}" title="Teil entfernen" aria-label="${esc(name)} entfernen">✕</button>`;
@@ -2879,10 +2893,17 @@ function renderPartsManager(){
   hh+=`<div class="row" style="margin-top:10px"><button class="btn small" id="pmAdd">+ Neues Teil</button>${del.length?`<button class="btn ghost small" id="pmRestore">${del.length} entfernte Teile wiederherstellen</button>`:""}</div><div id="pmAddBox"></div>`;
   const fk=focusKey(box,"pm"); box.innerHTML=hh; restoreFocus(box,"pm",fk);
   $("pmType").onchange=e=>{ pmType=e.target.value; pmQuery=""; renderPartsManager(); };
+  if($("pmBrand")) $("pmBrand").onchange=e=>{ pmBrand=e.target.value; renderPartsManager(); };
+  box.querySelectorAll("[data-pmbr]").forEach(el=>el.onchange=()=>{
+    const name=el.dataset.pmbr, P=S.partBrands=S.partBrands||{}, T=P[t]=P[t]||{}, a=(T[name]||[]).filter(y=>y!==pb);
+    if(el.checked) a.push(pb); if(a.length) T[name]=a; else delete T[name];
+    setTimeout(afterPartChange,0);
+  });
   $("pmQ").oninput=e=>{ pmQuery=e.target.value; clearTimeout(renderPartsManager.t); renderPartsManager.t=setTimeout(()=>{ renderPartsManager(); const i=$("pmQ"); i.focus(); i.setSelectionRange(i.value.length,i.value.length); },250); };
   box.querySelectorAll("[data-pmname]").forEach(el=>el.onchange=()=>{
     const err=renamePart(t,el.dataset.pmname,el.value);
     if(err){ el.value=el.dataset.pmname; alertNote(err); return; }
+    { const T=S.partBrands&&S.partBrands[t], o=el.dataset.pmname, nn=el.value.trim(); if(T&&T[o]&&nn&&nn!==o){ T[nn]=T[o]; delete T[o]; } }
     setTimeout(afterPartChange,0);
   });
   box.querySelectorAll("[data-pm]").forEach(el=>el.onchange=()=>{
@@ -5192,7 +5213,7 @@ async function factoryLoad(){
     else { sugCache.key=""; sugApplyAuto(); }
   }
 }
-const LIB_KEYS=["customParts","partFix","partDel","partRename","customBikes","bikeFix","bikeDel","bikeRename","bikeType"];
+const LIB_KEYS=["customParts","partFix","partDel","partRename","partBrands","customBikes","bikeFix","bikeDel","bikeRename","bikeType"];
 const libJSON=()=>JSON.stringify(LIB_KEYS.map(k=>S[k]||null));
 let libReady=false, libT=null;
 /* Daten für den zentralen Speicher säubern: ungültige Zahlen (NaN, leere Felder) weglassen – sonst lehnt der Speicher den ganzen Satz ab */
