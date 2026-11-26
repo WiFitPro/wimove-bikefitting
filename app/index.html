@@ -594,6 +594,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <section>
         <h2>Messwerte<button type="button" class="infoBtn" data-tip="Messwerte direkt eintragen. Neben jedem Maß steht die Norm für Körpergröße und Geschlecht.&#10;Datenbasis: ANSUR II (4.082 Männer, 1.986 Frauen). Je Maß gilt: Norm = a + b × Körpergröße. Die Streuung (SD) ist die übliche Abweichung bei Menschen gleicher Größe.&#10;Anzeige: „Norm 830 (+25 mm · +1,0 SD)“ = Normwert, Abweichung in mm und in Streuungen.&#10;● grün: bis 1 SD – normal&#10;● gelb: 1–2 SD – auffällig, Messung prüfen&#10;● rot: über 2 SD – deutlich abweichend, nachmessen&#10;Bewertet werden Schrittlänge, Brustbeinhöhe, Schulterhöhe, Schulterbreite, Fußlänge, Armlänge und die daraus berechneten Segmente (Ober-/Unterschenkel, Rumpf, Ober-/Unterarm)." aria-label="Info: Normwerte">i</button></h2>
         <p class="note" id="pReqNote" style="margin-top:0"></p>
+        <div class="row" style="margin:4px 0 6px"><button class="btn ghost small" type="button" id="measImgBtn">Messwerte aus Bild übernehmen</button></div><div id="measImgBox"></div>
         <div id="pCommon"></div>
         <div id="pFootL"></div>
         <div id="pFootR"></div>
@@ -3304,6 +3305,139 @@ function renderGeoImg(){
     dz.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("geoFile").click(); } }); }
   document.removeEventListener("paste",geoPaste); document.addEventListener("paste",geoPaste);
 }
+/* ===== Messwerte aus Bild: Screenshot (z. B. Messblatt, Formular) einlesen und in die Messfelder übernehmen ===== */
+const MEAS_F=[   // Schlüssel, Bezeichnung, Feld-ID, Bereich in mm, Seite
+  ["height","Körpergröße","pn_height",[1300,2200],""],["sternum","Höhe Brustbein","pn_sternum",[1050,1850],""],["inseam","Schrittlänge","pn_inseam",[600,1100],""],
+  ["footL","Fußlänge links","pn_footL",[180,340],"L"],["foot","Fußlänge rechts","pn_foot",[180,340],"R"],
+  ["acromion","Schulterhöhe rechts","pn_acromion",[1050,1850],"R"],["hand","Handhöhe rechts","pn_hand",[500,1050],"R"],
+  ["acromionL","Schulterhöhe links","pn_acromionL",[1050,1850],"L"],["handL","Handhöhe links","pn_handL",[500,1050],"L"],["shoulderW","Schulterbreite","pn_shoulderW",[250,560],""]];
+const MEAS_KW=[   // Erkennung der Bezeichnungen (klein, ohne Umlaute)
+  ["height",/^(korpergro(ss|ß)e|korperhohe|korpergrosse|grosse|große|grose|height|bodyheight|korperlange)$/],
+  ["sternum",/^(brustbein|brustbeins|brustbeinhohe|sternum|sternumhohe)$/],
+  ["inseam",/^(schrittlange|schritthohe|schrittlaenge|innenbeinlange|innenbein|inseam)$/],
+  ["shoulderW",/^(schulterbreite|shoulderwidth)$/],
+  ["acromion",/^(schulterhohe|schulterdach|schulterdachhohe|akromion|acromion|shoulderheight)$/],
+  ["hand",/^(handhohe|handheight)$/],
+  ["foot",/^(fu(ss|ß)lange|fuslange|fusslange|footlength|fusslaenge)$/]];
+const measKey=t=>String(t).toLowerCase().replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"ss").replace(/[^a-z]/g,"");
+const MEAS_CANON=[["height","korpergrosse"],["height","korperhohe"],["sternum","brustbein"],["sternum","brustbeins"],["sternum","brustbeinhohe"],["inseam","schrittlange"],["inseam","schritthohe"],["inseam","innenbeinlange"],
+  ["shoulderW","schulterbreite"],["acromion","schulterhohe"],["acromion","schulterdach"],["acromion","schulterdachhohe"],["hand","handhohe"],["foot","fusslange"]];
+function measLev(a,b){ const m=a.length,n=b.length; if(Math.abs(m-n)>3) return 9; let p=Array.from({length:n+1},(_,j)=>j); for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
+function measKw(t){ const k=measKey(t); if(!k) return null; for(const [key,re] of MEAS_KW) if(re.test(k)) return key;
+  if(k.length<8) return null; let best=null,bd=9; for(const [key,c] of MEAS_CANON){ const d=measLev(k,c); if(d<bd){ bd=d; best=key; } }   // OCR-Fehler wie „Schritthéhe“, „FuRlinge“
+  return bd<=Math.max(2,Math.floor(k.length/5))?best:null; }
+function measSide(t){ const k=measKey(t); return /^(links|li|left|l)$/.test(k)?"L":/^(rechts|re|right|r)$/.test(k)?"R":""; }
+function measNum(t){ let s=String(t).replace(/[^\d.,]/g,""); if(!s) return NaN;
+  if(/^\d{1,2}[.,]\d{3}$/.test(s)) s=s.replace(/[.,]/,"");   // 1.695 → 1695
+  return parseFloat(s.replace(",",".")); }
+/* Wert in mm bringen (cm/m erkennen) und auf Plausibilität prüfen */
+function measMm(v,rng,unit){ if(!isFinite(v)) return NaN; const [a,b]=rng;
+  if(unit==="cm") v*=10; else if(unit==="m") v*=1000;
+  else if(!(v>=a&&v<=b)){ if(v*10>=a&&v*10<=b) v*=10; else if(v*1000>=a&&v*1000<=b) v*=1000; }
+  return v>=a&&v<=b?Math.round(v):NaN; }
+/* Ergebnis {key:{v,side}} in Feldwerte umsetzen; ohne Seitenangabe gilt der Wert für links und rechts */
+function measAssign(found){ const out={};
+  const set=(k,v)=>{ const f=MEAS_F.find(x=>x[0]===k); const mm=measMm(v.v,f[3],v.unit); if(isFinite(mm)&&!isFinite(out[k])) out[k]=mm; };
+  for(const r of found){ if(["height","sternum","inseam","shoulderW"].includes(r.key)) set(r.key,r);
+    else { const L=r.key+"L"; if(r.side==="L") set(L,r); else if(r.side==="R") set(r.key,r); else { set(r.key,r); set(L,r); } } }
+  return out; }
+/* Texterkennung: Wörter mit Position aus Tesseract (TSV) */
+function measWords(data){ const w=[];
+  if(data&&data.tsv){ for(const ln of data.tsv.split("\n")){ const c=ln.split("\t"); if(c.length<12||c[0]!=="5") continue; const t=c.slice(11).join(" ").trim(); if(!t) continue;
+    w.push({t,line:c[2]+"."+c[3]+"."+c[4],x0:+c[6],y0:+c[7],x1:+c[6]+(+c[8]),y1:+c[7]+(+c[9])}); } }
+  else if(data&&data.words) for(const x of data.words) w.push({t:x.text,line:"",x0:x.bbox.x0,y0:x.bbox.y0,x1:x.bbox.x1,y1:x.bbox.y1});
+  /* Zeilen nach senkrechter Lage bilden (Tesseract trennt Tabellenzellen oft in eigene Zeilen); Trennstriche weg */
+  const v=w.filter(x=>/[0-9A-Za-zÄÖÜäöüß]/.test(x.t)).sort((a,b)=>(a.y0+a.y1)-(b.y0+b.y1)); let ln=-1, cy=-1e9, ch=0;
+  for(const x of v){ const c=(x.y0+x.y1)/2, h=x.y1-x.y0; if(Math.abs(c-cy)>Math.max(h,ch)*0.6){ ln++; cy=c; ch=h; } x.line=String(ln); }
+  return v.sort((a,b)=>+a.line-+b.line||a.x0-b.x0); }
+function measParseWords(w){
+  const found=[], isNum=t=>/\d/.test(t)&&/^[^A-Za-zÄÖÜäöüß]*\d[\d.,]*\s*(mm|cm|m)?[^A-Za-z]*$/i.test(t), unitOf=t=>{ const k=String(t).toLowerCase(); return /\bcm\b|\(cm\)|^cm$/.test(k)?"cm":/\bmm\b|\(mm\)|^mm$/.test(k)?"mm":""; };
+  const used=new Set();
+  for(let i=0;i<w.length;i++){
+    let key=measKw(w[i].t), j=i+1;
+    if(!key&&i+1<w.length&&w[i+1].line===w[i].line){ const k2=measKw(w[i].t+w[i+1].t); if(k2){ key=k2; j=i+2; } }   // „Fuß länge“, „Körper größe“
+    if(!key){ const k=measKey(w[i].t); if((k==="hohe"||k==="hoehe")&&i+2<w.length){ const a=measKey(w[i+1].t), b=measKey(w[i+2].t); if(a==="des"||a==="der") key=measKw(w[i+2].t+"hohe")||(/brustbein/.test(b)?"sternum":/schulter/.test(b)?"acromion":null); if(key) j=i+3; } }   // „Höhe des Brustbeins“
+    if(!key) continue;
+    let side="", unit="", x0=w[i].x0, x1=w[j-1].x1, y0=Math.min(...w.slice(i,j).map(x=>x.y0)), y1=Math.max(...w.slice(i,j).map(x=>x.y1)), val=null;
+    for(let k=j;k<w.length&&w[k].line===w[i].line;k++){ const t=w[k].t;
+      if(measKw(t)) break; const s=measSide(t.replace(/[():]/g,"")); if(s&&!side){ side=s; x1=w[k].x1; continue; }
+      const u=unitOf(t); if(u&&!/\d/.test(t)){ unit=unit||u; x1=w[k].x1; continue; }
+      if(isNum(t)&&!used.has(k)){ val={k,v:measNum(t)}; const u2=unitOf(t)||(k+1<w.length&&w[k+1].line===w[i].line?unitOf(w[k+1].t):""); if(u2) unit=u2;
+        /* Tabelle mit Spalten „links“/„rechts“: zweiten Wert derselben Zeile der anderen Seite zuordnen */
+        if(!side&&["acromion","hand","foot"].includes(key)){ let k2=-1; for(let q=k+1;q<w.length&&w[q].line===w[i].line;q++){ if(measKw(w[q].t)) break; if(isNum(w[q].t)){ k2=q; break; } }
+          if(k2>=0){ const hdr=w.filter(x=>x.y1<=w[k].y0+2&&measSide(x.t.replace(/[():]/g,""))), sideAt=c=>{ let b=null,bd=1e9; for(const x of hdr){ const d=Math.abs((x.x0+x.x1)/2-(c.x0+c.x1)/2)+(w[k].y0-x.y1)*0.2; if(d<bd){ bd=d; b=x; } } return b?measSide(b.t.replace(/[():]/g,"")):""; };
+            let s1=sideAt(w[k]), s2=sideAt(w[k2]); if(!s1||!s2||s1===s2){ s1="L"; s2="R"; }
+            used.add(k); used.add(k2); found.push({key,side:s1,v:val.v,unit},{key,side:s2,v:measNum(w[k2].t),unit}); val=null; side="done"; } }
+        break; }
+      if(/^[([]?(mm|cm)[)\]]?:?$/i.test(t)) continue; x1=Math.max(x1,w[k].x1); }
+    if(side==="done") continue;
+    if(!val){ const h=Math.max(8,y1-y0); let best=null, bd=1e9;   // Wert darunter (Formular mit Feld unter der Bezeichnung)
+      for(let k=0;k<w.length;k++){ const c=w[k]; if(used.has(k)||!isNum(c.t)||c.y0<y1-2||c.y0>y1+h*5) continue;
+        if(c.x1<x0-h*1.5||c.x0>Math.max(x1,x0+h*8)) continue; const d=(c.y0-y1)+Math.abs(c.x0-x0)*0.3; if(d<bd){ bd=d; best=k; } }
+      if(best!==null){ val={k:best,v:measNum(w[best].t)}; const u2=unitOf(w[best].t)||(best+1<w.length&&w[best+1].line===w[best].line?unitOf(w[best+1].t):""); if(u2) unit=u2; } }
+    if(val&&isFinite(val.v)){ used.add(val.k); found.push({key,side,v:val.v,unit}); }
+  }
+  return measAssign(found);
+}
+async function measByClaude(blob){
+  let sample=null; try{ sample=window.claude&&window.claude.use?await window.claude.use("sample"):null; }catch(e){}
+  if(!sample) return null; try{ const lim=sample.limits?await sample.limits():null; if(lim&&!lim.images) return null; }catch(e){}
+  const out=await sample.json(`Lies die Körpermaße einer Person aus dem Bild (Screenshot eines Messblatts, Formulars oder einer Tabelle). Antworte NUR mit JSON in genau dieser Form, Werte in Millimetern als Zahl oder null, wenn nicht im Bild:
+{"height":null,"sternum":null,"inseam":null,"shoulderW":null,"acromionR":null,"acromionL":null,"handR":null,"handL":null,"footR":null,"footL":null}
+Zuordnung: height=Körpergröße; sternum=Höhe des Brustbeins; inseam=Schrittlänge/Schritthöhe; shoulderW=Schulterbreite; acromion=Schulterhöhe/Schulterdach; hand=Handhöhe; foot=Fußlänge; R=rechts, L=links. Steht ein Maß ohne Seitenangabe, trage es bei R und L ein. Rechne cm in mm um (169,5 cm → 1695). Nichts erfinden.`,{images:[blob],modelTier:"default"});
+  const map={height:"height",sternum:"sternum",inseam:"inseam",shoulderW:"shoulderW",acromionR:"acromion",acromionL:"acromionL",handR:"hand",handL:"handL",footR:"foot",footL:"footL"}, r={};
+  for(const [a,k] of Object.entries(map)){ const f=MEAS_F.find(x=>x[0]===k), v=measMm(Number(out&&out[a]),f[3],""); if(isFinite(v)) r[k]=v; }
+  return r;
+}
+function measPrepPlain(img){ const sc=Math.min(3,Math.max(1,2000/Math.max(img.width,1))), cv=document.createElement("canvas"); cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+  const cx=cv.getContext("2d"); cx.imageSmoothingQuality="high"; cx.drawImage(img,0,0,cv.width,cv.height); return new Promise(ok=>cv.toBlob(ok,"image/png")); }
+async function measByOcr(blob,note){
+  if(!window.Tesseract){ tessP=tessP||new Promise((ok,no)=>{ const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"; s.onload=ok; s.onerror=()=>no(new Error("Texterkennung konnte nicht geladen werden")); document.head.appendChild(s); }); await tessP; }
+  note("Texterkennung läuft … (beim ersten Mal werden Sprachdaten geladen)");
+  const img=await createImageBitmap(blob), w=await Tesseract.createWorker(["deu","eng"]);
+  try{ await w.setParameters({preserve_interword_spaces:"1"}); let best={}, bn=-1;
+    for(const prep of [()=>measPrepPlain(img),()=>geoPrep(img,0)]){ for(const psm of ["3","11"]){ await w.setParameters({tessedit_pageseg_mode:psm});
+      const {data}=await w.recognize(await prep(),{},{text:true,tsv:true}); const r=measParseWords(measWords(data)), n=Object.keys(r).length; if(n>bn){ best=r; bn=n; } if(bn>=MEAS_F.length) return best; } }
+    return best; } finally{ try{ await w.terminate(); }catch(e){} }
+}
+function renderMeasImg(){
+  const box=$("measImgBox"); if(!box) return; if(box.innerHTML){ box.innerHTML=""; document.removeEventListener("paste",measPaste); return; }
+  box.innerHTML=`<div class="suadd"><h3 style="margin:0 0 6px">Messwerte aus Bild</h3>
+    <p class="note info" style="margin-top:0">Screenshot oder Foto mit den Messwerten wählen oder mit Strg/⌘+V einfügen. Die erkannten Werte werden zum Prüfen angezeigt – erst „Übernehmen“ trägt sie ein.</p>
+    <label class="geoDrop" id="measDrop" tabindex="0"><input type="file" accept="image/*" id="measFile" hidden><b>Bild hierher ziehen</b><span>oder klicken zum Auswählen · Strg/⌘+V zum Einfügen</span></label>
+    <div class="row"><button class="btn ghost small" type="button" id="measCancel">Schließen</button></div>
+    <p class="note" id="measNote"></p><div id="measRes"></div></div>`;
+  $("measCancel").onclick=()=>{ box.innerHTML=""; document.removeEventListener("paste",measPaste); };
+  $("measFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(f) measRun(f); e.target.value=""; };
+  { const dz=$("measDrop"), on=v=>dz.classList.toggle("over",v);
+    ["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{ e.preventDefault(); e.dataTransfer.dropEffect="copy"; on(true); }));
+    ["dragleave","dragend"].forEach(t=>dz.addEventListener(t,e=>{ if(!dz.contains(e.relatedTarget)) on(false); }));
+    dz.addEventListener("drop",e=>{ e.preventDefault(); on(false); const f=[...(e.dataTransfer.files||[])].find(x=>x.type.startsWith("image/")); if(f) measRun(f); else $("measNote").textContent="Bitte eine Bilddatei (PNG, JPG …) hineinziehen."; });
+    dz.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("measFile").click(); } }); }
+  document.removeEventListener("paste",measPaste); document.addEventListener("paste",measPaste);
+}
+function measPaste(e){ if(!$("measFile")) return document.removeEventListener("paste",measPaste);
+  const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.type&&x.type.startsWith("image/")); if(!it) return; e.preventDefault(); measRun(it.getAsFile()); }
+async function measRun(blob){
+  const note=t=>{ const n=$("measNote"); if(n) n.textContent=t; }, res=$("measRes"); if(res) res.innerHTML="";
+  note("Bild wird ausgewertet …"); let r=null;
+  try{ r=await measByClaude(blob); }catch(e){ r=null; }
+  if(!r||!Object.keys(r).length){ try{ r=await measByOcr(blob,note); }catch(e){ note("Texterkennung nicht möglich: "+(e.message||e)); return; } }
+  if(!r||!Object.keys(r).length){ note("Im Bild wurden keine Messwerte erkannt. Bitte einen schärferen Ausschnitt verwenden oder die Werte von Hand eintragen."); return; }
+  const n=Object.keys(r).length; note(`${n} von ${MEAS_F.length} Werten erkannt – bitte prüfen.`);
+  const cur=k=>{ const el=$(MEAS_F.find(x=>x[0]===k)[2]); return el?el.value:""; };
+  res.innerHTML=`<div class="clg" style="grid-template-columns:24px minmax(0,1.6fr) 90px 80px;margin-top:8px"><span></span><b>Maß</b><b>Erkannt (mm)</b><b>Bisher</b>
+    ${MEAS_F.map(([k,l])=>`<input type="checkbox" data-mk="${k}" ${isFinite(r[k])?"checked":"disabled"} aria-label="${l} übernehmen" style="width:auto"><span>${l}</span><input type="number" data-mv="${k}" value="${isFinite(r[k])?r[k]:""}" placeholder="–" step="1"><span class="note" style="margin:0">${esc(cur(k))||"–"}</span>`).join("")}</div>
+    <div class="row" style="margin-top:10px"><button class="btn small" type="button" id="measApply">Übernehmen</button></div>`;
+  res.querySelectorAll("[data-mv]").forEach(i=>i.oninput=()=>{ const c=res.querySelector(`[data-mk="${i.dataset.mv}"]`); c.disabled=!i.value; c.checked=!!i.value; });
+  $("measApply").onclick=()=>{ let k=0;
+    for(const [key,,id,rng] of MEAS_F){ const c=res.querySelector(`[data-mk="${key}"]`), v=Number(res.querySelector(`[data-mv="${key}"]`).value), el=$(id);
+      if(!c.checked||!el||!isFinite(v)||!v) continue; el.value=Math.round(v); el.dispatchEvent(new Event("input",{bubbles:true})); el.dispatchEvent(new Event("change",{bubbles:true})); k++; }
+    $("measImgBox").innerHTML=""; document.removeEventListener("paste",measPaste);
+    const pn=$("pReqNote"); if(pn&&k){ const t=pn.textContent; setTimeout(()=>{ const p2=$("pReqNote"); if(p2&&!p2.textContent) { p2.textContent=`${k} Messwerte aus dem Bild übernommen.`; setTimeout(()=>{ if(p2.textContent.endsWith("übernommen.")) p2.textContent=""; },5000); } },50); }
+  };
+}
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("#measImgBtn"); if(b){ e.preventDefault(); renderMeasImg(); } });
 function geoPaste(e){ if(!$("geoFile")) return document.removeEventListener("paste",geoPaste);
   const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.type&&x.type.startsWith("image/")); if(!it) return; e.preventDefault(); geoRun(it.getAsFile()); }
 async function geoRun(blob){
