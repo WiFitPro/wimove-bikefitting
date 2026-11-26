@@ -695,7 +695,6 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <section>
         <h2>PDF erstellen</h2>
         <p class="src-line" id="pdfWho"></p>
-        <details class="acc adv" id="pkgDetails"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
         <details class="acc" id="pdfSecsBox" style="margin-top:12px" ontoggle="if(document.body.classList.contains('basic')&&!this.open)this.open=true"><summary>Inhalte auswählen <span class="note" id="pdfSecsCount" style="margin:0 auto 0 10px;font-weight:400"></span></summary>
           <div class="row" style="margin-top:4px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
           <div id="pdfSecs"></div>
@@ -718,6 +717,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <button class="btn" id="pdfBtn">PDF erstellen</button>
         <p class="note" id="pdfNote"></p>
       </section>
+      <details class="acc adv" id="pkgDetails"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
       <details class="acc"><summary>Bericht: Logo und Kontaktdaten</summary>
         <p class="note info" style="margin-top:0">Gilt für dein Konto: Die Kontaktdaten und dein Logo erscheinen im PDF in der Fußzeile jeder Seite und auf der letzten Seite. Leere Zeilen und kein Logo = Standard (wimove / Wildrad).</p>
         <div id="brandBox"></div>
