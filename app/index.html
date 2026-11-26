@@ -262,10 +262,11 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .geoDrop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin:6px 0 10px;padding:22px 12px;border:2px dashed var(--rule);border-radius:10px;background:var(--field);cursor:pointer;text-align:center;transition:border-color .15s,background .15s}
 .geoDrop span{font-size:13px;color:#6B7785}.geoDrop:hover,.geoDrop:focus-visible{border-color:var(--frame);outline:none}
 .geoDrop.over{border-color:var(--frame);background:color-mix(in srgb,var(--frame) 10%,var(--field))}
-.infoBtn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin:0 0 0 8px;padding:0;border-radius:50%;border:1.5px solid currentColor;background:transparent;color:#6B7785;font:italic 700 12px/1 Georgia,serif;cursor:help;vertical-align:middle;opacity:.8;flex:none;text-transform:none;letter-spacing:0}
+.infoBtn{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;margin:0 0 0 3px;padding:0;border-radius:50%;border:1.2px solid currentColor;background:transparent;color:#6B7785;font:italic 700 9px/1 Georgia,serif;cursor:help;vertical-align:top;position:relative;top:.05em;align-self:flex-start;opacity:.8;flex:none;text-transform:none;letter-spacing:0}
 .infoBtn:hover,.infoBtn:focus-visible{opacity:1;color:var(--frame);outline:none}
 .infoRow{display:flex;justify-content:flex-end;margin:4px 0}
 summary .infoBtn{margin-right:auto}
+.lbl .infoBtn{margin-left:-3px;top:-.2em}
 #infoTip{position:fixed;z-index:300;max-width:min(340px,calc(100vw - 16px));background:#1F2A33;color:#fff;font-size:13px;line-height:1.45;padding:9px 11px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}
 .geoWrap{overflow-x:auto;margin-top:8px}.geoT{border-collapse:collapse;font-size:14px}.geoT th{text-align:left;font-weight:600;padding:3px 6px;white-space:nowrap}.geoT td{padding:2px 3px}.geoT .geoIn{width:66px;min-width:0;padding:5px 6px;text-align:right}.geoT thead .geoIn{text-align:center;font-weight:700}.geoT .geoSz{display:flex;align-items:center;gap:2px}.geoT .geoDel{border:0;background:none;color:var(--muted,#888);cursor:pointer;font-size:15px;padding:0 2px;line-height:1}.geoT .geoDel:hover{color:#C0392B}.geoT .geoAdd{white-space:nowrap}.geoBad{border-color:#C0392B!important;background:#FDECEA!important}
 .viewMenu{position:relative;display:inline-block;margin-bottom:10px}
@@ -803,8 +804,8 @@ const COMP = [
   {key:"stemAngle", label:"Vorbauwinkel", g:"Cockpit", unit:"°", min:-25,max:25,step:1,def:-6},
   {key:"stemHeight", label:"Vorbauhöhe (Klemmung)", g:"Cockpit", min:30,max:60,step:1,def:40},
   {key:"barWidth", label:"Lenkerbreite (Mitte–Mitte)", g:"Cockpit", min:300,max:820,step:10,def:420},
-  {key:"barReach", label:"Lenker-Reach (Mitte Oberlenker bis Bremsgriff)", g:"Cockpit", min:30,max:110,step:1,def:60, bars:["drop"]},
-  {key:"leverReach", label:"Bremsgriff-Reach (Beginn Bremsgriff bis Griffpunkt)", g:"Cockpit", min:20,max:90,step:1,def:50, bars:["drop"]},
+  {key:"barReach", label:"Lenker-Reach", info:"Mitte Oberlenker bis Bremsgriff", g:"Cockpit", min:30,max:110,step:1,def:60, bars:["drop"]},
+  {key:"leverReach", label:"Bremsgriff-Reach", info:"Beginn Bremsgriff bis Griffpunkt", g:"Cockpit", min:20,max:90,step:1,def:50, bars:["drop"]},
   {key:"leverAngle", label:"Bremsgriffwinkel", g:"Cockpit", unit:"°", min:-10,max:20,step:1,def:0, bars:["drop"]},
   {key:"barRise", label:"Lenker-Rise (Griff über Lenkerklemmung)", g:"Cockpit", min:-20,max:80,step:5,def:0, bars:["flat"]},
   {key:"padStack", label:"Armpad-Höhe über Lenkermitte", g:"Cockpit", min:0,max:200,step:5,def:70, bars:["aero"]},
@@ -1923,11 +1924,12 @@ function fitToTarget(){
 }
 
 /* ================= Eingabefelder ================= */
+function infoH(t){ const e=String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); return `<button type="button" class="infoBtn" data-tip="${e}" aria-label="Info: ${e}">i</button>`; }   // i-Button (auch vor ib() nutzbar)
 function makeControls(boxId,prefix,list,get,set,tag){
   const box=document.getElementById(boxId); let h="",grp="";
   for(const p of list){
     if(p.g&&p.g!==grp){grp=p.g; h+=`<h3>${grp}</h3>`;}
-    h+=`<div class="param"><label class="lbl" for="${prefix}n_${p.key}">${p.label} <span class="src" id="${prefix}s_${p.key}"></span></label>
+    h+=`<div class="param"><label class="lbl" for="${prefix}n_${p.key}">${p.label}${p.info?infoH(p.info):""} <span class="src" id="${prefix}s_${p.key}"></span></label>
       <input type="number" id="${prefix}n_${p.key}" step="${p.step||1}" aria-label="${p.label} in ${p.unit||"mm"}">
       <input type="range" id="${prefix}r_${p.key}" min="${p.min}" max="${p.max}" step="${p.step||1}" aria-label="${p.label}"${prefix==="p"?' tabindex="-1"':""}></div>`;   // Tab springt im Tab „Person“ von Eingabefeld zu Eingabefeld
   }
@@ -2061,18 +2063,18 @@ function renderManual(){
     if(box.contains(document.activeElement)) continue;   // nicht während der Eingabe neu aufbauen
     { const ex=[...box.querySelectorAll("[data-man]")]; if(ex.length===keys.length&&ex.every((e,i)=>e.dataset.man===keys[i])){ ex.forEach(e=>{ const v=S.comp[e.dataset.man], t=isFinite(v)?String(v):""; if(e.value!==t) e.value=t; }); continue; } }   // Felder behalten (Pfeile bleiben bedienbar), nur Werte setzen
     box.innerHTML=keys.map(key=>{ const p=COMP.find(x=>x.key===key), v=S.comp[key];
-      return `<div class="param manParam" style="padding:3px 0"><label class="lbl" for="man_${key}" style="font-size:13px">${esc(p.label)}${p.unit?` (${p.unit})`:" (mm)"}</label><input type="number" id="man_${key}" data-man="${key}" step="${p.step||1}" value="${isFinite(v)?v:""}"></div>`; }).join("");
+      return `<div class="param manParam" style="padding:3px 0"><label class="lbl" for="man_${key}" style="font-size:13px">${esc(p.label)}${p.unit?` (${p.unit})`:" (mm)"}${p.info?infoH(p.info):""}</label><input type="number" id="man_${key}" data-man="${key}" step="${p.step||1}" value="${isFinite(v)?v:""}"></div>`; }).join("");
     box.querySelectorAll("[data-man]").forEach(el=>el.onchange=()=>{ const x=num(el.value); if(!isFinite(x)) return; S.comp[el.dataset.man]=x; syncComp(); render(); save(); });
   }
 }
 /* fehlende Maße des gewählten Teils direkt eintragen; der Wert wird am Teil gespeichert */
-const MISS=[["bar","bars","reach","barReach","Lenker-Reach – Mitte Oberlenker bis Bremsgriff (mm)"],["barI","bars","angle","stemAngle","Vorbauwinkel Cockpit (°)"],["barI","bars","height","stemHeight","Vorbauhöhe Cockpit (mm)"],["stem","stems","angle","stemAngle","Vorbauwinkel (°)"],["stem","stems","height","stemHeight","Vorbauhöhe (mm)"],
-  ["lever","levers","reach","leverReach","Bremsgriff-Reach – Beginn Bremsgriff bis Griffpunkt (mm)"],["pedal","pedals","stack","pedalStack","Stack Height Pedal (mm)"],["shoe","shoes","sole","sole","Sohlendicke (mm)"]];
+const MISS=[["bar","bars","reach","barReach","Lenker-Reach (mm)","Mitte Oberlenker bis Bremsgriff"],["barI","bars","angle","stemAngle","Vorbauwinkel Cockpit (°)"],["barI","bars","height","stemHeight","Vorbauhöhe Cockpit (mm)"],["stem","stems","angle","stemAngle","Vorbauwinkel (°)"],["stem","stems","height","stemHeight","Vorbauhöhe (mm)"],
+  ["lever","levers","reach","leverReach","Bremsgriff-Reach (mm)","Beginn Bremsgriff bis Griffpunkt"],["pedal","pedals","stack","pedalStack","Stack Height Pedal (mm)"],["shoe","shoes","sole","sole","Sohlendicke (mm)"]];
 function renderMissing(){
   const box=document.getElementById("compMissing"); if(!box) return;
   const L=FIT.lists, bar=L.bars.find(x=>x.name===S.compSel.bar), integ=!!(bar&&isFinite(bar.angle));
   let h="";
-  for(const [sel,t,f,ck,lab] of MISS){
+  for(const [sel,t,f,ck,lab0,inf] of MISS){ const lab=lab0+(inf?infoH(inf):"");
     if(sel==="stem"&&integ) continue;
     if(sel==="barI"&&!integ) continue;   // Cockpit-Maße nur bei integriertem Cockpit
     const name=S.compSel[sel==="barI"?"bar":sel], part=name&&(L[t]||[]).find(x=>x.name===name);
