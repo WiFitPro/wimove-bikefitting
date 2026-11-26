@@ -267,7 +267,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .infoRow{display:flex;justify-content:flex-end;margin:4px 0}
 summary .infoBtn{margin-right:auto}
 .lbl .infoBtn{margin-left:-3px;top:-.2em}
-#infoTip{position:fixed;z-index:300;max-width:min(340px,calc(100vw - 16px));background:#1F2A33;color:#fff;font-size:13px;line-height:1.45;padding:9px 11px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}
+#infoTip{white-space:pre-line;position:fixed;z-index:300;max-width:min(340px,calc(100vw - 16px));background:#1F2A33;color:#fff;font-size:13px;line-height:1.45;padding:9px 11px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}
 .geoWrap{overflow-x:auto;margin-top:8px}.geoT{border-collapse:collapse;font-size:14px}.geoT th{text-align:left;font-weight:600;padding:3px 6px;white-space:nowrap}.geoT td{padding:2px 3px}.geoT .geoIn{width:66px;min-width:0;padding:5px 6px;text-align:right}.geoT thead .geoIn{text-align:center;font-weight:700}.geoT .geoSz{display:flex;align-items:center;gap:2px}.geoT .geoDel{border:0;background:none;color:var(--muted,#888);cursor:pointer;font-size:15px;padding:0 2px;line-height:1}.geoT .geoDel:hover{color:#C0392B}.geoT .geoAdd{white-space:nowrap}.geoBad{border-color:#C0392B!important;background:#FDECEA!important}
 .viewMenu{position:relative;display:inline-block;margin-bottom:10px}
 .bikeTag{text-align:right;line-height:1.05}.bikeTag h1{font-size:28px}.bikeTag .kicker{font-size:13px;margin:0}.bikeTag .size-big{margin-top:0}
@@ -581,8 +581,8 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     <div class="panel" id="tab-person" hidden>
       <div class="ptools"><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn small" id="basicClear" title="Name, Datum, Messwerte, Befund und Bike Set Up werden geleert. Eigene Teile, Räder, Pakete und Logo bleiben erhalten.">Personendaten leeren</button></div><p class="note" id="basicClearNote"></p></div>
       <section>
-        <h2>Person</h2>
-        <p class="src-line" id="personSrc"></p>
+        <h2>Person<button type="button" class="infoBtn" data-tip="Messwerte direkt eintragen. Neben jedem Maß steht die Norm für Körpergröße und Geschlecht.&#10;Datenbasis: ANSUR II (4.082 Männer, 1.986 Frauen). Je Maß gilt: Norm = a + b × Körpergröße. Die Streuung (SD) ist die übliche Abweichung bei Menschen gleicher Größe.&#10;Anzeige: „Norm 830 (+25 mm · +1,0 SD)“ = Normwert, Abweichung in mm und in Streuungen.&#10;● grün: bis 1 SD – normal&#10;● gelb: 1–2 SD – auffällig, Messung prüfen&#10;● rot: über 2 SD – deutlich abweichend, nachmessen&#10;Bewertet werden Schrittlänge, Brustbeinhöhe, Schulterhöhe, Schulterbreite, Fußlänge, Armlänge und die daraus berechneten Segmente (Ober-/Unterschenkel, Rumpf, Ober-/Unterarm).&#10;Leere Messfelder (markiert mit „Normwert männlich/weiblich“) füllt die App mit festen Anteilen der Körpergröße, z. B. Schrittlänge 48 % (Männer) bzw. 48,5 % (Frauen). Ohne Körpergröße rechnet sie mit 1800 mm bzw. 1680 mm." aria-label="Info: Normwerte">i</button></h2>
+        <p class="src-line" id="personSrc" hidden></p>
         <div class="two"><div><label class="f" for="pName">Name</label><input class="bfi" id="pName" autocomplete="off"></div>
           <div><label class="f" for="pDate">Datum</label><input class="bfi" id="pDate" type="date"></div></div>
         <label class="f" for="styleSel">Sitzposition / Fahrstil</label>
