@@ -835,12 +835,13 @@ const PERS = [
   {key:"torso", label:"Oberkörper (Hüftgelenk bis Brustbein)", g:"Segmente", min:380,max:800,step:1, f:p=>p.sternum-(p.inseam+p.hipStand)},
   {key:"shoulderDrop", label:"Schultergelenk unter Schulterdach", g:"Segmente", min:0,max:90,step:1, f:()=>45},
   {key:"protr", label:"Schulterblatt nach vorn (Protraktion)", g:"Segmente", min:0,max:100,step:1, f:()=>40},
-  {key:"elbowT", label:"Ellbogenwinkel (Ziel)", g:"Haltung", unit:"°", min:120,max:180,step:1, f:()=>styleElbow()},
+  {key:"elbowT", label:"Ellbogenwinkel", g:"Haltung", unit:"°", min:120,max:180,step:1, f:()=>styleElbow()},
   {key:"kneeBack", label:"Drehpunkt Knie: + hinter / − vor Kniemitte", g:"Segmente", min:-30,max:30,step:1, f:()=>0},
   {key:"armAdd", label:"Handgelenk bis Griffpunkt (Zuschlag)", g:"Segmente", min:40,max:110,step:1, f:()=>75},
   {key:"upperArm", label:"Oberarm (ab Schultergelenk)", g:"Segmente", min:220,max:400,step:0.1, f:p=>(p.acromion-p.shoulderDrop-p.hand-p.armAdd)*p.armRatio},
   {key:"forearm", label:"Unterarm inkl. Hand bis Griffpunkt", g:"Segmente", min:200,max:450,step:0.1, f:p=>(p.acromion-p.shoulderDrop-p.hand-p.armAdd)*(1-p.armRatio)+p.armAdd},
   {key:"backAngle", label:"Rückenwinkel", g:"Haltung", unit:"°", min:15,max:75,step:1, f:p=>(STYLE_STD[p.style]||STYLE_STD.sportlich).back},
+  {key:"shoulderT", label:"Schulterwinkel", g:"Haltung", unit:"°", min:50,max:120,step:1, f:()=>styleShoulder()},
   {key:"footAngle", label:"Fußwinkel unten (Ferse höher als Ballen; im Rückhub +12°, im Druck −12°)", g:"Haltung", unit:"°", min:0,max:40,step:0.5, f:()=>25}
 ];
 /* Standardwerte je Fahrstil: Rückenwinkel und Schulterwinkel (Zielwerte), Richtwertbereiche jeweils darum herum */
@@ -1128,7 +1129,7 @@ function body(){
   /* Zuschlag Handgelenk–Griffpunkt: in der App einstellbar, Standard 75 mm (statt des Excel-Parameters) */
   m.armAdd=isFinite(p.ov.armAdd)?p.ov.armAdd:(isFinite(stdVal("armAdd"))?stdVal("armAdd"):75); m.armRatio=isFinite(X.armRatio)?X.armRatio:0.52; m.legRatio=isFinite(X.legRatio)?X.legRatio:0.52;
   for(const d of PERS){
-    if(d.f){ b[d.key]= isFinite(p.ov[d.key]) ? p.ov[d.key] : (isFinite(p.measured[d.key]) ? p.measured[d.key]+(d.key==="thigh"?m.legRatio*m.hipStand:d.key==="shank"?(1-m.legRatio)*m.hipStand:d.key==="forearm"?m.armAdd:0) : (d.key!=="elbowT"&&isFinite(stdVal(d.key)) ? stdVal(d.key) : d.f(m))); }
+    if(d.f){ b[d.key]= isFinite(p.ov[d.key]) ? p.ov[d.key] : (isFinite(p.measured[d.key]) ? p.measured[d.key]+(d.key==="thigh"?m.legRatio*m.hipStand:d.key==="shank"?(1-m.legRatio)*m.hipStand:d.key==="forearm"?m.armAdd:0) : (d.key!=="elbowT"&&d.key!=="shoulderT"&&isFinite(stdVal(d.key)) ? stdVal(d.key) : d.f(m))); }
     else b[d.key]=m[d.key];
   }
   /* Segmente der linken Seite (hinteres Bein und hinterer Arm) */
@@ -1142,8 +1143,9 @@ function personTag(k){
   if(!d.f) return isFinite(p[k])?["",false]:["Normwert "+p.sex,false];   // Messwerte: eigenständig, ohne Bezug auf eine Tabelle
   if(isFinite(p.measured[k])) return ["gemessen",false];
   if(k==="backAngle") return [p.autoBack?"automatisch":"Fahrstil "+p.style,false];
+  if(k==="shoulderT"||k==="elbowT") return ["Fahrstil "+p.style,false];
   if(isFinite(stdVal(k))) return ["Standard",false];
-  return [["ankleH","hipFwd","footAngle","hipStand","shoulderDrop","kneeBack","sitBack","armAdd","sink","protr","elbowT"].includes(k)?"Standard":"berechnet",false];
+  return [["ankleH","hipFwd","footAngle","hipStand","shoulderDrop","kneeBack","sitBack","armAdd","sink","protr","elbowT","shoulderT"].includes(k)?"Standard":"berechnet",false];
 }
 
 /* ================= Werte je Rad ================= */
@@ -1663,7 +1665,7 @@ let cur=null; // letzte Berechnung
 /* ================= Vorschlag optimale Sitzposition ================= */
 const SUG_DEF={knee:145,kops:0,back:NaN,shoulder:NaN,elbow:160};
 const sugOv=()=>btype()==="road"?S.sugT:((S.sugTT||{})[btype()]);   // Zielwerte je Radart getrennt
-const sugT=()=>{ const eT=(()=>{ try{ const v=body().elbowT; return isFinite(v)?v:160; }catch(e){ return 160; } })(); const t={...SUG_DEF,knee:styV("kneeT",145),kops:styV("kops",KOPS_T[btype()]),elbow:eT,...(sugOv()||{})}; for(const k in t) if(!(typeof t[k]==="number"&&isFinite(t[k]))) t[k]=k==="back"?NaN:k==="shoulder"?styleShoulder():k==="kops"?styV("kops",KOPS_T[btype()]):k==="knee"?styV("kneeT",145):SUG_DEF[k]; return t; };
+const sugT=()=>{ const eT=(()=>{ try{ const v=body().elbowT; return isFinite(v)?v:160; }catch(e){ return 160; } })(); const t={...SUG_DEF,knee:styV("kneeT",145),kops:styV("kops",KOPS_T[btype()]),elbow:eT,...(sugOv()||{})}; for(const k in t) if(!(typeof t[k]==="number"&&isFinite(t[k]))) t[k]=k==="back"?NaN:k==="shoulder"?(()=>{ try{ const v=body().shoulderT; return isFinite(v)?v:styleShoulder(); }catch(e){ return styleShoulder(); } })():k==="kops"?styV("kops",KOPS_T[btype()]):k==="knee"?styV("kneeT",145):SUG_DEF[k]; return t; };
 let sugCache={key:"",val:null};
 const styleBack=()=>(STYLE_STD[S.person.style]||STYLE_STD.sportlich).back;
 const STEM_PREF=0.6;
@@ -2008,7 +2010,7 @@ function initControls(){
   const s3=makeControls("pLeft","p",sideL(["acromionL","handL"]),lGet,lSet,lTag);
   const s3b=makeControls("pBottom","p",pick(["shoulderW"]),pGet,pSet,pTag);
   const s4=makeControls("pSeg","p",PERS.filter(d=>d.g==="Segmente").map(d=>({...d,g:""})),pGet,pSet,pTag);
-  const s5=makeControls("pHalt","p",PERS.filter(d=>d.g==="Haltung").map(d=>({...d,g:""})),pGet,pSet,pTag);
+  const s5=makeControls("pHalt","p",["backAngle","shoulderT","elbowT"].map(k=>PERS.find(d=>d.key===k)).map(d=>({...d,g:""})),pGet,pSet,pTag);   // Fußwinkel bleibt Standard (25°), nicht mehr unter Haltung
   /* Modell-Feinwerte der Segmente nur für Admins sichtbar */
   for(const k of ["hipStand","ankleH","sitBack","sink","hipFwd","hipSit","shoulderDrop","protr","kneeBack","armAdd"]){ const n=document.getElementById("pn_"+k); if(n) n.closest(".param").classList.add("adminOnly"); }
   { const pc=document.getElementById("pCleat"); if(pc) pc.classList.add("adminOnly"); }
@@ -2538,13 +2540,15 @@ for(const [id,k] of [["tKnee","knee"],["tKops","kops"],["tBack","back"],["tShoul
   $(id).onchange=e=>{ const x=parseFloat(String(e.target.value).replace(",",".")), v=isFinite(x)?x:(k==="back"?NaN:k==="kops"?styV("kops",KOPS_T[btype()]):k==="knee"?styV("kneeT",145):SUG_DEF[k]);
     if(btype()==="road") S.sugT={...(S.sugT||{}),[k]:v}; else { S.sugTT=S.sugTT||{}; S.sugTT[btype()]={...(S.sugTT[btype()]||{}),[k]:v}; } sugCache.key=""; renderBikeResults(); render(); save(); };
 $("sugCmp").onchange=e=>{ S.sugCmp=e.target.value; $("fitNote").textContent=""; renderBikeResults(); render(); save(); };
+let SUG_KEEP_BACK=false;   /* automatische Übernahme beim Öffnen: Rückenwinkel bleibt beim Wert des Fahrstils */
+function sugApplyAuto(){ SUG_KEEP_BACK=true; try{ $("sugApply").click(); } finally { SUG_KEEP_BACK=false; } }
 $("sugApply").onclick=()=>{
   const r=suggest(), p=r.parts, c=S.comp;
   if(p.stemAngle!==c.stemAngle) S.compSel.stem="";
   const keepAuto=!!S.person.autoBack;   // Haken „Rückenwinkel aus Griffposition ermitteln“: Rücken folgt dem eingestellten Griff
   const ca=crankAdvice(); Object.assign(c,p); c.barWidth=barWidthIdeal();
   if(ca&&isFinite(ca.L)&&ca.L!==c.crank){ c.saddleH=Math.round(c.saddleH+(c.crank-ca.L)); c.crank=ca.L; }   // empfohlene Kurbel, Sattelhöhe um die Differenz angepasst
-  if(keepAuto) delete S.person.ov.backAngle; else { S.person.ov.backAngle=Math.round(r.back); }
+  if(keepAuto||SUG_KEEP_BACK) delete S.person.ov.backAngle; else { S.person.ov.backAngle=Math.round(r.back); }
   syncComp(); syncPerson(); render(); save();
   $("sugNote").textContent=keepAuto?`Vorschlag übernommen: Sattel und Cockpit sind eingestellt, der Rückenwinkel ergibt sich aus der Griffposition (jetzt ${Math.round(cur.J.back)}°).`
     :`Vorschlag übernommen: Sattel und Cockpit sind eingestellt, der Rückenwinkel der Person steht auf ${Math.round(r.back)}°.`;
@@ -2636,7 +2640,7 @@ function renderDisc(){ const w=$("discWrap"), sel=$("discSel"); if(!w||!sel) ret
   sel.innerHTML=L.map(([k,l])=>`<option value="${k}"${k===d?" selected":""}>${l}</option>`).join(""); }
 $("discSel").onchange=e=>{ S.person["disc_"+btype()]=e.target.value; delete S.person.ov.backAngle; if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }
   applyStyleStd(); sugCache.key=""; sizeFitCache.key=""; cmpFit={}; syncPerson(); render(); save(); };
-$("styleSel").onchange=e=>{ S.person.style=e.target.value; delete S.person.ov.backAngle;
+$("styleSel").onchange=e=>{ S.person.style=e.target.value; delete S.person.ov.backAngle; delete S.person.ov.shoulderT; delete S.person.ov.elbowT;
   if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }   // Zielwerte folgen dem Fahrstil
   syncPerson(); render(); save(); };
 $("sexSel").onchange=e=>{ S.person.sex=e.target.value; syncPerson(); render(); save(); };
@@ -4864,7 +4868,7 @@ $("suClear").onclick=()=>{
   /* Werkseinstellung: Standardrad in passender Größe und eine passende Position (Vorschlag) */
   { const hgt=body().height, size=hgt<1650?"XS":hgt<1720?"S":hgt<1790?"M":hgt<1860?"L":"XL";
     if(findBike({b:stdBike().b,m:stdBike().m,s:size})) selectMain(stdBike().b,stdBike().m,size);
-    sugCache.key=""; $("sugApply").click(); }
+    sugCache.key=""; sugApplyAuto(); }
   render(); save();
   $("suNote").textContent=`Bike Set Up geleert. Der Vorschlag im Tab „Sitzposition“ ergibt sich jetzt nur aus Person und dem Rad im Tab „Rad“ (${(()=>{ const cb=findBike(S.sel); return cb?`${cb.b} ${cb.m} ${cb.s}`:"–"; })()}).`;
 };
@@ -5163,7 +5167,7 @@ async function factoryLoad(){
        damit alle Werte zum Rad passen. Erster Start in einem neuen Browser: zusätzlich Standardrad in passender Größe */
     /* bei jedem weiteren Öffnen: Rad und Eingaben bleiben, die Position wird aus Person und Rad neu ermittelt */
     if(typeof FRESH!=="undefined"&&FRESH){ sugCache.key=""; $("suClear").click(); }
-    else { sugCache.key=""; $("sugApply").click(); }
+    else { sugCache.key=""; sugApplyAuto(); }
   }
 }
 const LIB_KEYS=["customParts","partFix","partDel","partRename","customBikes","bikeFix","bikeDel","bikeRename","bikeType"];
