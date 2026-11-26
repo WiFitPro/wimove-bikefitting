@@ -407,7 +407,7 @@ details.acc[open]>summary::after{transform:rotate(-135deg)}
 .toggle{display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
 .toggle input{accent-color:var(--frame);width:16px;height:16px;margin:0}
 /* Überschriften markanter und größer */
-aside h2{font-size:19px;font-weight:700;letter-spacing:.005em}
+aside h2{font-size:18px;font-weight:700;letter-spacing:.005em}
 details.acc>summary{font-size:18px;font-weight:700}
 details.acc>summary::after{width:9px;height:9px;border-width:0 2.5px 2.5px 0}
 aside h3{font-size:15px;font-weight:700;color:var(--ink)}
@@ -599,6 +599,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div id="pBottom"></div>
         <p class="note info">Die rechte Seite (vorn in der Zeichnung) bestimmt Winkel und Vorschlag. Die linke Seite wird für das hintere Bein und den hinteren Arm verwendet.</p>
       </section>
+      <details class="acc"><summary>Segmente</summary><div id="pSeg"></div><div id="pCleat"></div></details>
       <details class="acc"><summary>Haltung</summary><div id="pHalt"></div><div id="styleStdBox"></div></details>
       <section id="stdBox" class="adminOnly" style="border-top:0">
         <div class="row"><button class="btn ghost small" id="saveStd">Modellwerte als Standard speichern</button><button class="btn ghost small" id="resetStd">Ursprüngliche App-Werte</button></div>
@@ -745,7 +746,6 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="admCopy">Änderungen für alle Radarten übernehmen</button></div><p class="note" id="admCopyNote"></p></section>
       <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
       <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
-      <details class="acc adminOnly" id="admSegP"><summary>Segmente dieser Person (aktuelles Fitting)</summary><p class="note info" style="margin-top:0">Körpersegmente und Feinwerte der gerade gefitteten Person. Leere bzw. unveränderte Felder werden aus den Messwerten und den Grundwerten der Radart (oben) berechnet.</p><div id="pSeg"></div><div id="pCleat"></div></details>
       <div id="admMore"></div>
       <div id="admStdBox"></div>
       <details class="acc adminOnly" style="margin-top:18px"><summary>Benutzerverwaltung</summary>
