@@ -177,7 +177,7 @@ input.pmname{font:inherit;font-size:13px;padding:3px 5px;border:1px solid var(--
 .bfg:not(.styleGrid){grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr)}
 .bfg>*{min-width:0}
 .bfg>div[style*="grid-column:2/4"]{display:flex;justify-content:flex-end}
-.bfg.styleGrid{grid-template-columns:minmax(90px,1fr) repeat(3,minmax(64px,92px));justify-content:stretch}
+.bfg.styleGrid{grid-template-columns:minmax(90px,1fr) repeat(4,minmax(60px,86px));justify-content:stretch}
 .bfg.styleGrid>div{align-items:flex-end}
 .su input[data-t=num],.su select{justify-self:end}
 .su .suv{text-align:right;padding-left:0;padding-right:7px}
@@ -228,7 +228,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 /* Startbildschirm: Deckblatt mit Auswahl WiFitPro / WiFitBasic */
 #startScr{position:fixed;inset:0;z-index:48;background:#fff;   /* weiß: Safari 26 übernimmt die Farbe für Adressleiste und Tabs */display:flex;align-items:center;justify-content:center;overflow:hidden}
 #startScr[hidden]{display:none}
-#startScr::before{content:"";position:absolute;inset:0;background:#0BA2D6 url("brand/start_bg.jpg") center/100% auto no-repeat}   /* winziges Vorschaubild, bis das Foto geladen ist */   /* Foto etwas transparenter */
+#startScr::before{content:"";position:absolute;inset:0;background:#0BA2D6 url("brand/start_bg.jpg") center/cover no-repeat}   /* winziges Vorschaubild, bis das Foto geladen ist */   /* Foto etwas transparenter */
 #startScr>.startCard{z-index:1}
 .startCard{position:relative;height:min(100vh,141.45vw);aspect-ratio:1240/1754;container-type:inline-size}
 .startCard::before{content:"";position:absolute;left:35%;top:75.5%;width:30%;aspect-ratio:900/510;background:url("brand/logo_stack.png") center/contain no-repeat;}   /* Foto füllt den ganzen Bildschirm, Logo an alter Stelle */   /* Blau etwas zurückgenommen */
@@ -249,21 +249,24 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 .startBtns.types .startBtn:hover,.startBtns.types .startBtn:focus-visible{background:#fff;color:#0389B8}
 .modeRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 .modeRow #basicBtn{margin-bottom:0}
-.btGroup{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--field)}
-.btGroup button{font:inherit;font-size:15px;font-weight:500;padding:9px 12px;border:0;background:transparent;color:var(--ink);cursor:pointer}
-.btGroup button+button{border-left:1px solid var(--rule)}
-.btGroup button[aria-pressed="true"]{background:var(--frame);color:#fff;font-weight:600}
-.btGroup button:focus-visible{outline:2px solid var(--frame);outline-offset:-2px}
+.btGroup{display:inline-flex;flex-wrap:wrap;gap:8px}   /* einzelne Buttons statt verbundener Leiste */
+.btGroup button{font:inherit;font-size:15px;font-weight:500;padding:9px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--field);color:var(--ink);cursor:pointer}.btGroup button:hover{border-color:var(--frame)}
+
+.btGroup button[aria-pressed="true"]{background:var(--frame);border-color:var(--frame);color:#fff;font-weight:600}
+.btGroup button:focus-visible{outline:2px solid var(--frame);outline-offset:2px}
 .barHide{display:none!important}
 .geoSec[hidden]{display:none!important}
+.stdCard{margin:26px 0 0}.stdCard:first-child{margin-top:8px}
+.stdCard>h3{margin:0 0 8px;padding-bottom:6px;border-bottom:1.5px solid var(--rule);font-size:16px;color:var(--ink)}
 .geoSmp{font-size:13px;color:#4A5560;white-space:nowrap;padding:3px 10px!important}.geoColSel{font-size:13px;min-width:170px;padding:4px 6px}.geoColT th{text-align:left}
 .geoDrop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin:6px 0 10px;padding:22px 12px;border:2px dashed var(--rule);border-radius:10px;background:var(--field);cursor:pointer;text-align:center;transition:border-color .15s,background .15s}
 .geoDrop span{font-size:13px;color:#6B7785}.geoDrop:hover,.geoDrop:focus-visible{border-color:var(--frame);outline:none}
 .geoDrop.over{border-color:var(--frame);background:color-mix(in srgb,var(--frame) 10%,var(--field))}
-.infoBtn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin:0 0 0 8px;padding:0;border-radius:50%;border:1.5px solid currentColor;background:transparent;color:#6B7785;font:italic 700 12px/1 Georgia,serif;cursor:help;vertical-align:middle;opacity:.8;flex:none;text-transform:none;letter-spacing:0}
+.infoBtn{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;margin:0 0 0 3px;padding:0;border-radius:50%;border:1.2px solid currentColor;background:transparent;color:#6B7785;font:italic 700 9px/1 Georgia,serif;cursor:help;vertical-align:top;position:relative;top:.05em;align-self:flex-start;opacity:.8;flex:none;text-transform:none;letter-spacing:0}
 .infoBtn:hover,.infoBtn:focus-visible{opacity:1;color:var(--frame);outline:none}
 .infoRow{display:flex;justify-content:flex-end;margin:4px 0}
 summary .infoBtn{margin-right:auto}
+.lbl .infoBtn{margin-left:-3px;top:-.2em}
 #infoTip{position:fixed;z-index:300;max-width:min(340px,calc(100vw - 16px));background:#1F2A33;color:#fff;font-size:13px;line-height:1.45;padding:9px 11px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}
 .geoWrap{overflow-x:auto;margin-top:8px}.geoT{border-collapse:collapse;font-size:14px}.geoT th{text-align:left;font-weight:600;padding:3px 6px;white-space:nowrap}.geoT td{padding:2px 3px}.geoT .geoIn{width:66px;min-width:0;padding:5px 6px;text-align:right}.geoT thead .geoIn{text-align:center;font-weight:700}.geoT .geoSz{display:flex;align-items:center;gap:2px}.geoT .geoDel{border:0;background:none;color:var(--muted,#888);cursor:pointer;font-size:15px;padding:0 2px;line-height:1}.geoT .geoDel:hover{color:#C0392B}.geoT .geoAdd{white-space:nowrap}.geoBad{border-color:#C0392B!important;background:#FDECEA!important}
 .viewMenu{position:relative;display:inline-block;margin-bottom:10px}
@@ -286,7 +289,7 @@ body:not(.bar-drop) #man_lever,body:not(.bar-drop) #selLever,body:not(.bar-drop)
 /* Anmeldung (über dem Startbildschirm) */
 #authScr{position:fixed;inset:0;z-index:49;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #authScr[hidden]{display:none}
-#authScr::before{content:"";position:absolute;inset:0;background:#0BA2D6 url("brand/start_bg.jpg") center/100% auto no-repeat}   /* wie die Titelseite */
+#authScr::before{content:"";position:absolute;inset:0;background:#0BA2D6 url("brand/start_bg.jpg") center/cover no-repeat}   /* wie die Titelseite */
 #authScr>.startCard{z-index:1}
 .authIn{position:absolute;z-index:1;left:0;right:0;top:24%;display:flex;flex-direction:column;align-items:center;gap:2.6cqi;color:#fff;text-align:center;padding:0 9cqi}
 .authIn h2{font:italic 700 11cqi/1 "Barlow",system-ui,sans-serif;margin:0}
@@ -332,7 +335,7 @@ body.noPro #startPro,body.noPro #basicBtn{display:none!important}
 .ptools{position:absolute;right:0;top:0;z-index:2;display:flex;flex-direction:column;align-items:flex-end;max-width:60%}
 .ptools .note{margin:4px 0 0;text-align:right}
 #tab-befund{padding-top:44px}
-.nextbar{display:flex;justify-content:flex-start;padding:18px 0 4px}   /* links, damit der Netlify-Hinweis unten rechts nichts verdeckt */
+.nextbar{display:flex;justify-content:flex-start;flex-wrap:wrap;gap:10px;padding:18px 0 4px}   /* links, damit der Netlify-Hinweis unten rechts nichts verdeckt */
 .nextbar .btn{min-width:180px}
 section{padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--rule)}
 section:last-child{border-bottom:0}
@@ -487,6 +490,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <button class="tab" role="tab" data-tab="fit">Sitzposition</button>
       <button class="tab" role="tab" data-tab="pdf">PDF</button>
       <button class="tab" role="tab" data-tab="data">Daten</button>
+      <button class="tab adminOnly" role="tab" data-tab="admin">Admin</button>
     </div>
 
     <div class="panel" id="tab-fit">
@@ -521,16 +525,16 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div id="fitSaddle"></div>
       </section>
       <section>
-        <h2>Griffposition</h2>
+        <h2>Griffposition<button type="button" class="infoBtn" data-tip="Griff X/Y wird über Vorbaulänge und Spacer eingestellt; Lenker, Griff-Reach und Winkel bleiben gleich." aria-label="Info: Griff X/Y wird über Vorbaulänge und Spacer eingestellt; Lenker, Griff-Reach und Winkel bleiben gleich.">i</button></h2>
         <div id="fitGrip"></div>
-        <p class="note" id="gripNote">Griff X/Y wird über Vorbaulänge und Spacer eingestellt; Lenker, Griff-Reach und Winkel bleiben gleich.</p>
+        <p class="note" id="gripNote" hidden></p>
       </section>
       <details class="acc" id="angDetails"><summary>Gelenkwinkel</summary>
         <div id="angTable"></div>
         <p class="note info">Bereich: kleinster und größter Wert über eine Kurbelumdrehung. Richtwerte sind übliche Orientierungswerte für Rennrad und Gravel, keine festen Grenzen.</p>
       </details>
       <div id="fitWarn"></div>
-      <details class="acc"><summary>Kalibrierung des Modells</summary>
+      <details class="acc adminOnly"><summary>Kalibrierung des Modells</summary>
         <p class="note info" style="margin-top:0">Für eine Person mit eingestelltem Ist-Setup die in Contemplas gemessene Kniestreckung (größter Kniewinkel unten) eintragen. Die App ermittelt, wie tief die Hüfte im Sattel sitzen muss, damit das Modell denselben Winkel ergibt.</p>
         <div class="two"><div><label class="f" for="calKnee">Kniestreckung gemessen (°)</label><input class="bfi" id="calKnee" inputmode="decimal" placeholder="z. B. 144"></div>
           <div><label class="f" for="calAnkle">Sprunggelenk 6 Uhr (°, 90 = rechtwinklig)</label><input class="bfi" id="calAnkle" inputmode="decimal" placeholder="z. B. 105"></div></div>
@@ -607,8 +611,8 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     <div class="panel" id="tab-bike" hidden>
       <div class="ptools"><button class="btn ghost small" id="bikeClear">Rad leeren</button></div>
       <section>
-        <h2>Fahrrad</h2>
-        <p class="src-line" id="srcLine"></p>
+        <h2>Fahrrad<button type="button" class="infoBtn" id="bikeInfo" data-tip="" aria-label="Info zur Raddatenbank">i</button></h2>
+        <p class="src-line" id="srcLine" hidden></p>
         <div class="two">
           <div><label class="f" for="brandSel">Marke</label><select id="brandSel"></select></div>
           <div><label class="f" for="modelSel">Modell</label><select id="modelSel"></select></div>
@@ -638,7 +642,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <details class="acc"><summary>Berechnet</summary><div class="res" id="results"></div></details>
       <details class="acc adminOnly" id="fitModelDetails"><summary>Bewertungsmodell Größenempfehlung</summary><div id="fitModelBox"></div></details>
       <details class="acc"><summary>Rahmenfarbe <span class="note" id="colorName" style="margin:0 auto 0 10px;font-weight:400"></span></summary><div class="swatches" id="swatches" style="flex-wrap:wrap"></div></details>
-      <section class="geoSec adminOnly"><div class="row"></div><div id="geoImgBox"></div></section>
+      <section class="geoSec"><div class="row"></div><div id="geoImgBox"></div></section>
       <details class="acc adminOnly" id="bmDetails"><summary>Räder verwalten</summary><p class="note dbstat" style="margin-top:0"></p>
         <div class="row"><button class="btn ghost small" id="newBikeBtn">+ Rad anlegen</button></div>
         <div id="newBikeBox"></div>
@@ -673,11 +677,6 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="row" style="margin-top:8px"><button class="btn small" id="acPwBtn" type="button">Passwort ändern</button><button class="btn ghost small wfOut" type="button">Abmelden</button></div>
         <p class="note" id="acNote"></p>
       </section>
-      <details class="acc adminOnly"><summary>Benutzerverwaltung</summary>
-        <p class="note" style="margin-top:0">Neue Konten registrieren sich selbst und können erst arbeiten, wenn du sie freischaltest. Unter „Zugang“ legst du fest, ob jemand WiFitPro und WiFitBasic oder nur WiFitBasic nutzen darf. Admins haben immer beides und dürfen zusätzlich Teile, Räder und Standardwerte ändern und Benutzer verwalten. Gesperrte Konten kommen nicht mehr in die App; ganz löschen kannst du ein Konto in Supabase unter „Authentication → Users“.</p>
-        <div class="row"><button class="btn ghost small" id="userReload" type="button">Liste aktualisieren</button></div>
-        <div id="userAdmin"></div>
-      </details>
       <section hidden>
         <h2>Passwort für WiFitPro</h2>
         <p class="note" id="pwNote" style="margin-top:0"></p>
@@ -685,10 +684,6 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
           <div><label class="f" for="pwNew2">Wiederholen</label><input class="bfi" id="pwNew2" type="password" autocomplete="new-password"></div></div>
         <div class="row" style="margin-top:8px"><button class="btn small" id="pwSet">Passwort festlegen</button><button class="btn ghost small" id="pwRemove">Sperre aufheben</button></div>
       </section>
-      <details class="acc"><summary>Bericht: Logo und Kontaktdaten</summary>
-        <p class="note info" style="margin-top:0">Gilt für dein Konto: Die Kontaktdaten und dein Logo erscheinen im PDF in der Fußzeile jeder Seite und auf der letzten Seite. Leere Zeilen und kein Logo = Standard (wimove / Wildrad).</p>
-        <div id="brandBox"></div>
-      </details>
       <details class="acc"><summary>Datensicherung</summary>
         <p class="note info" style="margin-top:0">Alle Daten liegen in diesem Browser. Mit einer Sicherung kannst du sie archivieren oder auf einem anderen Gerät weiterarbeiten.</p>
         <div class="row"><button class="btn small" id="exportBtn">Daten sichern (.json)</button><button class="btn ghost small" id="importBtn">Sicherung laden</button><input type="file" id="importIn" accept=".json,application/json" hidden></div>
@@ -701,7 +696,6 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <section>
         <h2>PDF erstellen</h2>
         <p class="src-line" id="pdfWho"></p>
-        <details class="acc adv" id="pkgDetails"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
         <details class="acc" id="pdfSecsBox" style="margin-top:12px" ontoggle="if(document.body.classList.contains('basic')&&!this.open)this.open=true"><summary>Inhalte auswählen <span class="note" id="pdfSecsCount" style="margin:0 auto 0 10px;font-weight:400"></span></summary>
           <div class="row" style="margin-top:4px"><button class="btn ghost small" type="button" id="pdfToggle">Alle auswählen</button></div>
           <div id="pdfSecs"></div>
@@ -724,6 +718,11 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <button class="btn" id="pdfBtn">PDF erstellen</button>
         <p class="note" id="pdfNote"></p>
       </section>
+      <details class="acc adv" id="pkgDetails"><summary>Eigene Pakete und Voreinstellung</summary><div id="pkgMgr"></div></details>
+      <details class="acc"><summary>Bericht: Logo und Kontaktdaten</summary>
+        <p class="note info" style="margin-top:0">Gilt für dein Konto: Die Kontaktdaten und dein Logo erscheinen im PDF in der Fußzeile jeder Seite und auf der letzten Seite. Leere Zeilen und kein Logo = Standard (wimove / Wildrad).</p>
+        <div id="brandBox"></div>
+      </details>
     </div>
 
     <div class="panel" id="tab-befund" hidden>
@@ -741,6 +740,20 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       <details class="acc"><summary>Dynamischer Befund</summary><div id="bfDyn"></div></details>
       <details class="acc"><summary>Mobilitätstests</summary><div id="bfMob"></div><p class="note">BAM = Bewegungsausmaß</p></details>
       <details class="acc"><summary>Muskelfunktion / Krafttests</summary><div id="bfKraft"></div></details>
+    </div>
+    <div class="panel" id="tab-admin" hidden>
+      <section><h2>Admin</h2><p class="note info" style="margin-top:0">Alle festgelegten Richtwerte und Modelle an einer Stelle. Änderungen gelten sofort für alle Fittings; mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern. Jede Radart hat ihre eigene, unabhängige Einstellungsseite: Richtwerte, Disziplinen, Bewertungsmodell, Lenkerbreite und Kurbellänge. Gemeinsam für alle Radarten bleiben nur die Farben der Größenempfehlung.</p>
+        <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div>
+        <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="admCopy">Änderungen für alle Radarten übernehmen</button></div><p class="note" id="admCopyNote"></p></section>
+      <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
+      <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
+      <div id="admMore"></div>
+      <div id="admStdBox"></div>
+      <details class="acc adminOnly" style="margin-top:18px"><summary>Benutzerverwaltung</summary>
+        <p class="note" style="margin-top:0">Neue Konten registrieren sich selbst und können erst arbeiten, wenn du sie freischaltest. Unter „Zugang“ legst du fest, ob jemand WiFitPro und WiFitBasic oder nur WiFitBasic nutzen darf. Admins haben immer beides und dürfen zusätzlich Teile, Räder und Standardwerte ändern und Benutzer verwalten. Gesperrte Konten kommen nicht mehr in die App; ganz löschen kannst du ein Konto in Supabase unter „Authentication → Users“.</p>
+        <div class="row"><button class="btn ghost small" id="userReload" type="button">Liste aktualisieren</button></div>
+        <div id="userAdmin"></div>
+      </details>
     </div>
   </aside>
 </div>
@@ -791,8 +804,8 @@ const COMP = [
   {key:"stemAngle", label:"Vorbauwinkel", g:"Cockpit", unit:"°", min:-25,max:25,step:1,def:-6},
   {key:"stemHeight", label:"Vorbauhöhe (Klemmung)", g:"Cockpit", min:30,max:60,step:1,def:40},
   {key:"barWidth", label:"Lenkerbreite (Mitte–Mitte)", g:"Cockpit", min:300,max:820,step:10,def:420},
-  {key:"barReach", label:"Lenker-Reach (Mitte Oberlenker bis Bremsgriff)", g:"Cockpit", min:30,max:110,step:1,def:60, bars:["drop"]},
-  {key:"leverReach", label:"Bremsgriff-Reach (Beginn Bremsgriff bis Griffpunkt)", g:"Cockpit", min:20,max:90,step:1,def:50, bars:["drop"]},
+  {key:"barReach", label:"Lenker-Reach", info:"Mitte Oberlenker bis Beginn Schalt-/Bremsgriff", g:"Cockpit", min:30,max:110,step:1,def:60, bars:["drop"]},
+  {key:"leverReach", label:"Schalt-/Bremsgriff-Reach", info:"Beginn Schalt-/Bremsgriff bis Griffpunkt", g:"Cockpit", min:20,max:90,step:1,def:50, bars:["drop"]},
   {key:"leverAngle", label:"Bremsgriffwinkel", g:"Cockpit", unit:"°", min:-10,max:20,step:1,def:0, bars:["drop"]},
   {key:"barRise", label:"Lenker-Rise (Griff über Lenkerklemmung)", g:"Cockpit", min:-20,max:80,step:5,def:0, bars:["flat"]},
   {key:"padStack", label:"Armpad-Höhe über Lenkermitte", g:"Cockpit", min:0,max:200,step:5,def:70, bars:["aero"]},
@@ -823,12 +836,13 @@ const PERS = [
   {key:"torso", label:"Oberkörper (Hüftgelenk bis Brustbein)", g:"Segmente", min:380,max:800,step:1, f:p=>p.sternum-(p.inseam+p.hipStand)},
   {key:"shoulderDrop", label:"Schultergelenk unter Schulterdach", g:"Segmente", min:0,max:90,step:1, f:()=>45},
   {key:"protr", label:"Schulterblatt nach vorn (Protraktion)", g:"Segmente", min:0,max:100,step:1, f:()=>40},
-  {key:"elbowT", label:"Ellbogenwinkel (Ziel)", g:"Haltung", unit:"°", min:120,max:180,step:1, f:()=>styleElbow()},
+  {key:"elbowT", label:"Ellbogenwinkel", g:"Haltung", unit:"°", min:120,max:180,step:1, f:()=>styleElbow()},
   {key:"kneeBack", label:"Drehpunkt Knie: + hinter / − vor Kniemitte", g:"Segmente", min:-30,max:30,step:1, f:()=>0},
   {key:"armAdd", label:"Handgelenk bis Griffpunkt (Zuschlag)", g:"Segmente", min:40,max:110,step:1, f:()=>75},
   {key:"upperArm", label:"Oberarm (ab Schultergelenk)", g:"Segmente", min:220,max:400,step:0.1, f:p=>(p.acromion-p.shoulderDrop-p.hand-p.armAdd)*p.armRatio},
   {key:"forearm", label:"Unterarm inkl. Hand bis Griffpunkt", g:"Segmente", min:200,max:450,step:0.1, f:p=>(p.acromion-p.shoulderDrop-p.hand-p.armAdd)*(1-p.armRatio)+p.armAdd},
   {key:"backAngle", label:"Rückenwinkel", g:"Haltung", unit:"°", min:15,max:75,step:1, f:p=>(STYLE_STD[p.style]||STYLE_STD.sportlich).back},
+  {key:"shoulderT", label:"Schulterwinkel", g:"Haltung", unit:"°", min:50,max:120,step:1, f:()=>styleShoulder()},
   {key:"footAngle", label:"Fußwinkel unten (Ferse höher als Ballen; im Rückhub +12°, im Druck −12°)", g:"Haltung", unit:"°", min:0,max:40,step:0.5, f:()=>25}
 ];
 /* Standardwerte je Fahrstil: Rückenwinkel und Schulterwinkel (Zielwerte), Richtwertbereiche jeweils darum herum */
@@ -876,7 +890,7 @@ const typeCompDef=c=>{ const bt=btype(); c.barWidth=barWidthIdeal(); c.stemAngle
 const STYLE_BACK=Object.fromEntries(Object.entries(STYLE_STD).map(([k,v])=>[k,[v.back-5,v.back+5]]));
 const styleShoulder=()=>(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).shoulder;
 const styleElbow=()=>{ const v=(STYLE_STD[S.person&&S.person.style]||STYLE_STD.sportlich).elbow; return isFinite(v)?v:160; };   // Ellbogen-Ziel je Fahrstil (sportlicher = stärker angewinkelt)
-const shoulderRange=()=>[styleShoulder()-10,styleShoulder()+10];
+const shoulderRange=()=>{ const r=styV("shR",10); return [styleShoulder()-r,styleShoulder()+r]; };
 
 /* Pflicht-Messwerte (rechts und links): die Person wird erst gezeichnet, wenn alle eingegeben sind */
 const P_REQ=["height","sternum","inseam","foot","footL","acromion","hand","acromionL","handL","shoulderW"];
@@ -955,7 +969,7 @@ const TYPE_FIX=[["gravel",/^(avona callis|bergamont grandurance|bianchi arcadex|
   ["mtb",/^(avona silva|simplon cirex|focus jarifa)/i],["tri",/^(cervelo p-?series|cube (cube )?aerium|pinarello bolide)/i]];
 function bikeTypeOf(b,m){
   { const t=(b+" "+m).trim(); for(const [ty,re] of TYPE_FIX) if(re.test(t)) return ty; }
-  const k=norm(b)+"|"+norm(m), o=[...BUILTIN_BIKES,...(S.customBikes||[])].find(o=>o.radart&&norm(o.marke)+"|"+norm(o.modell)===k);
+  const k=norm(b)+"|"+norm(m), o=[...BUILTIN_BIKES,...(S.customBikes||[]),...(S.userBikes||[])].find(o=>o.radart&&norm(o.marke)+"|"+norm(o.modell)===k);
   const t=b+" "+m; if(o&&BTYPES[o.radart]) return o.radart==="road"&&GRAVEL_RE.test(m)?"gravel":o.radart;
   return TRI_RE.test(t)&&!/\broad\b/i.test(t)?"tri":MTB_RE.test(m)?"mtb":GRAVEL_RE.test(m)?"gravel":"road";   // MTB nur am Modellnamen (Marken wie „Rocky Mountain“ bauen auch Gravelräder)
 }
@@ -1059,7 +1073,7 @@ function compsFrom(which){
     const pos=validPos(U.pos[which])?U.pos[which]:(validPos(U.pos.ist)?U.pos.ist:null);
     if(pos){ c.setback=pos.sx; c.saddleH=Math.round(Math.hypot(pos.sx,pos.sy)*10)/10; }
   }
-  c.cleat=(S.modelStd&&isFinite(S.modelStd.cleat))?S.modelStd.cleat:72;   // Cleatposition: eigener Standard oder 72 %, nicht aus der Excel
+  c.cleat=cleatStd();   // Cleatposition: Standard der Radart oder 72 %, nicht aus der Excel
   if(U) for(const k of CLEAT_KEYS){   // Cleats aus „Bike Set Up“: leere optimierte Werte übernehmen den Ist-Wert, 0 ist ein echter Wert
     const iv=cleatVal(U.ci,k), ov=cleatVal(U.co,k), v=which==="opt"&&String(ov).trim()!==""?ov:iv;
     if(k==="cleatPct"){ const x=num(v); if(isFinite(x)) c.cleat=x; }
@@ -1084,7 +1098,11 @@ function personFrom(){
 const isFem=()=>!!(S.person&&S.person.sex==="weiblich");
 /* Modellwerte, die als eigener Standard gespeichert werden können (bleiben bei neuen Excel-Dateien erhalten) */
 const MODEL_KEYS=["hipStand","hipFwd","sitBack","sink","shoulderDrop","protr","kneeBack","ankleH","footAngle","armAdd"];   // Ellbogenwinkel kommt aus den Richtwerten je Fahrstil   // Hüftgelenk über Sattel folgt immer Hüftgelenk über Schritthöhe
-const stdVal=k=>S.modelStd&&isFinite(S.modelStd[k])?S.modelStd[k]:NaN;
+/* Modellwerte (Segmente/Haltung) je Radart: Änderung im Admin-Tab > gespeicherter Standard der Radart > früherer gemeinsamer Standard */
+const stdValT=(bt,k)=>{ const T=S.segOvT&&S.segOvT[bt]; if(T&&isFinite(T[k])) return T[k]; const B=S.modelStd&&S.modelStd.byT&&S.modelStd.byT[bt]; if(B&&isFinite(B[k])) return B[k];
+  return S.modelStd&&isFinite(S.modelStd[k])?S.modelStd[k]:NaN; };
+const stdVal=k=>stdValT(btype(),k);
+const cleatStd=(bt=btype())=>{ const v=stdValT(bt,"cleat"); return isFinite(v)?v:72; };   // Cleatposition-Standard je Radart
 /* Fehlende Messwerte: geschlechtsspezifische Normwerte wie in den Spalten I (männlich) und M (weiblich) von „Peronendaten“ */
 function measures(){
   const p=S.person, w=p.sex==="weiblich", m={...p};
@@ -1112,7 +1130,7 @@ function body(){
   /* Zuschlag Handgelenk–Griffpunkt: in der App einstellbar, Standard 75 mm (statt des Excel-Parameters) */
   m.armAdd=isFinite(p.ov.armAdd)?p.ov.armAdd:(isFinite(stdVal("armAdd"))?stdVal("armAdd"):75); m.armRatio=isFinite(X.armRatio)?X.armRatio:0.52; m.legRatio=isFinite(X.legRatio)?X.legRatio:0.52;
   for(const d of PERS){
-    if(d.f){ b[d.key]= isFinite(p.ov[d.key]) ? p.ov[d.key] : (isFinite(p.measured[d.key]) ? p.measured[d.key]+(d.key==="thigh"?m.legRatio*m.hipStand:d.key==="shank"?(1-m.legRatio)*m.hipStand:d.key==="forearm"?m.armAdd:0) : (d.key!=="elbowT"&&isFinite(stdVal(d.key)) ? stdVal(d.key) : d.f(m))); }
+    if(d.f){ b[d.key]= isFinite(p.ov[d.key]) ? p.ov[d.key] : (isFinite(p.measured[d.key]) ? p.measured[d.key]+(d.key==="thigh"?m.legRatio*m.hipStand:d.key==="shank"?(1-m.legRatio)*m.hipStand:d.key==="forearm"?m.armAdd:0) : (d.key!=="elbowT"&&d.key!=="shoulderT"&&isFinite(stdVal(d.key)) ? stdVal(d.key) : d.f(m))); }
     else b[d.key]=m[d.key];
   }
   /* Segmente der linken Seite (hinteres Bein und hinterer Arm) */
@@ -1126,8 +1144,9 @@ function personTag(k){
   if(!d.f) return isFinite(p[k])?["",false]:["Normwert "+p.sex,false];   // Messwerte: eigenständig, ohne Bezug auf eine Tabelle
   if(isFinite(p.measured[k])) return ["gemessen",false];
   if(k==="backAngle") return [p.autoBack?"automatisch":"Fahrstil "+p.style,false];
+  if(k==="shoulderT"||k==="elbowT") return ["Fahrstil "+p.style,false];
   if(isFinite(stdVal(k))) return ["Standard",false];
-  return [["ankleH","hipFwd","footAngle","hipStand","shoulderDrop","kneeBack","sitBack","armAdd","sink","protr","elbowT"].includes(k)?"Standard":"berechnet",false];
+  return [["ankleH","hipFwd","footAngle","hipStand","shoulderDrop","kneeBack","sitBack","armAdd","sink","protr","elbowT","shoulderT"].includes(k)?"Standard":"berechnet",false];
 }
 
 /* ================= Werte je Rad ================= */
@@ -1647,7 +1666,7 @@ let cur=null; // letzte Berechnung
 /* ================= Vorschlag optimale Sitzposition ================= */
 const SUG_DEF={knee:145,kops:0,back:NaN,shoulder:NaN,elbow:160};
 const sugOv=()=>btype()==="road"?S.sugT:((S.sugTT||{})[btype()]);   // Zielwerte je Radart getrennt
-const sugT=()=>{ const eT=(()=>{ try{ const v=body().elbowT; return isFinite(v)?v:160; }catch(e){ return 160; } })(); const t={...SUG_DEF,kops:KOPS_T[btype()],elbow:eT,...(sugOv()||{})}; for(const k in t) if(!(typeof t[k]==="number"&&isFinite(t[k]))) t[k]=k==="back"?NaN:k==="shoulder"?styleShoulder():k==="kops"?KOPS_T[btype()]:SUG_DEF[k]; return t; };
+const sugT=()=>{ const eT=(()=>{ try{ const v=body().elbowT; return isFinite(v)?v:160; }catch(e){ return 160; } })(); const t={...SUG_DEF,knee:styV("kneeT",145),kops:styV("kops",KOPS_T[btype()]),elbow:eT,...(sugOv()||{})}; for(const k in t) if(!(typeof t[k]==="number"&&isFinite(t[k]))) t[k]=k==="back"?NaN:k==="shoulder"?(()=>{ try{ const v=body().shoulderT; return isFinite(v)?v:styleShoulder(); }catch(e){ return styleShoulder(); } })():k==="kops"?styV("kops",KOPS_T[btype()]):k==="knee"?styV("kneeT",145):SUG_DEF[k]; return t; };
 let sugCache={key:"",val:null};
 const styleBack=()=>(STYLE_STD[S.person.style]||STYLE_STD.sportlich).back;
 const STEM_PREF=0.6;
@@ -1712,17 +1731,17 @@ let crankCache={key:"",val:null};
 function crankAdvice(){
   if(!personReady()) return null;
   const r=suggest(), p=r.parts, c0=S.comp.crank, bt=btype(), M=FITM;
-  const dd=discOf(bt), hipT=M["dhip_"+bt+"_"+dd], kneeT=M["dknee_"+bt+"_"+dd];   // Grenzwerte je Disziplin
-  const key=JSON.stringify([p,r.grip,r.back,c0,hipT,kneeT,M.crankMinL,M.crankMaxL,M.crankPct,M.crankBase,S.person.inseam,S.bar]);
+  const dd=discOf(bt), stH=STYLE_T[bt]&&STYLE_T[bt][S.person.style||"sportlich"], hipT=stH&&isFinite(stH.hip)?stH.hip:M["dhip_"+bt+"_"+dd];   // Hüfte min je Fahrstil   // Grenzwerte je Disziplin
+  const key=JSON.stringify([p,r.grip,r.back,c0,hipT,M.crankMinL,M.crankMaxL,M.crankPct,M.crankBase,S.person.inseam,S.bar]);
   if(crankCache.key===key) return crankCache.val;
   const list=[]; for(let L=Math.max(140,M.crankMinL||160);L<=Math.min(190,M.crankMaxL||175)+0.01;L+=2.5) list.push(L);
   const ins=crankByInseam(); if(isFinite(ins)&&!list.includes(ins)){ list.push(ins); list.sort((a,b)=>a-b); }
   const rows=list.map(L=>{ const sh=p.saddleH+(c0-L), sy=Math.sqrt(Math.max(0,sh*sh-p.setback*p.setback)); S.comp.crank=L;
     let e=null; try{ e=evalPos({x:-p.setback,y:sy},r.grip,r.back); }catch(err){} S.comp.crank=c0;
-    return {L,hip:e?e.hipMin:NaN,knee:e?e.kneeMin:NaN,ok:!!e&&e.hipMin>=hipT&&e.kneeMin>=kneeT}; });
+    return {L,hip:e?e.hipMin:NaN,knee:e?e.kneeMin:NaN,ok:!!e&&e.hipMin>=hipT}; });
   /* Empfehlung = Formel aus der Schrittlänge; Hüft-/Kniewinkel nur noch als Hinweis */
   const ok=rows.filter(x=>x.ok), byIns=rows.find(x=>x.L===ins), pick=byIns||(ok.length?ok[ok.length-1]:rows[0]);
-  const val={L:pick.L,hip:pick.hip,knee:pick.knee,hipT,kneeT,rows,anyOk:ok.length>0,inseamL:ins,ok:pick.ok,byInseam:!!byIns};
+  const val={L:pick.L,hip:pick.hip,knee:pick.knee,hipT,rows,anyOk:ok.length>0,inseamL:ins,ok:pick.ok,byInseam:!!byIns};
   crankCache={key,val}; return val;
 }
 /* Kurbellänge aus der Schrittlänge (Grundwert + Faktor × Schrittlänge, auf 2,5 mm gerundet) – wird übernommen, solange die Kurbel nicht von Hand gewählt wurde */
@@ -1730,7 +1749,7 @@ const crankByInseam=()=>{ const ins=S.person&&S.person.inseam, M=FITM; if(!isFin
   const L=Math.round(((M.crankBase??110)+ins*(M.crankPct||0.0725))/2.5)*2.5; return Math.min(M.crankMaxL||180,Math.max(M.crankMinL||150,L)); };
 function autoCrank(){ if(S.crankManual||(S.person.entered&&!S.person.entered.inseam)) return;   /* nur echte, eingegebene Schrittlänge */ const L=crankByInseam(); if(isFinite(L)&&L!==S.comp.crank){ S.comp.crank=L; try{ if(!updateSelPart("crank",L)) clearSelFor("crank"); syncComp(); }catch(e){} } }
 const shWithCrank=sh=>{ const a=crankAdvice(); return a&&isFinite(a.L)?Math.round(sh+(S.comp.crank-a.L)):sh; };   // Sattelhöhe passend zur empfohlenen Kurbel
-const crankTxt=a=>a?`Kurbel <b>${String(a.L).replace(".",",")} mm</b> (${a.byInseam?"nach Schrittlänge; ":""}Hüfte ${String(a.ok?Math.round(a.hip):Math.floor(a.hip*10)/10).replace(".",",")}° / Knie ${String(a.ok?Math.round(a.knee):Math.floor(a.knee*10)/10).replace(".",",")}° oben${a.ok?"":` – <span class="bad">unter dem Mindestwert (Hüfte ${a.hipT}° / Knie ${a.kneeT}°), kürzere Kurbel prüfen</span>`})`:"";
+const crankTxt=a=>a?`Kurbel <b>${String(a.L).replace(".",",")} mm</b> (${a.byInseam?"nach Schrittlänge; ":""}Hüfte ${String(a.ok?Math.round(a.hip):Math.floor(a.hip*10)/10).replace(".",",")}° oben${a.ok?"":` – <span class="bad">unter dem Mindestwert (Hüfte ${a.hipT}°), kürzere Kurbel prüfen</span>`})`:"";
 function renderSug(){
   const T=sugT();
   for(const [id,k] of [["tKnee","knee"],["tKops","kops"],["tBack","back"],["tShoulder","shoulder"],["tElbow","elbow"]]){ const el=$(id); if(document.activeElement!==el) el.value=isFinite(T[k])?T[k]:(k==="back"?styleBack():""); }
@@ -1835,7 +1854,7 @@ function ghostSVG(g,op,col){
 }
 
 /* ================= Auswertung ================= */
-const RANGES={kneeMax:[140,150],hipMin:[50,999],shoulder:[75,95],elbow:[145,165],ankleExt:[100,120]};   // Sprunggelenk unten: 90° = rechtwinklig
+const RANGES={get kneeMax(){ return [styV("kneeLo",140),styV("kneeHi",150)]; },get hipMin(){ return [styV("hip",50),999]; },shoulder:[75,95],get elbow(){ return [styV("elbowLo",145),styV("elbowHi",165)]; },get ankleExt(){ return [styV("ankleLo",100),styV("ankleHi",120)]; }};   // Bereiche aus den Richtwerten je Fahrstil (Admin)   // Sprunggelenk unten: 90° = rechtwinklig
 function rate(v,r){ if(!r) return ""; if(v<r[0]-0.5) return `<span class="bad">zu klein</span>`; if(v>r[1]+0.5) return `<span class="bad">zu groß</span>`; return `<span class="good">im Bereich</span>`; }
 function renderSummary(){
   const {g,J,cyc}=cur, t=target();
@@ -1868,12 +1887,12 @@ function renderFit(){
   document.getElementById("kopsNote").innerHTML=`Knielot der aktuellen Einstellung (Kurbel auf 3 Uhr): <span class="${kOk?"good":"bad"}">${kopsText(ko)}</span>${kOk?"":` (${sgn(ko.dx)} mm)`}.`;
   // Winkel
   const style=S.person.style, A=[
-    ["Knie","knee",`${dg(cyc.kneeMin)} – ${dg(cyc.kneeMax)}`,"gestreckt 140–150°",rate(cyc.kneeMax,RANGES.kneeMax)],
-    ["Hüfte","hip",`${dg(cyc.hipMin)} – ${dg(cyc.hipMax)}`,"geschlossen ≥ 50°",rate(cyc.hipMin,RANGES.hipMin)],
-    ["Sprunggelenk","ankle",`${dg(cyc.ankleMin)} – ${dg(cyc.ankleMax)}`,`gestreckt ${dg(cyc.ankleExt)}`,""],
+    ["Knie","knee",`${dg(cyc.kneeMin)} – ${dg(cyc.kneeMax)}`,`gestreckt ${RANGES.kneeMax[0]}–${RANGES.kneeMax[1]}°`,rate(cyc.kneeMax,RANGES.kneeMax)],
+    ["Hüfte","hip",`${dg(cyc.hipMin)} – ${dg(cyc.hipMax)}`,`geschlossen ≥ ${RANGES.hipMin[0]}°`,rate(cyc.hipMin,RANGES.hipMin)],
+    ["Sprunggelenk","ankle",`${dg(cyc.ankleMin)} – ${dg(cyc.ankleMax)}`,`gestreckt ${RANGES.ankleExt[0]}–${RANGES.ankleExt[1]}°`,rate(cyc.ankleExt,RANGES.ankleExt)],
     ["Rücken zur Waagerechten","back","",`${STYLE_BACK[style][0]}–${STYLE_BACK[style][1]}° (${style})`,rate(J.back,STYLE_BACK[style])],
     ["Schulter","shoulder","",`${shoulderRange()[0]}–${shoulderRange()[1]}° (${S.person.style})`,rate(J.shoulder,shoulderRange())],
-    ["Ellbogen","elbow","","145–165°",R.armOver>0?`<span class="bad">nicht erreichbar</span>`:rate(J.elbow,RANGES.elbow)]
+    ["Ellbogen","elbow","",`${RANGES.elbow[0]}–${RANGES.elbow[1]}°`,R.armOver>0?`<span class="bad">nicht erreichbar</span>`:rate(J.elbow,RANGES.elbow)]
   ];
   let a=`<table class="t"><tr><th>Gelenk</th><th>Jetzt</th><th>Bereich</th><th>Richtwert</th></tr>`;
   for(const [n,k,rg,rw,st] of A) a+=`<tr><td>${n}<br><span class="note" style="margin:0">${st}</span></td><td id="ja_${k}">${dg(J[k])}</td><td>${rg}</td><td class="r">${rw}</td></tr>`;
@@ -1905,11 +1924,12 @@ function fitToTarget(){
 }
 
 /* ================= Eingabefelder ================= */
+function infoH(t){ const e=String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); return `<button type="button" class="infoBtn" data-tip="${e}" aria-label="Info: ${e}">i</button>`; }   // i-Button (auch vor ib() nutzbar)
 function makeControls(boxId,prefix,list,get,set,tag){
   const box=document.getElementById(boxId); let h="",grp="";
   for(const p of list){
     if(p.g&&p.g!==grp){grp=p.g; h+=`<h3>${grp}</h3>`;}
-    h+=`<div class="param"><label class="lbl" for="${prefix}n_${p.key}">${p.label} <span class="src" id="${prefix}s_${p.key}"></span></label>
+    h+=`<div class="param"><label class="lbl" for="${prefix}n_${p.key}">${p.label}${p.info?infoH(p.info):""} <span class="src" id="${prefix}s_${p.key}"></span></label>
       <input type="number" id="${prefix}n_${p.key}" step="${p.step||1}" aria-label="${p.label} in ${p.unit||"mm"}">
       <input type="range" id="${prefix}r_${p.key}" min="${p.min}" max="${p.max}" step="${p.step||1}" aria-label="${p.label}"${prefix==="p"?' tabindex="-1"':""}></div>`;   // Tab springt im Tab „Person“ von Eingabefeld zu Eingabefeld
   }
@@ -1953,6 +1973,7 @@ function initControls(){
     const sp=(r.x*sd.y-r.y*sd.x)/det, L=(u.x*r.y-u.y*r.x)/det;
     c.spacer=Math.round(sp*10)/10; c.stemLen=Math.round(L*10)/10;
     const n=document.getElementById("gripNote");
+    if(n) n.hidden=false;
     if(n) n.innerHTML=`Eingestellt über Vorbau <b>${c.stemLen} mm</b> und Spacer <b>${c.spacer} mm</b>.`+(c.spacer<0?" <span class=\"bad\">Negative Spacer sind nicht möglich – Vorbauwinkel oder Rahmen ändern.</span>":"")+(c.stemLen<40||c.stemLen>150?" <span class=\"bad\">Vorbaulänge außerhalb üblicher Maße.</span>":"");
   };
   setGripFn=setGrip;
@@ -1992,13 +2013,14 @@ function initControls(){
   const s3=makeControls("pLeft","p",sideL(["acromionL","handL"]),lGet,lSet,lTag);
   const s3b=makeControls("pBottom","p",pick(["shoulderW"]),pGet,pSet,pTag);
   const s4=makeControls("pSeg","p",PERS.filter(d=>d.g==="Segmente").map(d=>({...d,g:""})),pGet,pSet,pTag);
-  const s5=makeControls("pHalt","p",PERS.filter(d=>d.g==="Haltung").map(d=>({...d,g:""})),pGet,pSet,pTag);
+  const s5=makeControls("pHalt","p",["backAngle","shoulderT","elbowT"].map(k=>PERS.find(d=>d.key===k)).map(d=>({...d,g:""})),pGet,pSet,pTag);   // Fußwinkel bleibt Standard (25°), nicht mehr unter Haltung
   /* Modell-Feinwerte der Segmente nur für Admins sichtbar */
   for(const k of ["hipStand","ankleH","sitBack","sink","hipFwd","hipSit","shoulderDrop","protr","kneeBack","armAdd"]){ const n=document.getElementById("pn_"+k); if(n) n.closest(".param").classList.add("adminOnly"); }
   { const pc=document.getElementById("pCleat"); if(pc) pc.classList.add("adminOnly"); }
-  /* Haltung: Nutzer sehen nur den Rückenwinkel */
-  for(const k of ["elbowT","footAngle"]){ const n=document.getElementById("pn_"+k); if(n) n.closest(".param").classList.add("adminOnly"); }
   { const sb=document.getElementById("styleStdBox"); if(sb) sb.classList.add("adminOnly"); }
+  /* eigener Admin-Tab: alle festgelegten Richtwerte und Modelle dorthin verschieben */
+  { const mv=(el,to)=>{ if(el&&$(to)) $(to).appendChild(el); };
+    mv($("styleStdBox"),"admStyleBox"); mv($("fitModelDetails"),"admMore"); mv($("compModelDetails"),"admMore"); mv($("stdBox"),"admStdBox"); }
   syncPerson=()=>{ s1();s1b();s1c();s2();s3();s3b();s4();s5(); try{ decorateNorms(); }catch(e){} markPending(); };
   try{ applyBtypeUI(); }catch(e){}
   document.querySelectorAll(".subtab").forEach(b=>b.onclick=()=>{ const R=b.dataset.side==="R";
@@ -2040,19 +2062,20 @@ function renderManual(){
     let box=document.getElementById("man_"+k); if(!box){ box=document.createElement("div"); box.id="man_"+k; sel.insertAdjacentElement("afterend",box); }
     if(S.compSel[k]){ box.innerHTML=""; continue; }
     if(box.contains(document.activeElement)) continue;   // nicht während der Eingabe neu aufbauen
+    { const ex=[...box.querySelectorAll("[data-man]")]; if(ex.length===keys.length&&ex.every((e,i)=>e.dataset.man===keys[i])){ ex.forEach(e=>{ const v=S.comp[e.dataset.man], t=isFinite(v)?String(v):""; if(e.value!==t) e.value=t; }); continue; } }   // Felder behalten (Pfeile bleiben bedienbar), nur Werte setzen
     box.innerHTML=keys.map(key=>{ const p=COMP.find(x=>x.key===key), v=S.comp[key];
-      return `<div class="param manParam" style="padding:3px 0"><label class="lbl" for="man_${key}" style="font-size:13px">${esc(p.label)}${p.unit?` (${p.unit})`:" (mm)"}</label><input type="number" id="man_${key}" data-man="${key}" step="${p.step||1}" value="${isFinite(v)?v:""}"></div>`; }).join("");
+      return `<div class="param manParam" style="padding:3px 0"><label class="lbl" for="man_${key}" style="font-size:13px">${esc(p.label)}${p.unit?` (${p.unit})`:" (mm)"}${p.info?infoH(p.info):""}</label><input type="number" id="man_${key}" data-man="${key}" step="${p.step||1}" value="${isFinite(v)?v:""}"></div>`; }).join("");
     box.querySelectorAll("[data-man]").forEach(el=>el.onchange=()=>{ const x=num(el.value); if(!isFinite(x)) return; S.comp[el.dataset.man]=x; syncComp(); render(); save(); });
   }
 }
 /* fehlende Maße des gewählten Teils direkt eintragen; der Wert wird am Teil gespeichert */
-const MISS=[["bar","bars","reach","barReach","Lenker-Reach – Mitte Oberlenker bis Bremsgriff (mm)"],["barI","bars","angle","stemAngle","Vorbauwinkel Cockpit (°)"],["barI","bars","height","stemHeight","Vorbauhöhe Cockpit (mm)"],["stem","stems","angle","stemAngle","Vorbauwinkel (°)"],["stem","stems","height","stemHeight","Vorbauhöhe (mm)"],
-  ["lever","levers","reach","leverReach","Bremsgriff-Reach – Beginn Bremsgriff bis Griffpunkt (mm)"],["pedal","pedals","stack","pedalStack","Stack Height Pedal (mm)"],["shoe","shoes","sole","sole","Sohlendicke (mm)"]];
+const MISS=[["bar","bars","reach","barReach","Lenker-Reach (mm)","Mitte Oberlenker bis Beginn Schalt-/Bremsgriff"],["barI","bars","angle","stemAngle","Vorbauwinkel Cockpit (°)"],["barI","bars","height","stemHeight","Vorbauhöhe Cockpit (mm)"],["stem","stems","angle","stemAngle","Vorbauwinkel (°)"],["stem","stems","height","stemHeight","Vorbauhöhe (mm)"],
+  ["lever","levers","reach","leverReach","Schalt-/Bremsgriff-Reach (mm)","Beginn Schalt-/Bremsgriff bis Griffpunkt"],["pedal","pedals","stack","pedalStack","Stack Height Pedal (mm)"],["shoe","shoes","sole","sole","Sohlendicke (mm)"]];
 function renderMissing(){
   const box=document.getElementById("compMissing"); if(!box) return;
   const L=FIT.lists, bar=L.bars.find(x=>x.name===S.compSel.bar), integ=!!(bar&&isFinite(bar.angle));
   let h="";
-  for(const [sel,t,f,ck,lab] of MISS){
+  for(const [sel,t,f,ck,lab0,inf] of MISS){ const lab=lab0+(inf?infoH(inf):"");
     if(sel==="stem"&&integ) continue;
     if(sel==="barI"&&!integ) continue;   // Cockpit-Maße nur bei integriertem Cockpit
     const name=S.compSel[sel==="barI"?"bar":sel], part=name&&(L[t]||[]).find(x=>x.name===name);
@@ -2154,7 +2177,7 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["barFacRoad","_alt","Rennrad/Gravel: Faktor × Schulterbreite","",0.945,0.005,"Lenkerbreite (Mitte–Mitte) = Schulterbreite × Faktor, gerundet auf 20 mm"],
   ["barFacTri","_alt","Triathlon: Faktor × Schulterbreite","",1,0.005,"Basislenker = Schulterbreite × Faktor, gerundet auf 20 mm"],
   ["barFacMtb","_alt","MTB: Faktor × Körpergröße","",0.42,0.005,"Lenkerbreite = Körpergröße × Faktor, gerundet auf 20 mm"],
-  ...STYLE_KEYS.map(st=>["barSt_"+st,"Lenkerbreite",`Sitzposition ${st}: Faktor`,"",BAR_STYLE_DEF[st],0.005,st==="comfort"?"wird mit dem Lenker-Faktor der Disziplin (Tabelle unten) multipliziert":""]),
+  ...STYLE_KEYS.map(st=>["barSt_"+st,"Lenkerbreite",`Sitzposition ${st}: Faktor`,"",BAR_STYLE_DEF[st],0.005,""]),
   ...DISC_T.mtb.map(([k,l,,b])=>["discBar_mtb_"+k,"_alt",`MTB ${l}: Faktor`,"",b,0.005,""]),
   ...DISC_KEYS.flatMap(([bt,k])=>[["dbar_"+bt+"_"+k,"_disc","","",DISC_BAR_DEF[bt][k],0.005,""],["dhip_"+bt+"_"+k,"_disc","","°",bt==="tri"?45:48,1,""],["dknee_"+bt+"_"+k,"_disc","","°",58,1,""]]),
   ["crankHipRoad","_alt","Rennrad/Gravel: Hüfte geschlossen mindestens","°",48,1,"längste Kurbel, bei der der kleinste Hüftwinkel (oberer Totpunkt) nicht darunter fällt"],
@@ -2163,7 +2186,7 @@ const FITM_DEF=[   // [Schlüssel, Gruppe, Bezeichnung, Einheit, Grundwert, Schr
   ["crankKnee","_alt","Knie gebeugt mindestens","°",58,1,"kleinster Kniewinkel im oberen Totpunkt"],
   ["crankMinL","Kurbellänge","Kürzeste Kurbel","mm",160,2.5,"Suchbereich in 2,5-mm-Schritten"],
   ["crankMaxL","Kurbellänge","Längste Kurbel","mm",175,2.5,""],
-  ["crankBase","Kurbellänge","Empfehlung: Grundwert","mm",110,1,"Kurbellänge = Grundwert + Faktor × Schrittlänge (760 mm → 165, 895 mm → 175) – gilt überall"],
+  ["crankBase","Kurbellänge","Empfehlung: Grundwert","mm",110,1,""],
   ["crankPct","Kurbellänge","Empfehlung: Faktor × Schrittlänge","",0.0725,0.0005,"gerundet auf 2,5 mm"],
   ...DISC_T.tri.map(([k,l,o])=>["disc_tri_"+k,"Disziplin Triathlon",l+": Rückenwinkel","°",o,0.5,k==="kurz"?"wird zum Rückenwinkel-Ziel der Sitzposition addiert (+ = aufrechter)":""]),
   ...DISC_T.mtb.map(([k,l,o])=>["disc_mtb_"+k,"Disziplin MTB",l+": Rückenwinkel","°",o,0.5,k==="xc"?"wird zum Rückenwinkel-Ziel der Sitzposition addiert (+ = aufrechter)":""]),
@@ -2174,10 +2197,40 @@ const FITM={}; for(const d of FITM_DEF) FITM[d[0]]=d[4];
 const STEM_FACTORY={comfort:90,endurance:100,sportlich:105,ambitioniert:115,professional:125}, SPACER_FACTORY={comfort:25,endurance:20,sportlich:15,ambitioniert:10,professional:5};
 const STEM_FACTORY_T={road:STEM_FACTORY,gravel:{comfort:80,endurance:90,sportlich:95,ambitioniert:105,professional:115},tri:{comfort:80,endurance:85,sportlich:90,ambitioniert:100,professional:110},mtb:{comfort:50,endurance:55,sportlich:60,ambitioniert:70,professional:80}};
 const SPACER_FACTORY_T={road:SPACER_FACTORY,gravel:{comfort:30,endurance:25,sportlich:20,ambitioniert:15,professional:10},tri:{comfort:30,endurance:25,sportlich:20,ambitioniert:10,professional:5},mtb:{comfort:20,endurance:15,sportlich:10,ambitioniert:5,professional:0}};
+let ADM_BT=null; const admBt=()=>BTYPES[ADM_BT]?ADM_BT:btype();   // im Admin-Tab bearbeitete Radart (Standard: aktuelle)
+function renderSegStd(){ const box=$("admSegBox"); if(!box) return; const bt=admBt(), P0=body();
+  const tag=k=>S.segOvT&&S.segOvT[bt]&&isFinite(S.segOvT[bt][k])?'<small class="src edit">geändert</small>':isFinite(stdValT(bt,k))?'<small class="src">Standard</small>':'<small class="src">App-Wert</small>';
+  const CLD={key:"cleat",label:"Cleatposition (% Fußlänge ab Ferse)",unit:"%",min:40,max:90,step:0.5,f:()=>72};
+  const dOf=k=>k==="cleat"?CLD:PERS.find(x=>x.key===k);
+  box.innerHTML=`<div class="fitmGrid">`+[...MODEL_KEYS,"cleat"].map(k=>{ const d=dOf(k); if(!d) return ""; const v=isFinite(stdValT(bt,k))?stdValT(bt,k):d.f(P0);
+    return `<label for="sg_${k}">${esc(d.label)}</label><div class="fitmIn"><input class="bfi" id="sg_${k}" type="number" step="${d.step||1}" data-seg="${k}" value="${Math.round(v*10)/10}" style="max-width:90px"><span class="note" style="margin:0">${d.unit||"mm"}</span>${tag(k)}</div>`; }).join("")+`</div>`;
+  box.querySelectorAll("[data-seg]").forEach(el=>el.onchange=()=>{ const k=el.dataset.seg, d=dOf(k), x=num(el.value); if(!isFinite(x)||x<d.min||x>d.max){ renderSegStd(); return; }
+    S.segOvT=S.segOvT||{}; (S.segOvT[bt]=S.segOvT[bt]||{})[k]=x; if(bt===btype()&&S.person.ov) delete S.person.ov[k];
+    if(k==="cleat"&&bt===btype()){ S.comp.cleat=x; if(S.compBase) S.compBase.cleat=x; try{ syncComp(); }catch(e){} }
+    sugCache.key=""; sizeFitCache.key=""; markEdited(el); setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
+/* geänderte Werte der gezeigten Radart auf alle anderen Radarten übertragen */
+function admCopyAll(){ const bt=admBt(), others=Object.keys(BTYPES).filter(b=>b!==bt); let n=0;
+  for(const [k,v] of Object.entries(S.fitOv||{})){ let m;
+    if(k.startsWith(bt+"__")){ for(const o of others) S.fitOv[o+"__"+k.slice(bt.length+2)]=v; n++; }
+    else if((m=k.match(/^(?:([a-z]+)_)?(stem|spacer)_(\w+)$/))&&(m[1]||"road")===(bt==="road"?"road":bt)&&kpT(bt)===(m[1]?m[1]+"_":"")){ for(const o of others) S.fitOv[kpT(o)+m[2]+"_"+m[3]]=v; n++; } }
+  const O=styleOvOf(bt); for(const [st,vals] of Object.entries(O)) for(const [k,v] of Object.entries(vals||{})){ if(!isFinite(v)) continue; n++;
+    for(const o of others){ let O2; if(o==="road") O2=S.styleOv=S.styleOv||{}; else { S.styleOvT=S.styleOvT||{}; O2=S.styleOvT[o]=S.styleOvT[o]||{}; } (O2[st]=O2[st]||{})[k]=v; } }
+  const G=(S.segOvT||{})[bt]||{}; for(const [k,v] of Object.entries(G)){ n++; for(const o of others) (S.segOvT[o]=S.segOvT[o]||{})[k]=v; if(S.person.ov) delete S.person.ov[k]; }
+  applyFitModel(); applyStyleStd(); fitModelChanged(); renderStyleStd(); renderSegStd(); syncPerson(); render(); save();
+  $("admCopyNote").textContent=n?`${n} geänderte Werte von „${BTYPES[bt]}“ auf alle Radarten übertragen. Mit „Modellwerte als Standard speichern“ (unten) dauerhaft sichern.`:`Auf der Seite „${BTYPES[bt]}“ gibt es keine geänderten Werte (markiert mit „geändert“) zum Übertragen.`; }
+function renderAdmBt(){ const g=$("admBt"); if(!g) return; const b=admBt();
+  g.innerHTML=Object.entries(BTYPES).map(([k,l])=>`<button type="button" data-adm="${k}" aria-pressed="${k===b}" style="flex:1 1 auto"${k===btype()?' title="Radart des aktuellen Fittings"':""}>${l}${k===btype()?" •":""}</button>`).join("");
+  g.querySelectorAll("[data-adm]").forEach(x=>x.onclick=()=>{ ADM_BT=x.dataset.adm; try{ renderStyleStd(); }catch(e){} try{ renderFitModel(); }catch(e){} try{ renderSegStd(); }catch(e){} $("admCopyNote").textContent=""; });
+  const cb=$("admCopy"); if(cb){ cb.textContent=`Änderungen von „${BTYPES[b]}“ für alle Radarten übernehmen`; cb.onclick=admCopyAll; } try{ renderSegStd(); }catch(e){} }
 const STEM_T={}, SPACER_T={}, kpT=bt=>bt==="road"?"":bt+"_";   // Schlüssel: stem_comfort (Rennrad), tri_stem_comfort, mtb_stem_comfort …
+/* Jede Radart hat ihre eigenen Modellwerte (Schlüssel „radart__wert“); solange nicht eigens gesetzt, gilt der frühere gemeinsame Wert */
+const FITM_TYPED=new Set(FITM_DEF.filter(x=>x[1][0]!=="_"&&x[1]!=="Farben"&&!/^Disziplin/.test(x[1])).map(x=>x[0]));
+const fitmKeyT=(bt,k)=>FITM_TYPED.has(k)?bt+"__"+k:k;
+function fitmOf(bt,k){ const o=S.fitOv||{}, d=(S.modelStd&&S.modelStd.fitModel)||{}, x=FITM_DEF.find(e=>e[0]===k), def=x?x[4]:NaN, t=fitmKeyT(bt,k);
+  return isFinite(o[t])?o[t]:isFinite(d[t])?d[t]:isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:def; }
 function applyFitModel(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
   const o=S.fitOv||{}, d=(S.modelStd&&S.modelStd.fitModel)||{}, pick=(k,def)=>isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:def;
-  for(const x of FITM_DEF) FITM[x[0]]=pick(x[0],x[4]);
+  for(const x of FITM_DEF) FITM[x[0]]=FITM_TYPED.has(x[0])?fitmOf(btype(),x[0]):pick(x[0],x[4]);
   /* Werte je Disziplin: solange nicht eigens gesetzt, aus den bisherigen Einstellungen je Radart übernehmen */
   const has=k=>isFinite(o[k])||isFinite(d[k]);
   for(const [bt,k] of DISC_KEYS){ const B="dbar_"+bt+"_"+k, Hk="dhip_"+bt+"_"+k, Kk="dknee_"+bt+"_"+k;
@@ -2192,43 +2245,42 @@ function applyFitModel(){   // Reihenfolge: aktuelle Änderung > gespeicherte We
   Object.assign(STEM_BY_STYLE,STEM_T[btype()]); Object.assign(SPACER_BY_STYLE,SPACER_T[btype()]);
 }
 const fitModelKey=()=>JSON.stringify([FITM,STEM_BY_STYLE,SPACER_BY_STYLE,btype()]);
-function fitModelVals(){ const v={...FITM}; for(const bt of Object.keys(BTYPES)) for(const st of Object.keys(STEM_FACTORY)){ v[kpT(bt)+"stem_"+st]=STEM_T[bt][st]; v[kpT(bt)+"spacer_"+st]=SPACER_T[bt][st]; } return v; }
+function fitModelVals(){ const v={...FITM}; for(const k of FITM_TYPED){ delete v[k]; for(const bt of Object.keys(BTYPES)) v[bt+"__"+k]=fitmOf(bt,k); }   /* je Radart getrennt speichern */ for(const bt of Object.keys(BTYPES)) for(const st of Object.keys(STEM_FACTORY)){ v[kpT(bt)+"stem_"+st]=STEM_T[bt][st]; v[kpT(bt)+"spacer_"+st]=SPACER_T[bt][st]; } return v; }
 function fitModelChanged(){ sugCache.key=""; cmpFit={}; sizeFitCache.key=""; try{ updateSizeFit(); if(cmpSlots().some(x=>x.b)) fillCmp(); }catch(e){} try{ render(); }catch(e){} save(); }
 const COMP_FITM=["Lenkerbreite","Kurbellänge"];   // diese Gruppen stehen im Tab Bauteile, der Rest unter Rad
 /* Tabelle im Tab Bauteile: Lenkerfaktor sowie Hüft- und Kniewinkel-Minimum (Kurbellänge) je Disziplin */
-function discCompTable(tag){
-  const cell=(k,st)=>`<div><input class="bfi" type="number" step="${st}" data-fitm="${k}" value="${FITM[k]}" aria-label="${k}">${tag(k)||'<small class="src">&nbsp;</small>'}</div>`;
-  let h=`<h3 style="margin:16px 0 4px">Je Disziplin</h3><p class="note" style="margin-top:0">Lenker: Rennrad, Gravel und Triathlon × Schulterbreite, MTB × Körpergröße – danach × Faktor der Sitzposition, gerundet auf 20 mm. Kurbellänge kommt aus der Schrittlänge (Formel oben); Hüfte/Knie min: Warnung im Vorschlag, wenn diese Winkel im oberen Totpunkt unterschritten werden.</p>
-    <div class="bfg styleGrid discGrid"><span></span><b>Lenker-Faktor</b><b>Hüfte min (°)</b><b>Knie min (°)</b>`;
-  for(const bt of Object.keys(BTYPES)){ h+=`<div class="suh" style="grid-column:1/-1;align-items:flex-start;margin-top:8px">${BTYPES[bt]}</div>`;
-    for(const [k,l] of DISC_T[bt]) h+=`<span>${esc(l)}</span>${cell("dbar_"+bt+"_"+k,0.005)}${cell("dhip_"+bt+"_"+k,1)}${cell("dknee_"+bt+"_"+k,1)}`; }
-  return h+`</div>`; }
+function discCompTable(tag){   // Lenker-Faktor je Disziplin – Zeilen in der Gruppe „Lenkerbreite“
+  const bt=admBt(), ref=bt==="mtb"?"Körpergröße":"Schulterbreite";
+  return `<div style="grid-column:1/-1;margin:10px 0 0;font-size:14px;font-weight:600;color:var(--muted)">Lenker-Faktor je Disziplin</div>`+DISC_T[bt].map(([k,l],i)=>{ const key="dbar_"+bt+"_"+k;
+    return `<label for="cm_${key}">${DISC_T[bt].length>1?esc(l)+": ":""}Lenker-Faktor × ${ref}</label><div class="fitmIn"><input class="bfi" type="number" step="0.005" id="cm_${key}" data-fitm="${key}" value="${FITM[key]}" style="max-width:90px"><span class="note" style="margin:0"></span>${tag(key)}</div>`; }).join(""); }
 const DISC_FITM=["Disziplin Rennrad","Disziplin Triathlon","Disziplin MTB"];   // diese Gruppen stehen unter Person → Richtwerte je Fahrstil
 function renderFitModel(){ renderFitBox("fitModelBox","fm",g=>!COMP_FITM.includes(g)&&!DISC_FITM.includes(g),true); try{ renderDiscStd(); }catch(e){} renderFitBox("compModelBox","cm",g=>COMP_FITM.includes(g)||g==="_disc",false,undefined,discCompTable); }
 function renderFitBox(boxId,pf,filt,full,note,extra){
   const box=$(boxId); if(!box) return; applyFitModel();
-  const tag=k=>S.fitOv&&isFinite(S.fitOv[k])?'<small class="src edit">geändert</small>':S.modelStd&&S.modelStd.fitModel&&isFinite(S.modelStd.fitModel[k])?'<small class="src">Standard</small>':'';
-  const inp=(k,v,st)=>`<input class="bfi" type="number" step="${st}" data-fitm="${k}" value="${v}" style="max-width:90px">`;
-  const bt=btype(), kp=kpT(bt);
+  const bt=admBt(), kp=kpT(bt);
+  const tag=k0=>{ const k=fitmKeyT(bt,k0); return S.fitOv&&isFinite(S.fitOv[k])?'<small class="src edit">geändert</small>':S.modelStd&&S.modelStd.fitModel&&isFinite(S.modelStd.fitModel[k])?'<small class="src">Standard</small>':''; };
+  const inp=(k,v,st)=>`<input class="bfi" type="number" step="${st}" data-fitm="${fitmKeyT(bt,k)}" value="${v}" style="max-width:90px">`;
   let h=note!==undefined?note:!full?`<p class="note info" style="margin-top:0">Grundlage für den Vorschlag von Lenkerbreite und Kurbellänge (Tab Sitzposition) und den Report.</p>`:`<p class="note info" style="margin-top:0">Für jede Größe wird zuerst die beste Position berechnet (${BTYPES[bt]}: Vorbau ${STEM_RANGE_T[bt][0]}–${STEM_RANGE_T[bt][1]} mm, Spacer 0–40 mm, Vorbauwinkel ${STEM_ANGLES_T[bt].map(a=>(a>0?"+":a<0?"−":"")+Math.abs(a)).join("/")}°${bt==="tri"?", Armpad-Höhe 30–130 mm":""}). Score = Strafpunkte + Feinabstimmung; die Größe mit dem niedrigsten Score ist die Empfehlung.</p>`;
   let grp="";
   h+=`<div class="fitmGrid">`;
-  for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){ if(!filt(g)||g[0]==="_") continue;
-    if(g!==grp){ grp=g; h+=`<div class="suh">${g}</div>`; }
-    h+=`<label for="${pf}_${k}">${esc(lab)}<small>${esc(expl)}</small></label><div class="fitmIn">${inp(k,FITM[k],step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
+  for(const [k,g,lab,unit,def,step,expl] of FITM_DEF){ if(!filt(g)||g[0]==="_"||(g==="Radart"&&bt!=="mtb")) continue;
+    if(g!==grp){ if(grp==="Lenkerbreite"&&extra) h+=extra(tag); grp=g; h+=`<div class="suh">${g}${g==="Kurbellänge"?ib("Kurbellänge = Grundwert + Faktor × Schrittlänge (760 mm → 165, 895 mm → 175) – gilt überall"):""}${g==="Lenkerbreite"?ib(`Lenkerbreite = ${bt==="mtb"?"Körpergröße":"Schulterbreite"} × Lenker-Faktor der Disziplin × Faktor der Sitzposition, gerundet auf 20 mm`):""}</div>`; }
+    if(k==="barSt_comfort") h+=`<div style="grid-column:1/-1;margin:6px 0 0;font-size:14px;font-weight:600;color:var(--muted)">Faktor je Sitzposition</div>`;
+    h+=`<label for="${pf}_${k}">${esc(lab)}${expl?ib(expl):""}</label><div class="fitmIn">${inp(k,fitmOf(bt,k),step).replace('data-fitm','id="'+pf+'_'+k+'" data-fitm')}<span class="note" style="margin:0">${esc(unit)}</span>${tag(k)}</div>`;
   }
+  if(grp==="Lenkerbreite"&&extra) h+=extra(tag);
   h+=`</div>`; if(full) h+=`<h3 style="margin:14px 0 4px">Vorlieben je Sitzposition – ${BTYPES[bt]}</h3><div class="bfg styleGrid" style="grid-template-columns:minmax(90px,120px) repeat(2,minmax(64px,92px))"><span></span><b>Vorbau (mm)</b><b>Spacer (mm)</b>`+
-    Object.keys(STEM_FACTORY).map(st=>`<span>${st}</span><div>${inp(kp+"stem_"+st,STEM_BY_STYLE[st],5)}${tag(kp+"stem_"+st)||'<small class="src">&nbsp;</small>'}</div><div>${inp(kp+"spacer_"+st,SPACER_BY_STYLE[st],5)}${tag(kp+"spacer_"+st)||'<small class="src">&nbsp;</small>'}</div>`).join("")+`</div>`;
-  if(extra) h+=extra(tag);
-  h+=`<div class="row" style="margin-top:10px"><button class="btn small" type="button" id="${pf}Save">Als Standard speichern</button><button class="btn ghost small" type="button" id="${pf}Reset">Auf App-Grundwerte zurücksetzen</button></div><p class="note" id="${pf}Note">Änderungen wirken sofort${full?" auf die Größenempfehlung":" auf den Vorschlag"}. „Als Standard speichern“ macht sie zur Werkseinstellung für alle Geräte.</p>`;
+    Object.keys(STEM_FACTORY).map(st=>`<span>${st}</span><div>${inp(kp+"stem_"+st,STEM_T[bt][st],5)}${tag(kp+"stem_"+st)||'<small class="src">&nbsp;</small>'}</div><div>${inp(kp+"spacer_"+st,SPACER_T[bt][st],5)}${tag(kp+"spacer_"+st)||'<small class="src">&nbsp;</small>'}</div>`).join("")+`</div>`;
+  h+=`<div class="row" style="margin-top:10px"><button class="btn small" type="button" id="${pf}Save">Als Standard speichern</button><button class="btn ghost small" type="button" id="${pf}Reset">Auf App-Grundwerte zurücksetzen</button>${ib(`Änderungen wirken sofort${full?" auf die Größenempfehlung":" auf den Vorschlag"}. „Als Standard speichern“ macht sie zur Werkseinstellung für alle Geräte.`)}</div><p class="note" id="${pf}Note"></p>`;
   box.innerHTML=h;
-  box.querySelectorAll("[data-fitm]").forEach(el=>el.onchange=()=>{ const k=el.dataset.fitm, x=num(el.value); if(!isFinite(x)||(x<0&&!/^disc_/.test(k))||(/Per$|^soft/.test(k)&&x<=0)){ renderFitModel(); return; }
-    (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); renderFitModel(); });
+  box.querySelectorAll("[data-fitm]").forEach(el=>el.onchange=()=>{ const k=el.dataset.fitm, kb=k.replace(/^[a-z]+__/,""), x=num(el.value); if(!isFinite(x)||(x<0&&!/^disc_/.test(kb))||(/Per$|^soft/.test(kb)&&x<=0)){ renderFitModel(); return; }
+    (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); markEdited(el); });
   $(pf+"Save").onclick=()=>{ applyFitModel(); S.modelStd=S.modelStd||{}; S.modelStd.fitModel=fitModelVals(); delete S.fitOv; S.modelStdAt=Date.now(); save(); renderFitModel(); $(pf+"Note").textContent="Speichere …";
     factorySave().then(ok=>{ $(pf+"Note").textContent=ok?"Als Werkseinstellung gespeichert. Gilt ab jetzt überall, wo die App geöffnet wird.":"In diesem Browser gespeichert. Für alle Geräte die App über ihren Link öffnen und erneut speichern."; }); };
-  $(pf+"Reset").onclick=()=>{ const ks=FITM_DEF.filter(d=>filt(d[1])).map(d=>d[0]);   // nur die Werte dieses Bereichs zurücksetzen
-    for(const k of ks){ if(S.fitOv) delete S.fitOv[k]; if(S.modelStd&&S.modelStd.fitModel) delete S.modelStd.fitModel[k]; }
-    if(full){ for(const k of Object.keys((S.modelStd&&S.modelStd.fitModel)||{})) if(/stem_|spacer_/.test(k)) delete S.modelStd.fitModel[k]; for(const k of Object.keys(S.fitOv||{})) if(/stem_|spacer_/.test(k)) delete S.fitOv[k]; }
+  $(pf+"Reset").onclick=()=>{ const ks=FITM_DEF.filter(d=>filt(d[1]));   // nur die Werte dieses Bereichs und dieser Radart zurücksetzen
+    S.modelStd=S.modelStd||{}; S.modelStd.fitModel=S.modelStd.fitModel||{};
+    for(const [k,,,,def] of ks){ const t=fitmKeyT(bt,k); if(S.fitOv) delete S.fitOv[t]; if(t!==k) S.modelStd.fitModel[t]=def; else delete S.modelStd.fitModel[k]; }
+    if(full){ const re=new RegExp("^"+kp+"(stem|spacer)_"); for(const k of Object.keys(S.modelStd.fitModel)) if(re.test(k)) delete S.modelStd.fitModel[k]; for(const k of Object.keys(S.fitOv||{})) if(re.test(k)) delete S.fitOv[k]; }
     S.modelStdAt=Date.now(); applyFitModel(); fitModelChanged(); renderFitModel();
     factorySave().then(ok=>{ $(pf+"Note").textContent=ok?"App-Grundwerte wiederhergestellt (auch als Werkseinstellung).":"App-Grundwerte wiederhergestellt (in diesem Browser)."; }); };
 }
@@ -2358,7 +2410,8 @@ function useData(geoRows,fitObj,fileName,source,keep){
   const ok=DB.bikes.filter(x=>x.hasData).length;
   document.getElementById("srcLine").textContent=`${ok} Größen aus ${Object.values(DB.models).flat().length} Modellen von ${DB.brands.length} Marken `;
   { const n=document.getElementById("loadNoteT"); if(n) n.textContent=""; }
-  document.getElementById("loadNote").textContent=DB.empty?`${DB.empty} Einträge ohne Geometriedaten sind ausgegraut.`:"";
+  document.getElementById("loadNote").textContent="";
+  { const t=document.getElementById("srcLine").textContent.trim()+"."+(DB.empty?` ${DB.empty} Einträge ohne Geometriedaten sind ausgegraut.`:""), b=document.getElementById("bikeInfo"); if(b){ b.dataset.tip=t; b.setAttribute("aria-label","Info: "+t); } }
   const P=FIT.person;
   document.getElementById("personSrc").textContent="Messwerte direkt hier eintragen. Grün/gelb/rot zeigt, wie stark ein Wert von der Norm für Körpergröße und Geschlecht abweicht.";
   if(!keep||!S.person) S.person=personFrom();
@@ -2487,16 +2540,18 @@ $("fileIn").onchange=e=>{ const f=e.target.files[0]; if(f) readFile(f); e.target
 $("resetBtn").onclick=()=>{ S.edits={}; loadBike(); save(); };
 $("fitBtn").onclick=fitToTarget;
 for(const [id,k] of [["tKnee","knee"],["tKops","kops"],["tBack","back"],["tShoulder","shoulder"],["tElbow","elbow"]])
-  $(id).onchange=e=>{ const x=parseFloat(String(e.target.value).replace(",",".")), v=isFinite(x)?x:(k==="back"?NaN:k==="kops"?KOPS_T[btype()]:SUG_DEF[k]);
+  $(id).onchange=e=>{ const x=parseFloat(String(e.target.value).replace(",",".")), v=isFinite(x)?x:(k==="back"?NaN:k==="kops"?styV("kops",KOPS_T[btype()]):k==="knee"?styV("kneeT",145):SUG_DEF[k]);
     if(btype()==="road") S.sugT={...(S.sugT||{}),[k]:v}; else { S.sugTT=S.sugTT||{}; S.sugTT[btype()]={...(S.sugTT[btype()]||{}),[k]:v}; } sugCache.key=""; renderBikeResults(); render(); save(); };
 $("sugCmp").onchange=e=>{ S.sugCmp=e.target.value; $("fitNote").textContent=""; renderBikeResults(); render(); save(); };
+let SUG_KEEP_BACK=false;   /* automatische Übernahme beim Öffnen: Rückenwinkel bleibt beim Wert des Fahrstils */
+function sugApplyAuto(){ SUG_KEEP_BACK=true; try{ $("sugApply").click(); } finally { SUG_KEEP_BACK=false; } }
 $("sugApply").onclick=()=>{
   const r=suggest(), p=r.parts, c=S.comp;
   if(p.stemAngle!==c.stemAngle) S.compSel.stem="";
   const keepAuto=!!S.person.autoBack;   // Haken „Rückenwinkel aus Griffposition ermitteln“: Rücken folgt dem eingestellten Griff
   const ca=crankAdvice(); Object.assign(c,p); c.barWidth=barWidthIdeal();
   if(ca&&isFinite(ca.L)&&ca.L!==c.crank){ c.saddleH=Math.round(c.saddleH+(c.crank-ca.L)); c.crank=ca.L; }   // empfohlene Kurbel, Sattelhöhe um die Differenz angepasst
-  if(keepAuto) delete S.person.ov.backAngle; else { S.person.ov.backAngle=Math.round(r.back); }
+  if(keepAuto||SUG_KEEP_BACK) delete S.person.ov.backAngle; else { S.person.ov.backAngle=Math.round(r.back); }
   syncComp(); syncPerson(); render(); save();
   $("sugNote").textContent=keepAuto?`Vorschlag übernommen: Sattel und Cockpit sind eingestellt, der Rückenwinkel ergibt sich aus der Griffposition (jetzt ${Math.round(cur.J.back)}°).`
     :`Vorschlag übernommen: Sattel und Cockpit sind eingestellt, der Rückenwinkel der Person steht auf ${Math.round(r.back)}°.`;
@@ -2530,6 +2585,7 @@ function setBtype(bt){
   S.selT=S.selT||{}; if(S.sel&&S.sel.b) S.selT[old]={...S.sel};
   S.btype=bt; applyStyleStd(); applyFitModel(); sugCache.key=""; sizeFitCache.key=""; cmpFit={};
   if(old!==bt){   // Cockpit auf die Radart einstellen: Vorbau und Spacer nach Sitzposition, MTB mit Riserbar
+    S.comp.cleat=cleatStd(bt); if(S.compBase) S.compBase.cleat=S.comp.cleat;   // Cleatposition-Standard der neuen Radart
     const keepA=S.comp.stemAngle; typeCompDef(S.comp); S.comp.stemLen=stemIdeal(); S.comp.spacer=spacerIdeal(); if(S.compSel.stem||S.compSel.bar) S.comp.stemAngle=keepA;
     for(const k of ["padStack","padReach","extAngle","extLen"]) if(!isFinite(S.comp[k])){ const d=COMP.find(x=>x.key===k); S.comp[k]=d.def; }
     S.cmp=EMPTY_CMP(); S.cmpX=[]; cmpRowsN=0; }
@@ -2557,24 +2613,27 @@ $("saveStd").onclick=()=>{
   let n=0;
   for(const k of keys){
     /* Modellwerte und von Hand geänderte Längen festschreiben; berechnete Längen bleiben von der Person abhängig */
-    if(MODEL_KEYS.includes(k)||isFinite(S.person.ov[k])){ S.modelStd[k]=B[k]; n++; }
+    if(MODEL_KEYS.includes(k)){ if(isFinite(S.person.ov[k])){ const by=S.modelStd.byT=S.modelStd.byT||{}; (by[btype()]=by[btype()]||{})[k]=S.person.ov[k]; n++; } }   // Modellwerte je Radart (Feinwert der Person → Standard dieser Radart)
+    else if(isFinite(S.person.ov[k])){ S.modelStd[k]=B[k]; n++; }
     else delete S.modelStd[k];
     delete S.person.ov[k];
   }
-  S.modelStd.cleat=S.comp.cleat; if(S.compBase) S.compBase.cleat=S.comp.cleat;
+  for(const [bt,vals] of Object.entries(S.segOvT||{})){ const by=S.modelStd.byT=S.modelStd.byT||{}; by[bt]=Object.assign(by[bt]||{},vals); n+=Object.keys(vals).length; } delete S.segOvT;   // Grundwerte je Radart aus dem Admin-Tab
+  for(const bt of Object.keys(BTYPES)){ const by=S.modelStd.byT=S.modelStd.byT||{}; by[bt]=by[bt]||{}; for(const k of [...MODEL_KEYS,"cleat"]) if(!isFinite(by[bt][k])&&isFinite(S.modelStd[k])) by[bt][k]=S.modelStd[k]; }   // jede Radart bekommt eigene, vollständige Werte
+  try{ renderSegStd(); }catch(e){}
   applyStyleStd(); S.modelStd.styleStd=JSON.parse(JSON.stringify(STYLE_T.road)); S.modelStd.styleStdT=JSON.parse(JSON.stringify(Object.fromEntries(Object.keys(BTYPES).filter(b=>b!=="road").map(b=>[b,STYLE_T[b]])))); delete S.styleOv; delete S.styleOvT; renderStyleStd();
   applyFitModel(); S.modelStd.fitModel=fitModelVals(); delete S.fitOv; renderFitModel();   // Bewertungsmodell mitspeichern   // Richtwerte je Fahrstil mitspeichern
   S.modelStdAt=Date.now();
   syncPerson(); syncComp(); render(); save();
-  $("stdNote").textContent=`Gespeichert als Werkseinstellung: ${n+1} Werte (Modellwerte, von Hand geänderte Längen, Cleatposition ${S.comp.cleat} %) …`;
+  $("stdNote").textContent=`Gespeichert als Werkseinstellung: ${n+1} Werte (Modellwerte, von Hand geänderte Längen, Cleatposition je Radart) …`;
   factorySave().then(ok=>{ $("stdNote").textContent=ok
-    ?`Als Werkseinstellung gespeichert: ${n+1} Werte (Modellwerte, von Hand geänderte Längen, Cleatposition ${S.comp.cleat} %). Sie gelten ab jetzt überall, wo die App geöffnet wird. Berechnete Längen richten sich weiter nach der Person.`
+    ?`Als Werkseinstellung gespeichert: ${n+1} Werte (Modellwerte, von Hand geänderte Längen, Cleatposition je Radart). Sie gelten ab jetzt überall, wo die App geöffnet wird. Berechnete Längen richten sich weiter nach der Person.`
     :`Als Werkseinstellung in diesem Browser gespeichert (${n+1} Werte). Für alle Geräte die App über ihren Link öffnen und erneut speichern.`; });
 };
 $("resetStd").onclick=()=>{
   /* gespeicherte Segmentlängen verwerfen: Längen wieder aus den Messwerten, Modellwerte auf Werksstandard; Cleat bleibt */
   const keep=S.modelStd&&isFinite(S.modelStd.cleat)?{cleat:S.modelStd.cleat}:{};
-  S.modelStd=keep; S.modelStdAt=Date.now(); delete S.styleOv; applyStyleStd(); renderStyleStd(); delete S.fitOv; applyFitModel(); renderFitModel(); for(const d of PERS) if(d.g==="Segmente") delete S.person.ov[d.key];
+  S.modelStd=keep; S.modelStdAt=Date.now(); delete S.styleOv; delete S.styleOvT; delete S.segOvT; try{ renderSegStd(); }catch(e){} applyStyleStd(); renderStyleStd(); delete S.fitOv; applyFitModel(); renderFitModel(); for(const d of PERS) if(d.g==="Segmente") delete S.person.ov[d.key];
   sugCache.key=""; syncPerson(); render(); save(); factorySave();
   $("stdNote").textContent="Ursprüngliche App-Werte wiederhergestellt; sie sind jetzt die Werkseinstellung.";
 };
@@ -2584,7 +2643,7 @@ function renderDisc(){ const w=$("discWrap"), sel=$("discSel"); if(!w||!sel) ret
   sel.innerHTML=L.map(([k,l])=>`<option value="${k}"${k===d?" selected":""}>${l}</option>`).join(""); }
 $("discSel").onchange=e=>{ S.person["disc_"+btype()]=e.target.value; delete S.person.ov.backAngle; if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }
   applyStyleStd(); sugCache.key=""; sizeFitCache.key=""; cmpFit={}; syncPerson(); render(); save(); };
-$("styleSel").onchange=e=>{ S.person.style=e.target.value; delete S.person.ov.backAngle;
+$("styleSel").onchange=e=>{ S.person.style=e.target.value; delete S.person.ov.backAngle; delete S.person.ov.shoulderT; delete S.person.ov.elbowT;
   if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }   // Zielwerte folgen dem Fahrstil
   syncPerson(); render(); save(); };
 $("sexSel").onchange=e=>{ S.person.sex=e.target.value; syncPerson(); render(); save(); };
@@ -2635,10 +2694,14 @@ function markBasic(){
 /* „Geometrie aus Bild“: in WiFitPro unter „Räder verwalten“, in WiFitBasic als eigener Bereich (dort ist „Räder verwalten“ ausgeblendet) */
 function placeGeo(){   /* „+ Rad anlegen“ samt Formular: in WiFitPro unter „Räder verwalten“, in WiFitBasic als eigener Bereich */
   const b=$("newBikeBtn"), gx=$("geoImgBox"), nb=$("newBikeBox"), sec=document.querySelector(".geoSec"), row=document.querySelector("#bmDetails .row"); if(!b||!gx||!nb||!sec||!row) return;
-  if(S.basic){ sec.querySelector(".row").appendChild(b); sec.appendChild(gx); sec.appendChild(nb); sec.hidden=false; }
+  if(S.basic||isWebUser()){ sec.querySelector(".row").appendChild(b); sec.appendChild(gx); sec.appendChild(nb); sec.hidden=false; }   // Nutzer ohne Admin-Rechte: „Räder verwalten“ ist ausgeblendet, Rad anlegen trotzdem möglich
   else { row.appendChild(b); row.after(gx); gx.after(nb); sec.hidden=true; }
 }
 /* Erklärtexte als kleiner i-Button: Beschreibung erscheint beim Darüberfahren (Touch: antippen) */
+/* Feld nach einer Änderung nur als „geändert“ markieren statt den ganzen Bereich neu aufzubauen –
+   sonst wird das Feld unter der Maus ersetzt und die Pfeile reagieren beim nächsten Klick nicht bzw. die Zahl wird markiert */
+function markEdited(el){ const p=el.parentElement; if(!p) return; let t=p.querySelector("small.src"); if(!t){ t=document.createElement("small"); p.appendChild(t); } t.className="src edit"; t.textContent="geändert"; }
+const ib=t=>`<button type="button" class="infoBtn" data-tip="${esc(t)}" aria-label="Info: ${esc(t)}">i</button>`;   // kleiner i-Button mit Beschreibung
 function infoize(root=document){
   root.querySelectorAll("p.note.info:not([data-done])").forEach(p=>{
     const txt=p.textContent.replace(/\s+/g," ").trim(); if(!txt) return; p.dataset.done="1";
@@ -2660,14 +2723,16 @@ function infoize(root=document){
   document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest(".infoBtn"); if(b){ e.preventDefault(); e.stopPropagation(); cur===b&&!tip.hidden?hide():show(b); } else if(cur) hide(); },true);
   addEventListener("scroll",hide,true);
   infoize(); new MutationObserver(()=>infoize()).observe(document.body,{childList:true,subtree:true}); }
-/* Weiter-Button am Ende jedes Tabs: springt zum nächsten sichtbaren Tab */
+/* Zurück- und Weiter-Button am Ende jedes Tabs: springt zum vorigen bzw. nächsten sichtbaren Tab */
 function renderNext(){
   const tabs=[...document.querySelectorAll(".tab")].filter(t=>getComputedStyle(t).display!=="none");
   document.querySelectorAll(".nextbar").forEach(n=>n.remove());
-  tabs.forEach((t,i)=>{ const nx=tabs[i+1], pan=$("tab-"+t.dataset.tab); if(!nx||!pan) return;
+  const go=t=>{ t.click(); const a=document.querySelector("aside"); if(a) a.scrollTop=0; t.scrollIntoView({block:"nearest"}); };
+  const nxTxt=t=>t.dataset.tab==="bike"?"Weiter zur Radauswahl":t.dataset.tab==="comp"?"Weiter zur Bauteilauswahl":t.dataset.tab==="fit"?"Weiter zur Sitzposition":t.dataset.tab==="pdf"?"Weiter zum PDF Report":"Weiter zu "+t.textContent;
+  tabs.forEach((t,i)=>{ const pv=tabs[i-1], nx=tabs[i+1], pan=$("tab-"+t.dataset.tab); if((!nx&&!pv)||!pan) return;
     const d=document.createElement("div"); d.className="nextbar";
-    d.innerHTML=`<button class="btn small">${nx.dataset.tab==="bike"?"Weiter zur Radauswahl":nx.dataset.tab==="comp"?"Weiter zur Bauteilauswahl":nx.dataset.tab==="fit"?"Weiter zur Sitzposition":nx.dataset.tab==="pdf"?"Weiter zum PDF Report":"Weiter zu "+nx.textContent} →</button>`;
-    d.firstChild.onclick=()=>{ nx.click(); const a=document.querySelector("aside"); if(a) a.scrollTop=0; nx.scrollIntoView({block:"nearest"}); };
+    if(pv){ const b=document.createElement("button"); b.className="btn ghost small"; b.textContent="← Zurück zu "+pv.textContent; b.onclick=()=>go(pv); d.appendChild(b); }
+    if(nx){ const b=document.createElement("button"); b.className="btn small"; b.textContent=nxTxt(nx)+" →"; b.onclick=()=>go(nx); d.appendChild(b); }
     pan.appendChild(d); });
 }
 function applyBasic(){ try{ placeGeo(); }catch(e){}
@@ -2703,7 +2768,7 @@ window.addEventListener("beforeunload",e=>{
   const startFresh=()=>{ if(fresh) return; fresh=true;
     S.pdfTouched=false; if(!S.basic) applyPdfDefault(); else S.pdfSel={};
     S.cmp={b:"",m:"",s:""}; S.cmpX=[]; delete S.cmpN; cmpRowsN=0; try{ fillCmp(); renderBikeResults(); }catch(e){}   /* beim Öffnen kein Rahmenvergleich */
-    /* manuell eingegebene Bauteilmaße beim Start auf die Standardwerte (Lenker-Reach 60, Bremsgriff-Reach 50, Pedal 16 …) */
+    /* manuell eingegebene Bauteilmaße beim Start auf die Standardwerte (Lenker-Reach 60, Schalt-/Bremsgriff-Reach 50, Pedal 16 …) */
     try{ for(const [k,[,keys]] of Object.entries(MANUAL)) if(!S.compSel[k]) for(const key of keys){ const d=COMP.find(x=>x.key===key); if(d) S.comp[key]=d.def; } syncComp(); render(); }catch(e){}   /* PDF: Voreinstellung des Kontos (Standard: nichts ausgewählt) */
     S.show.targets=false; $("tTargets").checked=false;   /* Fadenkreuze beim Öffnen aus */ try{ CP=null; saveCP(); renderCP(); EV=null; saveEV(); renderEV(); }catch(e){} newPerson(); syncPName(); $("dataNote").textContent="";
     S.comp.crank=170; S.crankManual=false; try{ if(!updateSelPart("crank",170)) clearSelFor("crank"); syncComp(); render(); save(); }catch(e){} };   /* beim Öffnen 170 mm, nach Eingabe der Schrittlänge die passende Länge */
@@ -2749,9 +2814,9 @@ const PART_TYPES={pedalName:"pedals",barName:"bars",stemName:"stems",shoeName:"s
 const PART_FORMS={
   pedals:{title:"Pedal hinzufügen",fields:[["stack","Stack Height (mm)"]]},
   shoes:{title:"Schuh hinzufügen",fields:[["sole","Sohlendicke (mm)"]]},
-  levers:{title:"Schalt-/Bremsgriff hinzufügen",fields:[["reach","Bremsgriff-Reach – Beginn Bremsgriff bis Griffpunkt (mm)"]]},
+  levers:{title:"Schalt-/Bremsgriff hinzufügen",fields:[["reach","Schalt-/Bremsgriff-Reach – Beginn Schalt-/Bremsgriff bis Griffpunkt (mm)"]]},
   stems:{title:"Vorbau hinzufügen",fields:[["angle","Vorbauwinkel (°)"],["height","Vorbauhöhe / Klemmung (mm)"]]},
-  bars:{title:"Lenker hinzufügen",fields:[["reach","Lenker-Reach – Mitte Oberlenker bis Bremsgriff (mm)"]],integ:true},
+  bars:{title:"Lenker hinzufügen",fields:[["reach","Lenker-Reach – Mitte Oberlenker bis Beginn Schalt-/Bremsgriff (mm)"]],integ:true},
   saddles:{title:"Sattel hinzufügen",fields:[]}
 };
 function mergeCustomParts(){
@@ -2892,6 +2957,11 @@ function renderBikeManager(){
     bmSel=null; reloadData(); renderOwnBikes(); renderBikeManager();
   };
   if($("bmRestore")) $("bmRestore").onclick=()=>{ S.bikeDel=(S.bikeDel||[]).filter(k=>!k.startsWith(bmSel.b+"|")); reloadData(); renderBikeManager(); };
+  if(isWebUser()){   // Nutzer: nur ansehen und neue Räder anlegen, nichts ändern oder löschen
+    box.querySelectorAll("input,select,textarea").forEach(e=>{ if(!["bmCat","bmB","bmM"].includes(e.id)) e.disabled=true; });
+    box.querySelectorAll("#bmRen,#bmAddS,#bmDelM,#bmRestore,[data-bmdel],#bmNewS").forEach(e=>e.hidden=true);
+    if($("bmNote")) $("bmNote").textContent="Nur ansehen: Räder ändern oder löschen dürfen nur Admins. Neue Räder kannst du mit „+ Rad anlegen“ hinzufügen – sie sind dann für alle sichtbar.";
+    return; }
   $("bmAddS").onclick=()=>{
     const s=$("bmNewS").value.trim(); if(!s){ $("bmNote").textContent="Bitte eine Größenbezeichnung eingeben."; return; }
     if(sizesOf(bmSel.b,bmSel.m).some(x=>String(x.s)===s)){ $("bmNote").textContent="Diese Größe gibt es schon."; return; }
@@ -2978,7 +3048,15 @@ const BUILTIN_BIKES=[
     ["Canyon","Lux World Cup CF (2026)","mtb",[["XS",415,595,66,75.5,569,93,390,435,1144,42],["S",435,595,66,75.5,589,93,420,435,1164,42],["M",455,597,66,75.5,609,95,440,435,1185,42],["L",475,609,66,75.5,632,108,470,440,1216,42],["XL",495,624,66,75.5,655,120,500,440,1242,42]]]
   ].flatMap(([marke,modell,radart,rows])=>rows.map(([s,r,st,hta,sta,tt,ht,stl,cs,wb,bb])=>({marke,modell,radart,grosse:s,reach:r,stack:st,steuerwinkel:hta,sitzwinkel:sta,oberrohr:tt,steuerrohr:ht,sitzrohr:stl,kettenstrebe:cs,radstand:wb,tretlageroffset:bb})))
 ];
-function customRows(header){ return [...BUILTIN_BIKES,...(S.customBikes||[])].map(o=>header.map(hc=>{ const v=o[norm(hc)]; return v===undefined?"":v; })); }
+/* Räder, die Nutzer (ohne Admin-Rechte) angelegt haben – eigene Tabelle in Supabase, für alle sichtbar, nur Admins können ändern/löschen */
+const userBikesExtra=()=>{ const own=new Set((S.customBikes||[]).map(o=>norm(o.marke)+"|"+norm(o.modell)+"|"+norm(o.grosse))); return (S.userBikes||[]).filter(o=>!own.has(norm(o.marke)+"|"+norm(o.modell)+"|"+norm(o.grosse))); };
+const isWebUser=()=>!!(window.WF&&WF.userBikes&&WF.user&&!WF.isAdmin);
+function addBikes(list){   // neue Räder speichern: Admin → zentrale Bibliothek, Nutzer → Tabelle „user_bikes“
+  if(isWebUser()){ S.userBikes=S.userBikes||[]; S.userBikes.push(...list);
+    WF.userBikes.add(list).then(()=>libToast("✓ Rad gespeichert – für alle sichtbar. Ändern oder löschen kann es nur ein Admin.",true))
+      .catch(e=>libToast("✗ Rad nicht zentral gespeichert: "+(e&&e.message||e),false)); return "user"; }
+  S.customBikes=S.customBikes||[]; S.customBikes.push(...list); return "lib"; }
+function customRows(header){ return [...BUILTIN_BIKES,...(S.customBikes||[]),...userBikesExtra()].map(o=>header.map(hc=>{ const v=o[norm(hc)]; return v===undefined?"":v; })); }
 /* ================= Geometrie aus Bild: Screenshot einer Geometrietabelle → Werte je Größe → eigene Räder ================= */
 const GEO_F=[["reach","Reach"],["stack","Stack"],["steuerwinkel","Steuerwinkel","°"],["sitzwinkel","Sitzwinkel","°"],["oberrohr","Oberrohr (eff.)"],["steuerrohr","Steuerrohr"],
   ["sitzrohr","Sitzrohr"],["kettenstrebe","Kettenstrebe"],["radstand","Radstand"],["tretlageroffset","Tretlager-Offset"]];
@@ -3233,11 +3311,11 @@ function geoTable(r){
       if(DB.bikes.some(x=>norm(x.b)===norm(marke)&&norm(x.m)===norm(modell)&&norm(x.s)===norm(o.grosse))){ skip.push(o.grosse); return; }
       add.push(o); });
     if(!add.length){ $("geoErr").textContent=miss.length?`Es fehlen Reach, Stack, Steuer- oder Sitzwinkel (${miss.join(", ")}).`:"Diese Größen gibt es schon."; return; }
-    S.customBikes=S.customBikes||[]; S.customBikes.push(...add);
+    const via=addBikes(add);
     if(art!==btype()) setBtype(art);
     reloadData(); selectMain(marke,modell,String(add[0].grosse)); try{ renderOwnBikes(); bmSel={b:marke,m:modell}; renderBikeManager(); }catch(e){} save();
     const host=$("geoRes").closest("#newBikeBox")||$("geoImgBox"); host.innerHTML=`<p class="note">${esc(marke)} ${esc(modell)}: ${add.length} Größe${add.length>1?"n":""} angelegt${skip.length?`, schon vorhanden: ${esc(skip.join(", "))}`:""}${miss.length?`, ohne Pflichtwerte übersprungen: ${esc(miss.join(", "))}`:""}. Wird zentral gespeichert …</p>`;
-    try{ libSaveNow(); }catch(e){}   // gleich zentral sichern – auch in WiFitBasic, wo „Räder verwalten“ ausgeblendet ist
+    if(via==="lib") try{ libSaveNow(); }catch(e){}   // gleich zentral sichern – auch in WiFitBasic, wo „Räder verwalten“ ausgeblendet ist
     document.removeEventListener("paste",geoPaste);
   };
 }
@@ -3274,7 +3352,7 @@ function renderBikeForm(boxId="newBikeBox",onSaved=null){
     for(const k of ["marke","modell","grosse","reach","stack","steuerwinkel","sitzwinkel"]) if(o[k]===undefined||o[k]===""){ $("nbErr").textContent="Bitte mindestens Marke, Modell, Größe, Reach, Stack, Steuer- und Sitzwinkel angeben."; return; }
     if(DB.bikes.some(x=>norm(x.b)===norm(o.marke)&&norm(x.m)===norm(o.modell)&&norm(x.s)===norm(o.grosse))){ $("nbErr").textContent="Dieses Rad gibt es schon."; return; }
     o.radart=btype();   // neues Rad gehört zur gerade gewählten Radart
-    S.customBikes=S.customBikes||[]; S.customBikes.push(o); box.innerHTML=""; if(S.basic) setTimeout(()=>{ try{ libSaveNow(); }catch(e){} },0);   // WiFitBasic: gleich zentral speichern
+    const via=addBikes([o]); box.innerHTML=""; if(S.basic&&via==="lib") setTimeout(()=>{ try{ libSaveNow(); }catch(e){} },0);   // WiFitBasic: gleich zentral speichern
     reloadData(); if(onSaved) onSaved(o); else selectMain(o.marke,o.modell,String(o.grosse)); renderOwnBikes(); bmSel={b:o.marke,m:o.modell}; renderBikeManager();
   };
 }
@@ -3403,23 +3481,24 @@ const PAIN_CAT={
 };
 const PAIN_QUAL=["ziehend","stechend","brennend","dumpf","drückend","kribbelnd","taub","krampfartig","pochend","ausstrahlend"];
 const PAIN_WHEN=["–","sofort beim Fahren","nach weniger als 1 h","nach mehr als 1 h","nach der Fahrt","dauerhaft"];
-let painDraft={region:"knie_r",items:[],qual:[],vas:"",when:"–"};
-const painRegions=()=>BF_PAIN.flatMap(([k,l,lr])=>lr?[[k+"_l",l+" links"],[k+"_r",l+" rechts"]]:[[k,l]]);
+let painDraft={region:"knie",items:[],qual:[],vas:"",when:"–"};
+const painRegions=()=>BF_PAIN.flatMap(([k,l,lr])=>lr?[[k,l],[k+"_l",l+" links"],[k+"_r",l+" rechts"],[k+"_b",l+" beidseitig"]]:[[k,l]]);
+const PAIN_SIDES=[["l","links"],["r","rechts"],["b","beidseitig"]];   // Seite wird nach der Körperregion gewählt
 /* „Keine Beschwerden“ ist vorausgewählt, solange nichts eingetragen und das Häkchen nicht entfernt wurde */
 const noPainOn=()=>{ const B=bf(); return !(B.painList||[]).length&&B.noPain!==false; };
 function renderPainPicker(){
   const box=$("bfPainPick"); if(!box) return;
   const hasList=(bf().painList||[]).length>0, none=noPainOn();
   /* „Keine Beschwerden“ als erster Eintrag der Bereichsauswahl */
-  const regionSel=`<h3 style="margin:14px 0 6px">Beschwerdebild</h3>
-    <label class="f" for="pp_region">Bereich</label><select class="bfi ppRegion" id="pp_region"><option value="__none"${none?" selected":""}${hasList?" disabled":""}>Keine Beschwerden${hasList?" (erst Einträge löschen)":""}</option>${painRegions().map(([k,l])=>`<option value="${k}"${!none&&k===painDraft.region?" selected":""}>${l}</option>`).join("")}</select>`;
-  const onRegion=e=>{ const v=e.target.value; if(v==="__none"){ bf().noPain=true; } else { bf().noPain=false; painDraft.region=v; painDraft.items=[]; } save(); renderPainPicker(); };
+  const regionSel=`<label class="f" for="pp_region">Bereich</label><select class="bfi ppRegion" id="pp_region"><option value="__none"${none?" selected":""}${hasList?" disabled":""}>Keine Beschwerden${hasList?" (erst Einträge löschen)":""}</option>${BF_PAIN.map(([k,l])=>`<option value="${k}"${!none&&k===painDraft.region.replace(/_[lrb]$/,"")?" selected":""}>${l}</option>`).join("")}</select>`;
+  const onRegion=e=>{ const v=e.target.value; if(v==="__none"){ bf().noPain=true; } else { bf().noPain=false; const lr=(BF_PAIN.find(x=>x[0]===v)||[])[2], side=(painDraft.region.match(/_([lrb])$/)||[])[1]; painDraft.region=lr&&side?v+"_"+side:v; painDraft.items=[]; } save(); renderPainPicker(); };
   if(none){ box.innerHTML=regionSel+`<p class="note">Zum Eintragen einen Bereich wählen.</p>`; $("pp_region").onchange=onRegion; return; }
-  const D=painDraft, base=D.region.replace(/_[lr]$/,""), cat=PAIN_CAT[base]||[];
+  const D=painDraft, base=D.region.replace(/_[lrb]$/,""), cat=PAIN_CAT[base]||[], hasSide=!!(BF_PAIN.find(x=>x[0]===base)||[])[2], side=(D.region.match(/_([lrb])$/)||[])[1];
   D.items=D.items.filter(x=>cat.includes(x)||!Object.values(PAIN_CAT).flat().includes(x));
   const chips=(arr,sel,attr)=>arr.map(x=>`<button type="button" class="chip pchip" ${attr}="${esc(x)}" aria-pressed="${sel.includes(x)}">${esc(x)}</button>`).join("");
   const list=(bf().painList||[]);
   box.innerHTML=regionSel+`
+    ${hasSide?`<label class="f">Seite <span class="note">(optional, erneut antippen zum Abwählen)</span></label><div class="chips">${PAIN_SIDES.map(([k,l])=>`<button type="button" class="chip pchip" data-pside="${k}" aria-pressed="${k===side}">${l}</button>`).join("")}</div>`:""}
     <label class="f">Beschwerden <span class="note">(Mehrfachauswahl)</span></label><div class="chips">${chips(cat,D.items,"data-pitem")}</div>
     <label class="f">Schmerzqualität <span class="note">(Mehrfachauswahl)</span></label><div class="chips">${chips(PAIN_QUAL,D.qual,"data-pqual")}</div>
     <div><div><label class="f" for="pp_vas">Stärke (0–10)</label><select class="bfi" id="pp_vas"><option value="">–</option>${Array.from({length:11},(_,i)=>`<option${String(i)===String(D.vas)?" selected":""}>${i}</option>`).join("")}</select></div>
@@ -3428,6 +3507,7 @@ function renderPainPicker(){
     <div class="row" style="margin-top:10px"><button type="button" class="btn small" id="pp_add">Hinzufügen</button></div><p class="note warn" id="pp_err"></p>
     ${list.length?`<div class="plist">${list.map((e,i)=>`<div class="pentry"><div><b>${esc(e.regionLabel)}</b>: ${esc(e.items.join(", ")||"–")}<br><span class="note">${esc([e.qual.join(", "),e.vas!==""?`Stärke ${e.vas}/10`:"",e.when&&e.when!=="–"?e.when:""].filter(Boolean).join(" · "))}</span>${bf()["p_"+e.region]?`<br><span class="note"><i>${esc(bf()["p_"+e.region])}</i></span>`:""}</div><button type="button" class="suback" data-pdel="${i}" aria-label="Eintrag entfernen" title="Entfernen">✕</button></div>`).join("")}</div>`:""}`;
   $("pp_region").onchange=onRegion;
+  box.querySelectorAll("[data-pside]").forEach(b=>b.onclick=()=>{ D.region=side===b.dataset.pside?base:base+"_"+b.dataset.pside; renderPainPicker(); });   // erneut antippen = keine Seite
   box.querySelectorAll("[data-pitem]").forEach(b=>b.onclick=()=>{ const x=b.dataset.pitem; D.items=D.items.includes(x)?D.items.filter(y=>y!==x):[...D.items,x]; b.setAttribute("aria-pressed",D.items.includes(x)); });
   box.querySelectorAll("[data-pqual]").forEach(b=>b.onclick=()=>{ const x=b.dataset.pqual; D.qual=D.qual.includes(x)?D.qual.filter(y=>y!==x):[...D.qual,x]; b.setAttribute("aria-pressed",D.qual.includes(x)); });
   $("pp_vas").onchange=e=>{ D.vas=e.target.value; };
@@ -3454,7 +3534,7 @@ const SU_ROWS=[
   ["c","barReach","Lenker-Reach","num"],["c","stemName","Vorbau","stems"],["c","stemLen","Vorbaulänge","num"],
   ["c","stemAngle","Vorbauwinkel","num"],["c","stemHeight","Vorbauhöhe","num"],["c","cap","Steuersatzkappe","num"],["c","spacer","Spacer","num"],
   ["c","shoeName","Schuhe","shoes"],["c","sole","Sohlendicke","num"],
-  ["c","leverName","Schalt-/Bremsgriffe","levers"],["c","leverReach","Bremsgriff-Reach","num"],["c","leverAngle","Bremsgriffwinkel","num"],
+  ["c","leverName","Schalt-/Bremsgriffe","levers"],["c","leverReach","Schalt-/Bremsgriff-Reach","num"],["c","leverAngle","Bremsgriffwinkel","num"],
   ["c","barRise","Lenker-Rise","num"],["c","padStack","Armpad-Höhe über Lenkermitte","num"],["c","padReach","Armpad vor/hinter Lenkermitte","num"],["c","extAngle","Extensions-Winkel","num"],["c","extLen","Extensions-Länge","num"],
   ["c","cleatPct","Cleatposition (% Fußlänge ab Ferse)","num"]
 ];
@@ -3584,7 +3664,7 @@ function renderSetup(){
     }
     const [g,k,lab,typ]=r.length===3?["pos",r[1],r[2],"num"]:r;
     const rowStart=h.length, rowLinked=g==="c"&&!!SU_LINK[k];
-    const SU_DESC={barReach:"Mitte Oberlenker bis Bremsgriff",leverReach:"Beginn Bremsgriff bis Griffpunkt"};
+    const SU_DESC={barReach:"Mitte Oberlenker bis Beginn Schalt-/Bremsgriff",leverReach:"Beginn Schalt-/Bremsgriff bis Griffpunkt"};
     h+=`<span>${lab}${SU_DESC[k]&&g==="c"?`<small>${SU_DESC[k]}</small>`:""}</span>`;
     for(const w of ["ist","opt"]){
       let val=g==="pos"?U.pos[w][k]:(w==="ist"?U.ci:U.co)[k];
@@ -4709,12 +4789,12 @@ async function makePdf(){
   if(pdfOn("angles")){ H2("Gelenkwinkel");
     font(7.5); col(C.mute); need(6); doc.text(pdfTxt("Grün: Richtwertbereich · Punkt: Wert · dunkler Balken: Bereich über eine Kurbelumdrehung"),M,y+2.5); y+=6;
     const sr=STYLE_BACK[P.style]||[40,50], shr=shoulderRange();
-    gauge("Knie gestreckt",cyc.kneeMax,120,180,140,150,"°",null,"unterer Totpunkt");
+    gauge("Knie gestreckt",cyc.kneeMax,120,180,RANGES.kneeMax[0],RANGES.kneeMax[1],"°",null,"unterer Totpunkt");
     gauge("Knie gebeugt",cyc.kneeMin,50,120,NaN,NaN,"°",null,"oberer Totpunkt");
-    gauge("Hüfte geschlossen",cyc.hipMin,30,90,50,90,"°",null,"kleinster Winkel");
+    gauge("Hüfte geschlossen",cyc.hipMin,30,90,RANGES.hipMin[0],90,"°",null,"kleinster Winkel");
     gauge("Sprunggelenk gestreckt",cyc.ankleExt,70,140,RANGES.ankleExt[0],RANGES.ankleExt[1],"°",[cyc.ankleMin,cyc.ankleMax],"unten; Balken: Bereich über Umdrehung");
     gauge("Rücken",J.back,20,70,sr[0],sr[1],"°",null,P.style);
-    if(cur.R.armOver>0){ T("Ellbogen: Griff nicht erreichbar",9.5,true,C.bad); } else gauge("Ellbogen",J.elbow,120,180,145,165,"°",null,"");
+    if(cur.R.armOver>0){ T("Ellbogen: Griff nicht erreichbar",9.5,true,C.bad); } else gauge("Ellbogen",J.elbow,120,180,RANGES.elbow[0],RANGES.elbow[1],"°",null,"");
     gauge("Knielot (3 Uhr)",kops.dx,-60,60,(T2.kops||0)-10,(T2.kops||0)+10," mm",null,"+ vor / - hinter Pedalachse"); }
   if(pdfOn("sug")&&personReady()) try{
     const r=suggest(), p=r.parts; H2("Vorschlag optimale Sitzposition");
@@ -4785,13 +4865,13 @@ $("suClear").onclick=()=>{
   applySetupOv();
   /* Bauteile auf Grundwerte (Kurbel, Pedal, Sohle … aus den App-Standards), Teileauswahl leer */
   for(const p of COMP) if(!p.virt&&isFinite(p.def)) S.comp[p.key]=p.def;
-  typeCompDef(S.comp); S.comp.cap=CAP; if(S.modelStd&&isFinite(S.modelStd.cleat)) S.comp.cleat=S.modelStd.cleat;
+  typeCompDef(S.comp); S.comp.cap=CAP; S.comp.cleat=cleatStd();
   S.compSel={}; S.compBase={...S.comp}; S.compBaseName="Ist"; S.sugCmp="cur"; sugCache.key="";
   fillCompSelects(); syncComp(); renderSetup();
   /* Werkseinstellung: Standardrad in passender Größe und eine passende Position (Vorschlag) */
   { const hgt=body().height, size=hgt<1650?"XS":hgt<1720?"S":hgt<1790?"M":hgt<1860?"L":"XL";
     if(findBike({b:stdBike().b,m:stdBike().m,s:size})) selectMain(stdBike().b,stdBike().m,size);
-    sugCache.key=""; $("sugApply").click(); }
+    sugCache.key=""; sugApplyAuto(); }
   render(); save();
   $("suNote").textContent=`Bike Set Up geleert. Der Vorschlag im Tab „Sitzposition“ ergibt sich jetzt nur aus Person und dem Rad im Tab „Rad“ (${(()=>{ const cb=findBike(S.sel); return cb?`${cb.b} ${cb.m} ${cb.s}`:"–"; })()}).`;
 };
@@ -4836,7 +4916,7 @@ $("bikeClear").onclick=e=>{   // Standardrad in passender Größe, kein Vergleic
   sugCache.key=""; $("sugApply").click(); fillCmp(); render(); save(); clearDone(e.target); };
 $("compClear").onclick=e=>{   // Bauteile auf Grundwerte, keine Teile ausgewählt
   for(const p of COMP) if(!p.virt&&isFinite(p.def)) S.comp[p.key]=p.def;
-  typeCompDef(S.comp); S.comp.cap=CAP; if(S.modelStd&&isFinite(S.modelStd.cleat)) S.comp.cleat=S.modelStd.cleat;
+  typeCompDef(S.comp); S.comp.cap=CAP; S.comp.cleat=cleatStd();
   S.compSel={}; sugCache.key=""; fillCompSelects(); syncComp(); render(); save(); clearDone(e.target); };
 $("fitClear").onclick=e=>{   // Zielwerte auf Standard, kein Vergleich, Position nach Vorschlag
   S.sugT={}; S.sugTT={}; S.sugCmp="none"; const sc=$("sugCmp"); if(sc) sc.value="none"; sugCache.key="";
@@ -4939,38 +5019,53 @@ const STYLE_FACTORY=JSON.parse(JSON.stringify(STYLE_STD));
 const STYLE_T={};   // Richtwerte aller Radarten; STYLE_STD enthält jeweils die der aktiven Radart
 const styleOvOf=bt=>(bt==="road"?S.styleOv:(S.styleOvT||{})[bt])||{};
 const styleStdOf=bt=>(S.modelStd&&(bt==="road"?S.modelStd.styleStd:(S.modelStd.styleStdT||{})[bt]))||{};
+/* Mindest-Hüftwinkel je Fahrstil (Kurbel-Prüfung): Grundwert aus der bisherigen Einstellung je Radart */
+/* alle Richtwerte je Fahrstil (je Radart): Ziele und Bereiche der Gelenkwinkel, Knielot */
+const STYLE_ALL=["back","backR","shoulder","shR","elbow","elbowLo","elbowHi","kneeT","kneeLo","kneeHi","hip","kops","ankleLo","ankleHi"];
+const styT=()=>{ try{ return (STYLE_T[btype()]||{})[(S.person&&S.person.style)||"sportlich"]||{}; }catch(e){ return {}; } };
+const styV=(k,def)=>{ const v=styT()[k]; return isFinite(v)?v:def; };
+const hipMinDef=bt=>fitmNum(`dhip_${bt}_${DISC_DEF[bt]}`,bt==="tri"?45:48);
 function applyStyleStd(){   // Reihenfolge: aktuelle Änderung > gespeicherte Werkseinstellung > App-Grundwerte
   for(const bt of Object.keys(BTYPES)){ const fac=bt==="road"?STYLE_FACTORY:STYLE_T_DEF[bt], O=styleOvOf(bt), D=styleStdOf(bt); STYLE_T[bt]={};
     for(const st of Object.keys(STYLE_FACTORY)){ const o=O[st]||{}, d=D[st]||{}; STYLE_T[bt][st]={};
-      for(const k of ["back","shoulder","elbow"]) STYLE_T[bt][st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:fac[st][k]; } }
+      const eT0=isFinite(o.elbow)?o.elbow:isFinite(d.elbow)?d.elbow:fac[st].elbow, aero=bt==="tri"||bt==="mtb";   // Triathlon/MTB: Ellbogenbereich um das eigene Ziel
+      const def={hip:hipMinDef(bt),kneeT:145,kneeLo:140,kneeHi:150,kops:KOPS_T[bt],elbowLo:aero?eT0-10:145,elbowHi:aero?eT0+10:165,ankleLo:100,ankleHi:120,backR:5,shR:10};
+      for(const k of STYLE_ALL) STYLE_T[bt][st][k]=isFinite(o[k])?o[k]:isFinite(d[k])?d[k]:k in def?def[k]:fac[st][k]; } }
   const off=discBackOff();   // Disziplin (Triathlon/MTB) verschiebt das Rücken-Ziel
-  for(const st of Object.keys(STYLE_FACTORY)){ Object.assign(STYLE_STD[st],STYLE_T[btype()][st]); STYLE_STD[st].back=Math.round((STYLE_T[btype()][st].back+off)*10)/10; STYLE_BACK[st]=[STYLE_STD[st].back-5,STYLE_STD[st].back+5]; }
+  for(const st of Object.keys(STYLE_FACTORY)){ Object.assign(STYLE_STD[st],STYLE_T[btype()][st]); STYLE_STD[st].back=Math.round((STYLE_T[btype()][st].back+off)*10)/10; { const r=isFinite(STYLE_T[btype()][st].backR)?STYLE_T[btype()][st].backR:5; STYLE_BACK[st]=[STYLE_STD[st].back-r,STYLE_STD[st].back+r]; } }
 }
 /* Rückenwinkel je Disziplin (Triathlon/MTB) unter den Richtwerten je Fahrstil */
-function renderDiscStd(){ const box=$("discStdBox"); if(!box) return; const bt=btype(), L=DISC_T[bt]; if(!L||L.length<2){ box.innerHTML=""; return; }
+function renderDiscStd(){ const box=$("discStdBox"); if(!box) return; const bt=admBt(), L=DISC_T[bt]; if(!L||L.length<2){ box.innerHTML=""; return; }
   const tag=k=>S.fitOv&&isFinite(S.fitOv[k])?'<small class="src edit">geändert</small>':S.modelStd&&S.modelStd.fitModel&&isFinite(S.modelStd.fitModel[k])?'<small class="src">Standard</small>':'<small class="src">&nbsp;</small>';
-  box.innerHTML=`<h3 style="margin:14px 0 4px">Rückenwinkel je Disziplin – ${BTYPES[bt]}</h3><div class="bfg styleGrid"><span></span><b>Rücken (°)</b><span></span><span></span>`+
-    L.map(([k,l])=>{ const key=`disc_${bt}_${k}`; return `<span>${esc(l)}</span><div><input class="bfi" type="number" step="0.5" data-discstd="${key}" value="${FITM[key]}" aria-label="Rücken ${esc(l)}">${tag(key)}</div><span></span><span></span>`; }).join("")+
-    `</div><p class="note info">Wird zum Rücken-Richtwert des Fahrstils addiert (+ = aufrechter, − = gestreckter). Die Disziplin wird oben unter „Sitzposition / Fahrstil“ gewählt. Mit „Modellwerte als Standard speichern“ als Werkseinstellung sichern.</p>`;
+  box.innerHTML=`<div style="margin:16px 0 4px;font-size:14px;font-weight:600;color:var(--muted)">Rückenwinkel je Disziplin${ib("Wird zum Rücken-Richtwert des Fahrstils addiert (+ = aufrechter, − = gestreckter). Die Disziplin wird oben unter „Sitzposition / Fahrstil“ gewählt. Mit „Modellwerte als Standard speichern“ als Werkseinstellung sichern.")}</div><div class="bfg styleGrid"><span></span><b>Rücken (°)</b><span></span><span></span><span></span>`+
+    L.map(([k,l])=>{ const key=`disc_${bt}_${k}`; return `<span>${esc(l)}</span><div><input class="bfi" type="number" step="0.5" data-discstd="${key}" value="${FITM[key]}" aria-label="Rücken ${esc(l)}">${tag(key)}</div><span></span><span></span><span></span>`; }).join("")+
+    `</div>`;
   box.querySelectorAll("[data-discstd]").forEach(el=>el.onchange=()=>{ const k=el.dataset.discstd, x=num(el.value); if(!isFinite(x)||Math.abs(x)>30){ renderDiscStd(); return; }
-    (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); renderFitModel(); delete S.person.ov.backAngle; sugCache.key=""; setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
+    (S.fitOv=S.fitOv||{})[k]=x; applyFitModel(); fitModelChanged(); markEdited(el); delete S.person.ov.backAngle; sugCache.key=""; setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
+const STYLE_INFO="Ziele steuern den Vorschlag (Sitzposition), die Bereiche die Bewertung grün/rot in Gelenkwinkeln, Kopfzeile und PDF. Rücken/Schulter ±: Breite des grünen Bereichs um das Ziel. Knie gestreckt: größter Kniewinkel unten. Hüfte min: kleinster Hüftwinkel oben (auch Warnung bei der Kurbel). Knielot: + vor / − hinter der Pedalachse bei 3 Uhr. Sprunggelenk: gestreckt unten (90° = rechtwinklig). Mit „Modellwerte als Standard speichern“ (unten) als Werkseinstellung sichern.";
 function renderStyleStd(){
   try{ renderFitModel(); }catch(e){}   // Werkseinstellung kann auch das Bewertungsmodell enthalten (Cache-Schlüssel enthalten das Modell)
   const box=$("styleStdBox"); if(!box) return;
   applyStyleStd();
-  const bt=btype(), O=styleOvOf(bt), D=styleStdOf(bt);
+  renderAdmBt(); const bt=admBt(), O=styleOvOf(bt), D=styleStdOf(bt);
   const tag=(st,k)=>O[st]&&isFinite(O[st][k])?'<small class="src edit">geändert</small>'
     :D[st]&&isFinite(D[st][k])?'<small class="src">Standard</small>':'<small class="src">&nbsp;</small>';
-  box.innerHTML=`<h3 style="margin:14px 0 4px">Richtwerte je Fahrstil – ${BTYPES[bt]}</h3><div class="bfg styleGrid"><span></span><b>Rücken (°)</b><b>Schulter (°)</b><b>Ellbogen (°)</b>`+
-    ["comfort","endurance","sportlich","ambitioniert","professional"].map(st=>`<span>${st}</span>${["back","shoulder","elbow"].map(k=>`<div><input class="bfi" type="number" step="${k==="elbow"?1:0.5}" data-stylestd="${st}|${k}" value="${STYLE_T[bt][st][k]}" aria-label="${k==="back"?"Rücken":k==="shoulder"?"Schulter":"Ellbogen"} ${st}">${tag(st,k)}</div>`).join("")}`).join("")+
-    `</div><p class="note info">Rücken: Rückenwinkel und Ziel im Vorschlag, Bereich ±5°. Schulter: Ziel im Vorschlag, Bereich ±10°. Ellbogen: Ziel im Vorschlag und Armhaltung der Figur (180° = gestreckt). Mit „Modellwerte als Standard speichern“ (ganz unten) als Werkseinstellung sichern.</p>`;
-  box.insertAdjacentHTML("beforeend",'<div id="discStdBox"></div>'); renderDiscStd();
+  const STS=["comfort","endurance","sportlich","ambitioniert","professional"];
+  const grid=(title,cols)=>`<div class="stdCard"><h3>${title}</h3><div class="bfg styleGrid"><span></span>${cols.map(([,l])=>`<b>${l}</b>`).join("")}${"<span></span>".repeat(4-cols.length)}`+
+    STS.map(st=>`<span>${st}</span>${cols.map(([k,l,stp])=>`<div><input class="bfi" type="number" step="${stp}" data-stylestd="${st}|${k}" value="${STYLE_T[bt][st][k]}" aria-label="${l} ${st}">${tag(st,k)}</div>`).join("")}${"<span></span>".repeat(4-cols.length)}`).join("")+`</div></div>`;
+  box.innerHTML=grid("Oberkörper",[["back","Rücken (°)",0.5],["backR","Rücken ± (°)",0.5],["shoulder","Schulter (°)",0.5],["shR","Schulter ± (°)",0.5]])+
+    grid("Arme",[["elbow","Ellbogen (°)",1],["elbowLo","Ellbogen von (°)",1],["elbowHi","Ellbogen bis (°)",1]])+
+    grid("Beine",[["kneeT","Knie gestreckt (°)",0.5],["kneeLo","Knie von (°)",0.5],["kneeHi","Knie bis (°)",0.5],["hip","Hüfte min (°)",1]])+
+    grid("Fuß und Knielot",[["kops","Knielot (mm)",1],["ankleLo","Sprunggelenk von (°)",1],["ankleHi","Sprunggelenk bis (°)",1]]);
+  { const sm=$("admStyle")&&$("admStyle").querySelector("summary"); if(sm){ sm.querySelectorAll(".infoBtn").forEach(b=>b.remove()); sm.insertAdjacentHTML("beforeend",ib(STYLE_INFO)); } }   // Erklärung als i-Button an der Überschrift
+  (box.querySelector(".stdCard")||box).insertAdjacentHTML("beforeend",'<div id="discStdBox"></div>'); renderDiscStd();   // Rückenwinkel je Disziplin gehört zum Oberkörper
   box.querySelectorAll("[data-stylestd]").forEach(el=>el.onchange=()=>{
-    const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value); if(!(k==="elbow"?(x>=70&&x<=180):(x>=5&&x<=130))){ renderStyleStd(); return; }
-    let O2; if(btype()==="road") O2=S.styleOv=S.styleOv||{}; else { S.styleOvT=S.styleOvT||{}; O2=S.styleOvT[btype()]=S.styleOvT[btype()]||{}; }
+    const [st,k]=el.dataset.stylestd.split("|"), x=num(el.value), LIM={backR:[0,30],shR:[0,40],elbow:[70,180],elbowLo:[60,180],elbowHi:[60,180],kneeT:[100,180],kneeLo:[100,180],kneeHi:[100,180],hip:[20,100],kops:[-80,80],ankleLo:[40,170],ankleHi:[40,170]}[k]||[5,130];
+    if(!(x>=LIM[0]&&x<=LIM[1])){ renderStyleStd(); return; }
+    const eb=admBt(); let O2; if(eb==="road") O2=S.styleOv=S.styleOv||{}; else { S.styleOvT=S.styleOvT||{}; O2=S.styleOvT[eb]=S.styleOvT[eb]||{}; }
     (O2[st]=O2[st]||{})[k]=x;
-    applyStyleStd(); delete S.person.ov.backAngle; sugCache.key="";
-    setTimeout(()=>{ syncPerson(); render(); renderStyleStd(); save(); },0);
+    applyStyleStd(); delete S.person.ov.backAngle; sugCache.key=""; sizeFitCache.key="";
+    markEdited(el); setTimeout(()=>{ syncPerson(); render(); save(); },0);
   });
 }
 
@@ -5061,7 +5156,7 @@ async function factoryLoad(){
     const db=window.claude&&window.claude.use?await window.claude.use("db"):null; if(!db){ DB_STATE="none"; setDbStat(); return; } FACT_DB=db; DB_STATE="ok";
     try{ const u=await window.claude.use("user"); const w=u&&u.can?await u.can("data.write"):null; if(w===false) DB_STATE="ro"; }catch(e){}
     setDbStat();
-    accessLoad(); await libLoad();
+    accessLoad(); await libLoad(); loadUserBikes();
     const snap=await db.doc("settings/factory").get(); if(!snap.exists) return;
     const d=JSON.parse(JSON.stringify(snap.data()||null)); if(!d||!d.vals||!isFinite(d.at)) return;
     if(isFinite(S.modelStdAt)&&S.modelStdAt>=d.at) return;   // lokal ist schon aktuell
@@ -5075,7 +5170,7 @@ async function factoryLoad(){
        damit alle Werte zum Rad passen. Erster Start in einem neuen Browser: zusätzlich Standardrad in passender Größe */
     /* bei jedem weiteren Öffnen: Rad und Eingaben bleiben, die Position wird aus Person und Rad neu ermittelt */
     if(typeof FRESH!=="undefined"&&FRESH){ sugCache.key=""; $("suClear").click(); }
-    else { sugCache.key=""; $("sugApply").click(); }
+    else { sugCache.key=""; sugApplyAuto(); }
   }
 }
 const LIB_KEYS=["customParts","partFix","partDel","partRename","customBikes","bikeFix","bikeDel","bikeRename","bikeType"];
@@ -5215,6 +5310,7 @@ libSaveNote();
 /* beim Schließen oder Wegwechseln noch offene Änderungen sofort schreiben */
 addEventListener("pagehide",()=>{ try{ const a=document.activeElement; if(a&&a.blur) a.blur(); clearTimeout(saveT); localStorage.setItem("bike-geo-v3",JSON.stringify(S)); }catch(e){} if(libT) libWrite(); });
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"&&libT) libWrite(); });
+async function loadUserBikes(){ if(!(window.WF&&WF.userBikes)) return; try{ placeGeo(); }catch(e){} try{ S.userBikes=await WF.userBikes.list(); reloadData(); renderOwnBikes(); try{ renderBikeManager(); }catch(e){} }catch(e){} }
 async function libLoad(){
   try{
     if(!FACT_DB) return;

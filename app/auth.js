@@ -39,6 +39,19 @@
       };
     }
   };
+  /* ---------- Von Nutzern angelegte Räder: eigene Tabelle, jeder Freigeschaltete darf hinzufügen, nur Admins ändern/löschen ---------- */
+  WF.userBikes = {
+    async list() {
+      const { data, error } = await sb.from("user_bikes").select("id,data").order("id");
+      if (error) throw { code: errCode(error), message: error.message };
+      return (data || []).map(r => ({ ...(r.data || {}), _ub: r.id }));
+    },
+    async add(list) {
+      const rows = list.map(o => ({ marke: String(o.marke || ""), modell: String(o.modell || ""), grosse: String(o.grosse ?? ""), data: o }));
+      const { error } = await sb.from("user_bikes").insert(rows);
+      if (error) throw { code: errCode(error), message: error.message };
+    }
+  };
   const USER = {
     isOwner: () => WF.isAdmin, canEdit: () => WF.isAdmin,
     id: async () => (WF.user ? WF.user.id : null),   // eigenes Konto (z. B. Logo und Kontaktdaten für den Bericht)
