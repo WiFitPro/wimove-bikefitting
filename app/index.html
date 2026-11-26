@@ -2046,10 +2046,14 @@ function updateSelPart(k,x){
 }
 function clearSelFor(k){ const s=SEL_OF[k]; if(s){ S.compSel[s]=""; if(s==="stem"&&S.compSel.bar){ const b=FIT.lists.bars.find(x=>x.name===S.compSel.bar); if(b&&isFinite(b.angle)) S.compSel.bar=""; } } }
 /* Lenkerauswahl: nur Lenker der Radmarke (plus Standard und den aktuell gewählten); Haken „alle Lenker“ zeigt alle */
+/* Hausmarken der Radhersteller für Lenker/Cockpits (Radmarke → Lenkermarken) */
+const BAR_HOUSE={pinarello:["Talon","MOST"],scott:["Syncros"],specialized:["Roval"],trek:["Bontrager"],giant:["Contact"],liv:["Giant","Contact"],
+  factor:["Black Inc"],cube:["Acid","Cubeparts"],ridley:["Forza","4ZA"],orbea:["OC "],cannondale:["HollowGram"]};
 function barsForBrand(all){
   const b=S.sel&&S.sel.b; if(S.barAll||!b||b==="Standard") return all;
   const nb=norm(b), lev=(a,c)=>{ if(Math.abs(a.length-c.length)>1) return 2; let d=0,i=0,j=0; while(i<a.length&&j<c.length){ if(a[i]===c[j]){i++;j++;continue;} if(++d>1) return 2; if(a.length>c.length) i++; else if(c.length>a.length) j++; else {i++;j++;} } return d+(a.length-i)+(c.length-j); };
-  const hit=x=>{ const n=norm(x.name), w=norm(String(x.name).split(/\s+/)[0]); return n.startsWith(nb)||(nb.length>=5&&lev(w,nb)<=1); };
+  const house=(BAR_HOUSE[nb]||[]).map(norm);
+  const hit=x=>{ const n=norm(x.name), w=norm(String(x.name).split(/\s+/)[0]); return n.startsWith(nb)||(nb.length>=5&&lev(w,nb)<=1)||house.some(h=>h&&n.startsWith(h)); };
   const own=all.filter(hit); if(!own.length) return all;
   return all.filter(x=>hit(x)||x.name==="Standard"||x.name===S.compSel.bar);
 }
