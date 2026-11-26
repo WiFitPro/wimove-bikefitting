@@ -610,8 +610,8 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     <div class="panel" id="tab-bike" hidden>
       <div class="ptools"><button class="btn ghost small" id="bikeClear">Rad leeren</button></div>
       <section>
-        <h2>Fahrrad</h2>
-        <p class="src-line" id="srcLine"></p>
+        <h2>Fahrrad<button type="button" class="infoBtn" id="bikeInfo" data-tip="" aria-label="Info zur Raddatenbank">i</button></h2>
+        <p class="src-line" id="srcLine" hidden></p>
         <div class="two">
           <div><label class="f" for="brandSel">Marke</label><select id="brandSel"></select></div>
           <div><label class="f" for="modelSel">Modell</label><select id="modelSel"></select></div>
@@ -2407,7 +2407,8 @@ function useData(geoRows,fitObj,fileName,source,keep){
   const ok=DB.bikes.filter(x=>x.hasData).length;
   document.getElementById("srcLine").textContent=`${ok} Größen aus ${Object.values(DB.models).flat().length} Modellen von ${DB.brands.length} Marken `;
   { const n=document.getElementById("loadNoteT"); if(n) n.textContent=""; }
-  document.getElementById("loadNote").textContent=DB.empty?`${DB.empty} Einträge ohne Geometriedaten sind ausgegraut.`:"";
+  document.getElementById("loadNote").textContent="";
+  { const t=document.getElementById("srcLine").textContent.trim()+"."+(DB.empty?` ${DB.empty} Einträge ohne Geometriedaten sind ausgegraut.`:""), b=document.getElementById("bikeInfo"); if(b){ b.dataset.tip=t; b.setAttribute("aria-label","Info: "+t); } }
   const P=FIT.person;
   document.getElementById("personSrc").textContent="Messwerte direkt hier eintragen. Grün/gelb/rot zeigt, wie stark ein Wert von der Norm für Körpergröße und Geschlecht abweicht.";
   if(!keep||!S.person) S.person=personFrom();
