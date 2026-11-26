@@ -307,6 +307,7 @@ body:not(.bar-drop) #man_lever,body:not(.bar-drop) #selLever,body:not(.bar-drop)
 .startAcc{position:absolute;z-index:1;left:0;right:0;top:4%;text-align:center;color:#fff;font:400 2.7cqi/1.4 "Barlow",system-ui,sans-serif}
 .startAcc button{background:none;border:0;color:#fff;text-decoration:underline;font:inherit;cursor:pointer;padding:0 0 0 1cqi}
 body:not(.isAdmin) .adminOnly{display:none!important}
+.barSelRow>.barAllT{margin:0 0 0 auto;white-space:nowrap;flex:none;font-size:13px}.barSelRow>select{margin-left:0}
 .notReady{display:none!important}
 body.noPro #startPro,body.noPro #basicBtn{display:none!important}
 .ulist{display:grid;gap:6px;margin-top:8px}
@@ -557,7 +558,8 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       </section>
       <section>
         <h2>Teile aus deinen Listen</h2>
-        <label class="f" for="selBar">Lenker</label><select id="selBar"></select>
+        <div class="frow barSelRow"><label class="f" for="selBar">Lenker</label><label class="toggle barAllT"><input type="checkbox" id="barAll"> alle Lenker</label><select id="selBar"></select></div>
+        <p class="note" id="barBrandNote" hidden></p>
         <div id="stemWrap"><label class="f" for="selStem">Vorbau</label><select id="selStem"></select></div>
         <label class="f" for="selLever">Schalt-/Bremsgriffe</label><select id="selLever"></select>
         <div class="two">
@@ -2043,9 +2045,20 @@ function updateSelPart(k,x){
   return true;
 }
 function clearSelFor(k){ const s=SEL_OF[k]; if(s){ S.compSel[s]=""; if(s==="stem"&&S.compSel.bar){ const b=FIT.lists.bars.find(x=>x.name===S.compSel.bar); if(b&&isFinite(b.angle)) S.compSel.bar=""; } } }
+/* Lenkerauswahl: nur Lenker der Radmarke (plus Standard und den aktuell gewählten); Haken „alle Lenker“ zeigt alle */
+function barsForBrand(all){
+  const b=S.sel&&S.sel.b; if(S.barAll||!b||b==="Standard") return all;
+  const nb=norm(b), lev=(a,c)=>{ if(Math.abs(a.length-c.length)>1) return 2; let d=0,i=0,j=0; while(i<a.length&&j<c.length){ if(a[i]===c[j]){i++;j++;continue;} if(++d>1) return 2; if(a.length>c.length) i++; else if(c.length>a.length) j++; else {i++;j++;} } return d+(a.length-i)+(c.length-j); };
+  const hit=x=>{ const n=norm(x.name), w=norm(String(x.name).split(/\s+/)[0]); return n.startsWith(nb)||(nb.length>=5&&lev(w,nb)<=1); };
+  const own=all.filter(hit); if(!own.length) return all;
+  return all.filter(x=>hit(x)||x.name==="Standard"||x.name===S.compSel.bar);
+}
 function fillCompSelects(){
   const L=FIT.lists, nv=x=>isFinite(x)?x:"–", o=(arr,cur,fmt)=>`<option value="">Werte manuell eingeben</option>`+arr.map(x=>`<option value="${esc(x.name)}"${x.name===cur?" selected":""}>${esc(x.name)} · ${fmt(x)}</option>`).join("")+`<option value="__add">+ Bauteil hinzufügen …</option>`;
-  document.getElementById("selBar").innerHTML=o(L.bars,S.compSel.bar,x=>`Reach ${nv(x.reach)}${isFinite(x.angle)?`, integriert ${x.angle}°`:""}`);
+  const bars=barsForBrand(L.bars), bn=document.getElementById("barBrandNote"), ba=document.getElementById("barAll");
+  if(ba) ba.checked=!!S.barAll;
+  if(bn){ const b=S.sel&&S.sel.b; bn.hidden=!(b&&b!=="Standard"&&!S.barAll&&bars.length===L.bars.length); bn.textContent=bn.hidden?"":`Keine Lenker der Marke ${b} hinterlegt – alle Lenker werden angezeigt.`; }
+  document.getElementById("selBar").innerHTML=o(bars,S.compSel.bar,x=>`Reach ${nv(x.reach)}${isFinite(x.angle)?`, integriert ${x.angle}°`:""}`);
   document.getElementById("selStem").innerHTML=o(L.stems,S.compSel.stem,x=>`${nv(x.angle)}°, Höhe ${nv(x.height)}`);
   document.getElementById("selLever").innerHTML=o(L.levers,S.compSel.lever,x=>`Reach ${x.reach}`);
   document.getElementById("selPedal").innerHTML=o(L.pedals,S.compSel.pedal,x=>`${x.stack} mm`);
@@ -2059,7 +2072,7 @@ const MANUAL={bar:["selBar",["barReach"]],stem:["selStem",["stemAngle","stemHeig
 function renderManual(){
   for(const [k,[selId,keys]] of Object.entries(MANUAL)){
     const sel=document.getElementById(selId); if(!sel) continue;
-    let box=document.getElementById("man_"+k); if(!box){ box=document.createElement("div"); box.id="man_"+k; sel.insertAdjacentElement("afterend",box); }
+    let box=document.getElementById("man_"+k); if(!box){ box=document.createElement("div"); box.id="man_"+k; (sel.closest(".barSelRow")||sel).insertAdjacentElement("afterend",box); }
     if(S.compSel[k]){ box.innerHTML=""; continue; }
     if(box.contains(document.activeElement)) continue;   // nicht während der Eingabe neu aufbauen
     { const ex=[...box.querySelectorAll("[data-man]")]; if(ex.length===keys.length&&ex.every((e,i)=>e.dataset.man===keys[i])){ ex.forEach(e=>{ const v=S.comp[e.dataset.man], t=isFinite(v)?String(v):""; if(e.value!==t) e.value=t; }); continue; } }   // Felder behalten (Pfeile bleiben bedienbar), nur Werte setzen
@@ -2386,8 +2399,9 @@ function fillCmp(){
 function selectMain(b,m,s){
   if(!DB.models[b]) b=DB.brands[0]; if(!DB.models[b].includes(m)) m=DB.models[b][0];
   if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s);
-  S.sel={b,m,s}; for(const k of Object.keys(S.edits)) if(!KEEP.includes(k)) delete S.edits[k];
+  const obPrev=(S.sel||{}).b; S.sel={b,m,s}; for(const k of Object.keys(S.edits)) if(!KEEP.includes(k)) delete S.edits[k];
   fillMain(); loadBike(); save();
+  if(obPrev!==b){ try{ fillCompSelects(); }catch(_){} }   // Lenkerliste an die Marke anpassen
 }
 function selectCmp(b,m,s,i=0){
   let v=EMPTY_CMP();
@@ -2525,6 +2539,7 @@ function showTab(t){ S.tab=t; document.querySelectorAll(".tab").forEach(b=>b.set
   save(); }
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 $("brandSel").onchange=e=>selectMain(e.target.value,"",S.sel.s);
+$("barAll").onchange=e=>{ S.barAll=e.target.checked; fillCompSelects(); save(); };
 $("modelSel").onchange=e=>selectMain(S.sel.b,e.target.value,S.sel.s);
 $("sizeChips").onclick=e=>{ const c=e.target.closest(".chip"); if(c&&!c.disabled) selectMain(S.sel.b,S.sel.m,c.dataset.s); };
 function cmpSetupBike(which){
