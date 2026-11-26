@@ -804,7 +804,7 @@ const COMP = [
   {key:"stemAngle", label:"Vorbauwinkel", g:"Cockpit", unit:"°", min:-25,max:25,step:1,def:-6},
   {key:"stemHeight", label:"Vorbauhöhe (Klemmung)", g:"Cockpit", min:30,max:60,step:1,def:40},
   {key:"barWidth", label:"Lenkerbreite (Mitte–Mitte)", g:"Cockpit", min:300,max:820,step:10,def:420},
-  {key:"barReach", label:"Lenker-Reach", info:"Mitte Oberlenker bis Bremsgriff", g:"Cockpit", min:30,max:110,step:1,def:60, bars:["drop"]},
+  {key:"barReach", label:"Lenker-Reach", info:"Mitte Oberlenker bis Beginn Schalt-/Bremsgriff", g:"Cockpit", min:30,max:110,step:1,def:60, bars:["drop"]},
   {key:"leverReach", label:"Bremsgriff-Reach", info:"Beginn Bremsgriff bis Griffpunkt", g:"Cockpit", min:20,max:90,step:1,def:50, bars:["drop"]},
   {key:"leverAngle", label:"Bremsgriffwinkel", g:"Cockpit", unit:"°", min:-10,max:20,step:1,def:0, bars:["drop"]},
   {key:"barRise", label:"Lenker-Rise (Griff über Lenkerklemmung)", g:"Cockpit", min:-20,max:80,step:5,def:0, bars:["flat"]},
@@ -2068,7 +2068,7 @@ function renderManual(){
   }
 }
 /* fehlende Maße des gewählten Teils direkt eintragen; der Wert wird am Teil gespeichert */
-const MISS=[["bar","bars","reach","barReach","Lenker-Reach (mm)","Mitte Oberlenker bis Bremsgriff"],["barI","bars","angle","stemAngle","Vorbauwinkel Cockpit (°)"],["barI","bars","height","stemHeight","Vorbauhöhe Cockpit (mm)"],["stem","stems","angle","stemAngle","Vorbauwinkel (°)"],["stem","stems","height","stemHeight","Vorbauhöhe (mm)"],
+const MISS=[["bar","bars","reach","barReach","Lenker-Reach (mm)","Mitte Oberlenker bis Beginn Schalt-/Bremsgriff"],["barI","bars","angle","stemAngle","Vorbauwinkel Cockpit (°)"],["barI","bars","height","stemHeight","Vorbauhöhe Cockpit (mm)"],["stem","stems","angle","stemAngle","Vorbauwinkel (°)"],["stem","stems","height","stemHeight","Vorbauhöhe (mm)"],
   ["lever","levers","reach","leverReach","Bremsgriff-Reach (mm)","Beginn Bremsgriff bis Griffpunkt"],["pedal","pedals","stack","pedalStack","Stack Height Pedal (mm)"],["shoe","shoes","sole","sole","Sohlendicke (mm)"]];
 function renderMissing(){
   const box=document.getElementById("compMissing"); if(!box) return;
@@ -2815,7 +2815,7 @@ const PART_FORMS={
   shoes:{title:"Schuh hinzufügen",fields:[["sole","Sohlendicke (mm)"]]},
   levers:{title:"Schalt-/Bremsgriff hinzufügen",fields:[["reach","Bremsgriff-Reach – Beginn Bremsgriff bis Griffpunkt (mm)"]]},
   stems:{title:"Vorbau hinzufügen",fields:[["angle","Vorbauwinkel (°)"],["height","Vorbauhöhe / Klemmung (mm)"]]},
-  bars:{title:"Lenker hinzufügen",fields:[["reach","Lenker-Reach – Mitte Oberlenker bis Bremsgriff (mm)"]],integ:true},
+  bars:{title:"Lenker hinzufügen",fields:[["reach","Lenker-Reach – Mitte Oberlenker bis Beginn Schalt-/Bremsgriff (mm)"]],integ:true},
   saddles:{title:"Sattel hinzufügen",fields:[]}
 };
 function mergeCustomParts(){
@@ -3663,7 +3663,7 @@ function renderSetup(){
     }
     const [g,k,lab,typ]=r.length===3?["pos",r[1],r[2],"num"]:r;
     const rowStart=h.length, rowLinked=g==="c"&&!!SU_LINK[k];
-    const SU_DESC={barReach:"Mitte Oberlenker bis Bremsgriff",leverReach:"Beginn Bremsgriff bis Griffpunkt"};
+    const SU_DESC={barReach:"Mitte Oberlenker bis Beginn Schalt-/Bremsgriff",leverReach:"Beginn Bremsgriff bis Griffpunkt"};
     h+=`<span>${lab}${SU_DESC[k]&&g==="c"?`<small>${SU_DESC[k]}</small>`:""}</span>`;
     for(const w of ["ist","opt"]){
       let val=g==="pos"?U.pos[w][k]:(w==="ist"?U.ci:U.co)[k];
