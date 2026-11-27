@@ -2686,10 +2686,12 @@ $("resetStd").onclick=()=>{
 function renderDisc(){ const w=$("discWrap"), sel=$("discSel"); if(!w||!sel) return; const bt=btype(), L=DISC_T[bt]; w.hidden=!L||L.length<2; if(!L||L.length<2) return;   // Rennrad und Gravel haben keine Disziplin-Auswahl
   $("discLab").textContent="Disziplin"; const d=discOf(bt);
   sel.innerHTML=L.map(([k,l])=>`<option value="${k}"${k===d?" selected":""}>${l}</option>`).join(""); }
-$("discSel").onchange=e=>{ S.person["disc_"+btype()]=e.target.value; delete S.person.ov.backAngle; if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }
+/* Fahrstil/Disziplin gewechselt: alle Zielwerte (Knie, Knielot, Rücken, Schulter, Ellbogen) wieder auf die Richtwerte */
+function resetSugTargets(){ const o=sugOv(); if(o) for(const k of ["knee","kops","back","shoulder","elbow"]) delete o[k]; sugCache.key=""; }
+$("discSel").onchange=e=>{ S.person["disc_"+btype()]=e.target.value; delete S.person.ov.backAngle; delete S.person.ov.shoulderT; delete S.person.ov.elbowT; resetSugTargets();
   applyStyleStd(); sugCache.key=""; sizeFitCache.key=""; cmpFit={}; syncPerson(); render(); save(); };
 $("styleSel").onchange=e=>{ S.person.style=e.target.value; delete S.person.ov.backAngle; delete S.person.ov.shoulderT; delete S.person.ov.elbowT;
-  if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }   // Zielwerte folgen dem Fahrstil
+  resetSugTargets();   // Zielwerte folgen dem Fahrstil
   syncPerson(); render(); save(); };
 $("sexSel").onchange=e=>{ S.person.sex=e.target.value; syncPerson(); render(); save(); };
 $("autoBack").onchange=e=>{ S.person.autoBack=e.target.checked; delete S.person.ov.backAngle; syncPerson(); render(); save(); };
