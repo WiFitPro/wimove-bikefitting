@@ -1709,6 +1709,13 @@ function suggest(){
   /* Vorbauwinkel: mit gewähltem Vorbau/Cockpit dessen Winkel, sonst Standard −6°; steilere Winkel nur wenn die Position es deutlich verlangt */
   const saRef=(integ||S.compSel.stem)?c0.stemAngle:STEM_ANGLE_T[bt];
   const angles=[...new Set([saRef,...(integ?[]:STEM_ANGLES_T[bt])])], SR=STEM_RANGE_T[bt], pads=aero?PAD_STACKS:[null];
+  /* Idealposition (radunabhängig): Griffpunkt, an dem bei Ziel-Rückenwinkel auch Schulter- und Ellbogenwinkel genau den Zielwerten entsprechen */
+  let ideal=null; { const seat={x:-sb,y:Math.sqrt(sh*sh-sb*sb)}, Bi={...B,backAngle:back,_back:back};
+    const err=(x,y)=>{ try{ const R=riderPose({seat,grip:{x,y}},c0,Bi,90), J=jointAngles(R); return ((J.shoulder-T.shoulder))**2+((J.elbow-T.elbow)/(aero?50:1))**2+((J.back-back)*2)**2; }catch(e){ return 1e9; } };
+    let bx=600, by=650, be=err(bx,by);   // fester Startpunkt: Ergebnis hängt nicht vom Rad ab
+    for(const st of [20,8,3,1,0.5]){ const R0=st===20?200:st*4; let cx=bx, cy=by;
+      for(let x=cx-R0;x<=cx+R0;x+=st) for(let y=cy-R0;y<=cy+R0;y+=st){ const e=err(x,y); if(e<be){ be=e; bx=x; by=y; } } }
+    if(be<4) ideal={gx:bx,gy:by}; }
   let best=null;
   for(const sa of angles) for(let L=SR[0];L<=SR[1];L+=10) for(let sp=0;sp<=40;sp+=5) for(const ps of pads){
     const g=compute(vals,{...base.c,stemLen:L,spacer:sp,stemAngle:sa,...(ps===null?{}:{padStack:ps})}), G=g.grip;
@@ -1717,22 +1724,24 @@ function suggest(){
     const Sh=add(add(hip,mul(u,a)),mul({x:-u.y,y:u.x},hh));
     const bk=degs(Math.atan2(Sh.y-hip.y,Sh.x-hip.x));
     const E=aero?G:ik(Sh,G,L1,L2,-1).mid, shA=angAt(Sh,hip,E);
-    const cost=((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==saRef?0.3+Math.abs(sa-saRef)*0.06:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400
+    const cost=ideal
+      ? (Math.hypot(G.x-ideal.gx,G.y-ideal.gy)/5)**2+0.15*(((bk-back)/4)**2+((shA-T.shoulder)/8)**2)+(sa!==saRef?2+Math.abs(sa-saRef)*0.1:0)+0.15*((L-SI)/20)**2+sp/400+(ps===null?0:Math.abs(ps-70)/250)   /* Griff möglichst nah am Idealpunkt; anderer Vorbauwinkel nur, wenn er ≈ 7 mm näher bringt */
+      : ((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==saRef?0.3+Math.abs(sa-saRef)*0.06:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400
       +STEM_PREF*((L-SI)/20)**2+(ps===null?0:Math.abs(ps-70)/250);   /* Vorliebe für die zur Sitzposition passende Vorbaulänge (comfort 90 … professional 125 mm), Abweichung nur wenn die Winkel es verlangen */
     if(!best||cost<best.cost) best={L,sp,sa,ps,cost,grip:G,back:bk,shoulder:shA};
   }
   if(!best){ const g=compute(vals,base.c); best={L:c0.stemLen,sp:c0.spacer,sa:c0.stemAngle,grip:g.grip,back,shoulder:NaN,cost:Infinity}; }
-  /* Idealposition (radunabhängig): Griffpunkt, an dem bei Ziel-Rückenwinkel auch Schulter- und Ellbogenwinkel genau den Zielwerten entsprechen */
-  let ideal=null; { const seat={x:-sb,y:Math.sqrt(sh*sh-sb*sb)}, Bi={...B,backAngle:back,_back:back};
-    const err=(x,y)=>{ try{ const R=riderPose({seat,grip:{x,y}},c0,Bi,90), J=jointAngles(R); return ((J.shoulder-T.shoulder))**2+((J.elbow-T.elbow)/(aero?50:1))**2+((J.back-back)*2)**2; }catch(e){ return 1e9; } };
-    let bx=600, by=650, be=err(bx,by);   // fester Startpunkt: Ergebnis hängt nicht vom Rad ab
-    for(const st of [20,8,3,1,0.5]){ const R0=st===20?200:st*4; let cx=bx, cy=by;
-      for(let x=cx-R0;x<=cx+R0;x+=st) for(let y=cy-R0;y<=cy+R0;y+=st){ const e=err(x,y); if(e<be){ be=e; bx=x; by=y; } } }
-    if(be<4) ideal={gx:bx,gy:by}; }
+  /* Rahmenhinweis: Idealpunkt mit Vorbau/Spacer nicht erreichbar */
+  let frameHint=""; if(ideal&&best.grip){ const dx=best.grip.x-ideal.gx, dy=best.grip.y-ideal.gy, tol=15, msg=[];
+    if(dy>tol&&best.sp<=0) msg.push(`Lenker ${Math.round(dy)} mm zu hoch, obwohl keine Spacer mehr verbaut sind: Rahmen vorn zu hoch (Stack) – kleinere Größe oder Rahmen mit weniger Stack prüfen`);
+    if(dy<-tol&&best.sp>=40) msg.push(`Lenker ${Math.round(-dy)} mm zu tief, obwohl 40 mm Spacer verbaut sind: Rahmen vorn zu niedrig (Stack) – größere Größe oder Rahmen mit mehr Stack prüfen`);
+    if(dx>tol&&best.L<=SR[0]) msg.push(`Griff ${Math.round(dx)} mm zu weit vorn, obwohl schon der kürzeste Vorbau gewählt ist: Rahmen zu lang (Reach) – kleinere Größe prüfen`);
+    if(dx<-tol&&best.L>=SR[1]) msg.push(`Griff ${Math.round(-dx)} mm zu weit hinten, obwohl schon der längste Vorbau gewählt ist: Rahmen zu kurz (Reach) – größere Größe prüfen`);
+    frameHint=msg.join(" · "); }
   const parts={setback:Math.round(sb),saddleH:Math.round(sh),stemLen:best.L,spacer:best.sp,stemAngle:best.sa};
   if(aero&&best.ps!=null) parts.padStack=best.ps;
   const sy=Math.sqrt(sh*sh-sb*sb);
-  const val={sb,sh,sy,saRef,gt:best.grip,grip:best.grip,parts,back:best.back,backTarget:back,cost:best.cost,ideal,
+  const val={sb,sh,sy,saRef,gt:best.grip,grip:best.grip,parts,back:best.back,backTarget:back,cost:best.cost,ideal,frameHint,
     ev:evalPos({x:-sb,y:sy},best.grip,best.back)};
   sugCache={key,val}; return val;
 }
@@ -1791,7 +1800,7 @@ function renderSug(){
   for(const [n,f,u] of rows){ const a=f(A), b=Bv?f(Bv):NaN, iv=I?f(I):NaN;
     h+=`<tr><td>${n}</td>${I?`<td class="r">${isFinite(iv)?Math.round(iv)+(u==="°"?"°":""):"–"}</td>`:""}<td>${Math.round(a)}${u==="°"?"°":""}</td>${Bv?`<td>${Math.round(b)}${u==="°"?"°":""}</td><td>${sgn(a-b)}</td>`:""}</tr>`; }
   let idealNote=""; if(I){ const dx=r.grip.x-I.gx, dy=r.grip.y-I.gy, d=Math.hypot(dx,dy);
-    idealNote=`<p class="note" id="idealNote">${gripLbl()} im Vorschlag weicht ${d<3?"praktisch nicht":`um ${Math.round(d)} mm`} von der Idealposition ab${d<3?"":` (${Math.abs(dx)<1?"":`${Math.round(Math.abs(dx))} mm ${dx>0?"weiter vorn":"weiter hinten"}`}${Math.abs(dx)>=1&&Math.abs(dy)>=1?", ":""}${Math.abs(dy)<1?"":`${Math.round(Math.abs(dy))} mm ${dy>0?"höher":"tiefer"}`})`}.</p>`; }
+    idealNote=`<p class="note" id="idealNote">${gripLbl()} im Vorschlag weicht ${d<3?"praktisch nicht":`um ${Math.round(d)} mm`} von der Idealposition ab${d<3?"":` (${Math.abs(dx)<1?"":`${Math.round(Math.abs(dx))} mm ${dx>0?"weiter vorn":"weiter hinten"}`}${Math.abs(dx)>=1&&Math.abs(dy)>=1?", ":""}${Math.abs(dy)<1?"":`${Math.round(Math.abs(dy))} mm ${dy>0?"höher":"tiefer"}`})`}.</p>`+(r.frameHint?`<p class="warn" id="frameHint">⚠ ${r.frameHint}.</p>`:""); }
   $("sugTable").innerHTML=h+"</table>"+idealNote+(Bv||mode==="none"?"":`<p class="note">Für „${lbl}“ gibt es keine Werte im Blatt „Bike Set Up“.</p>`);
   const P2=r.parts;
   { /* für welches Rad gilt der Vorschlag, und lässt sich der Sattelversatz mit diesem Sitzrohr umsetzen? */
@@ -4741,7 +4750,7 @@ function guideBuiltin(){   // Vorlage: Docs-Dokument „Anleitung WiFitPro und W
        ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen (deutsch oder englisch beschriftet), Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
        ["Rad",["Marke, Modell und Größe wählen; der Haken „alle Radkategorien“ neben „Fahrrad“ zeigt auch Räder anderer Radarten. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
        ["Bauteile",["„Ist-Zustand laden“ oder „Optimierte Position laden“ übernimmt die Werte aus dem Bike Set Up.","Lenker, Vorbau, Schalt-/Bremsgriffe, Pedale und Schuhe aus den Listen wählen. Angezeigt werden die Teile zur Radmarke; mit „alle Lenker“ bzw. „alle Vorbauten“ siehst du alle.","Fehlende Maße direkt eintragen; neue Teile unter „Teile verwalten“ anlegen und Radmarken zuordnen."]],
-       ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad. Die Spalte „Ideal“ zeigt die Zielposition nur aus Messwerten und Fahrstil (für jedes Rad gleich), „Vorschlag“ das mit diesem Rad und den verfügbaren Teilen Erreichbare; darunter steht, wie weit der Griff von der Idealposition abweicht.","Unter „Vorschlag vergleichen mit“ den Vorschlag neben die aktuelle Einstellung, die Ist- oder die optimierte Position stellen.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
+       ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad. Die Spalte „Ideal“ zeigt die Zielposition nur aus Messwerten und Fahrstil (für jedes Rad gleich), „Vorschlag“ das mit diesem Rad und den verfügbaren Teilen Erreichbare; darunter steht, wie weit der Griff von der Idealposition abweicht. Vorbaulänge, -winkel und Spacer wählt die App passend zu den gewählten Bauteilen (Lenker, Griffe) so, dass der Griff dem Idealpunkt möglichst nahe kommt; reicht das nicht, erscheint ein Hinweis zur Rahmengröße.","Unter „Vorschlag vergleichen mit“ den Vorschlag neben die aktuelle Einstellung, die Ist- oder die optimierte Position stellen.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
        ["PDF",["Ein Paket antippen ({PAKETE}) oder Inhalte einzeln anhaken. Eigene Pakete können unter „Eigene Pakete und Voreinstellung“ angelegt und bearbeitet werden.","Bei Bedarf das PDF der Videoanalyse (Contemplas) und der Satteldruckmessung (Everve) hinzufügen; die App übernimmt nur deren Bilder.","Unter „Bericht: Logo und Kontaktdaten“ kann das eigene Logo hochgeladen und die Kontaktdaten eingefügt werden.","„PDF erstellen“ erzeugt den Bericht mit Deckblatt, den ausgewählten Inhalten, deinem Logo und deinen Kontaktdaten."]],
        ["Daten",["Unter „Konto“ das Passwort ändern oder abmelden.","„Bedienungsanleitung herunterladen“ erzeugt diese Anleitung als PDF.","Mit „Daten sichern (.json)“ alles archivieren oder auf ein anderes Gerät mitnehmen; „Sicherung laden“ spielt es wieder ein."]]])]},
     {h:"Bedienung",blocks:[P("Diese Elemente gelten in beiden Ansichten."),
