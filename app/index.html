@@ -614,7 +614,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     <div class="panel" id="tab-bike" hidden>
       <div class="ptools"><button class="btn ghost small" id="bikeClear">Rad leeren</button></div>
       <section>
-        <h2>Fahrrad<button type="button" class="infoBtn" id="bikeInfo" data-tip="" aria-label="Info zur Raddatenbank">i</button></h2>
+        <h2 style="display:flex;align-items:center;flex-wrap:wrap;gap:6px 0">Fahrrad<button type="button" class="infoBtn" id="bikeInfo" data-tip="" aria-label="Info zur Raddatenbank">i</button><label class="toggle" style="margin-left:18px;font-size:13px;font-weight:500"><input type="checkbox" id="cmpAll"> alle Radkategorien</label></h2>
         <p class="src-line" id="srcLine" hidden></p>
         <div class="two">
           <div><label class="f" for="brandSel">Marke</label><select id="brandSel"></select></div>
@@ -623,7 +623,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <label class="f">Größe</label>
         <div class="chips" id="sizeChips"></div>
         <p class="note" id="sizeFitNote" style="margin-top:6px"></p>
-        <div class="frow" style="margin-top:16px"><h3 style="margin:0">Rahmen vergleichen mit</h3><label class="toggle barAllT" style="margin-left:auto;font-size:13px"><input type="checkbox" id="cmpAll"> alle Radkategorien</label></div>
+        <h3>Rahmen vergleichen mit</h3>
         <div id="cmpRows"></div>
         <div class="row" id="cmpBtns" style="margin-top:8px">
           <button class="btn ghost small" id="cmpOptBike">Mit Rad der optimierten Position vergleichen</button>
@@ -997,8 +997,8 @@ function buildDB(p){
   const mk=list=>{ const brands=[],models={}; for(const x of list){ if(!models[x.b]){models[x.b]=[];brands.push(x.b);} if(!models[x.b].includes(x.m)) models[x.b].push(x.m); } return {brands,models}; };
   const all=mk(p.bikes), byT={}; for(const t of Object.keys(BTYPES)) byT[t]=mk(p.bikes.filter(x=>x.t===t));
   /* Marken- und Modelllisten zeigen nur Räder der gewählten Radart */
-  return {bikes:p.bikes,all,byT,get brands(){ const v=this.byT[btype()]; return v&&v.brands.length?v.brands:this.all.brands; },
-    get models(){ const v=this.byT[btype()]; return v&&v.brands.length?v.models:this.all.models; },unknown:p.unknown,empty:p.bikes.filter(x=>!x.hasData).length};
+  return {bikes:p.bikes,all,byT,get brands(){ if(S.cmpAll) return this.all.brands; const v=this.byT[btype()]; return v&&v.brands.length?v.brands:this.all.brands; },
+    get models(){ if(S.cmpAll) return this.all.models; const v=this.byT[btype()]; return v&&v.brands.length?v.models:this.all.models; },unknown:p.unknown,empty:p.bikes.filter(x=>!x.hasData).length};
 }
 const sizesOf=(b,m)=>DB.bikes.filter(x=>x.b===b&&x.m===m);
 const findBike=sel=>DB.bikes.find(x=>x.b===sel.b&&x.m===sel.m&&x.s===sel.s);
@@ -2364,8 +2364,9 @@ function paintSizeFit(){
 }
 function fillMain(){
   const {b,m}=S.sel;
-  document.getElementById("brandSel").innerHTML=DB.brands.map(x=>opt(x,x,x===b)).join("");
-  document.getElementById("modelSel").innerHTML=DB.models[b].map(x=>opt(x,x,x===m)).join("");
+  const brs=DB.brands.includes(b)?DB.brands:[b,...DB.brands], mds0=DB.models[b]||DB.all.models[b]||[], mds=mds0.includes(m)?mds0:[m,...mds0];   // gewähltes Rad bleibt sichtbar, auch aus anderer Radart
+  document.getElementById("brandSel").innerHTML=brs.map(x=>opt(x,x,x===b)).join("");
+  document.getElementById("modelSel").innerHTML=mds.map(x=>opt(x,x,x===m)).join("");
   document.getElementById("sizeChips").innerHTML=sizesOf(b,m).map(x=>`<button class="chip" aria-pressed="${x.s===S.sel.s}" data-s="${esc(x.s)}"${x.hasData?"":` disabled title="Keine Geometriedaten"`}>${esc(x.s)}</button>`).join("");
   paintSizeFit(); updateSizeFit();   // Größenempfehlung grün/orange/rot
 }
@@ -2420,11 +2421,12 @@ function fillCmp(){
   box.querySelectorAll("[data-cmpdel]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.cmpdel, all=cmpSlots(); all.splice(i,1); all.push(EMPTY_CMP());
     S.cmp=all[0]; S.cmpX=all.slice(1,CMP_MAX); cmpRowsN=Math.max(0,cmpRowsN-1); fillCmp(); renderBikeResults(); render(); save(); });
   if($("cmpAdd")) $("cmpAdd").onclick=()=>{ cmpRowsN=Math.min(CMP_MAX,(cmpRowsN||0)+1); fillCmp(); };
-  if(ca) ca.onchange=()=>{ S.cmpAll=ca.checked; fillCmp(); save(); };
+  if(ca) ca.onchange=()=>{ S.cmpAll=ca.checked; fillMain(); fillCmp(); save(); };   // gilt für Marke/Modell oben und für den Vergleich
   if(pending) updateCmpFit();
 }
 function selectMain(b,m,s){
-  if(!DB.models[b]) b=DB.brands[0]; if(!DB.models[b].includes(m)) m=DB.models[b][0];
+  if(!DB.models[b]&&!DB.all.models[b]) b=DB.brands[0];
+  { const own=DB.models[b]||DB.all.models[b], any=DB.all.models[b]||own; if(!(own.includes(m)||any.includes(m))) m=own[0]; }   // auch Modelle anderer Radarten zulassen
   if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s);
   const obPrev=(S.sel||{}).b; S.sel={b,m,s}; for(const k of Object.keys(S.edits)) if(!KEEP.includes(k)) delete S.edits[k];
   fillMain(); loadBike(); save();
@@ -4687,7 +4689,7 @@ function guideBuiltin(){   // Vorlage: Docs-Dokument „Anleitung WiFitPro und W
      OL([["Befund",["Unter „Kunde“ Name und Datum eintragen – sie erscheinen auf dem PDF.","Anamnese ausfüllen, z. B. Umfang als Jahreskilometer oder km/Woche.","Beschwerden: erst die Körperregion wählen, dann die Seite (bei Bedarf abwählbar, z. B. Gesäß) und die Art der Beschwerde.","Statikbefund, Dynamischer Befund, Mobilitätstests und Krafttests nach Bedarf. Das kleine Bild neben einem Test zeigt, wie er durchgeführt wird."]],
        ["Bike Set Up",["Die Maße des mitgebrachten Rads als Ist-Zustand eintragen und die optimierte Position in der zweiten Spalte. Leere Felder der optimierten Spalte übernehmen den Ist-Wert."]],
        ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen, Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
-       ["Rad",["Marke, Modell und Größe wählen. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden; mit dem Haken „alle Radkategorien“ stehen auch Räder anderer Radarten zur Wahl.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
+       ["Rad",["Marke, Modell und Größe wählen; der Haken „alle Radkategorien“ neben „Fahrrad“ zeigt auch Räder anderer Radarten. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
        ["Bauteile",["„Ist-Zustand laden“ oder „Optimierte Position laden“ übernimmt die Werte aus dem Bike Set Up.","Lenker, Vorbau, Schalt-/Bremsgriffe, Pedale und Schuhe aus den Listen wählen. Angezeigt werden die Teile zur Radmarke; mit „alle Lenker“ bzw. „alle Vorbauten“ siehst du alle.","Fehlende Maße direkt eintragen; neue Teile unter „Teile verwalten“ anlegen und Radmarken zuordnen."]],
        ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad.","Unter „Vorschlag vergleichen mit“ den Vorschlag neben die aktuelle Einstellung, die Ist- oder die optimierte Position stellen.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
        ["PDF",["Ein Paket antippen ({PAKETE}) oder Inhalte einzeln anhaken. Eigene Pakete können unter „Eigene Pakete und Voreinstellung“ angelegt und bearbeitet werden.","Bei Bedarf das PDF der Videoanalyse (Contemplas) und der Satteldruckmessung (Everve) hinzufügen; die App übernimmt nur deren Bilder.","Unter „Bericht: Logo und Kontaktdaten“ kann das eigene Logo hochgeladen und die Kontaktdaten eingefügt werden.","„PDF erstellen“ erzeugt den Bericht mit Deckblatt, den ausgewählten Inhalten, deinem Logo und deinen Kontaktdaten."]],
