@@ -869,7 +869,7 @@ const STYLE_T_DEF={
   tri:{comfort:{back:24,shoulder:88,elbow:100},endurance:{back:21,shoulder:89,elbow:97},sportlich:{back:18,shoulder:90,elbow:95},ambitioniert:{back:15,shoulder:91,elbow:92},professional:{back:12,shoulder:92,elbow:90}},
   mtb:{comfort:{back:59,shoulder:58,elbow:160},endurance:{back:56,shoulder:60,elbow:158},sportlich:{back:53,shoulder:62,elbow:155},ambitioniert:{back:50,shoulder:64,elbow:152},professional:{back:47,shoulder:66,elbow:150}}};
 const STEM_RANGE_T={road:[60,140],gravel:[50,130],tri:[60,130],mtb:[30,100]};   // Suchbereich Vorbaulänge (mm)
-const STEM_ANGLES_T={road:[-6,-10,-17],gravel:[-6,-10,6],tri:[-6,-10,-17],mtb:[0,-6,6]};
+const STEM_ANGLES_T={road:[-6,-17,-10,-12,-8,-4,0,6,10],gravel:[-6,0,6,-10,10,-17,-12,-8,-4,4,8,12,17],tri:[-6,-17,-10,-12,-8,-4,0,6,10],mtb:[0,-6,6,-10,10,15,25,35,-17]};   // handelsübliche Vorbauwinkel je Radart
 const STEM_ANGLE_T={road:-6,gravel:-6,tri:-6,mtb:0};   // Standard-Vorbauwinkel je Radart
 const KOPS_T={road:0,gravel:0,tri:50,mtb:0};          // Knielot-Ziel: Triathlon sitzt weiter vorn
 const PAD_STACKS=[30,50,70,90,110,130];      // Armpad-Höhen im Vorschlag (Triathlon)
@@ -1708,7 +1708,8 @@ function suggest(){
   const integ=(()=>{ const b=FIT.lists.bars.find(x=>x.name===S.compSel.bar); return !!(b&&isFinite(b.angle)); })();
   /* Vorbauwinkel: mit gewähltem Vorbau/Cockpit dessen Winkel, sonst Standard −6°; steilere Winkel nur wenn die Position es deutlich verlangt */
   const saRef=(integ||S.compSel.stem)?c0.stemAngle:STEM_ANGLE_T[bt];
-  const angles=[...new Set([saRef,...(integ?[]:STEM_ANGLES_T[bt])])], SR=STEM_RANGE_T[bt], pads=aero?PAD_STACKS:[null];
+  const angles=[...new Set([saRef,...((integ||S.compSel.stem)?[]:STEM_ANGLES_T[bt])])],   // gewählter Vorbau/integriertes Cockpit: nur dessen Winkel
+    SR=STEM_RANGE_T[bt], pads=aero?PAD_STACKS:[null];
   /* Idealposition (radunabhängig): Griffpunkt, an dem bei Ziel-Rückenwinkel auch Schulter- und Ellbogenwinkel genau den Zielwerten entsprechen */
   let ideal=null; { const seat={x:-sb,y:Math.sqrt(sh*sh-sb*sb)}, Bi={...B,backAngle:back,_back:back};
     const err=(x,y)=>{ try{ const R=riderPose({seat,grip:{x,y}},c0,Bi,90), J=jointAngles(R); return ((J.shoulder-T.shoulder))**2+((J.elbow-T.elbow)/(aero?50:1))**2+((J.back-back)*2)**2; }catch(e){ return 1e9; } };
