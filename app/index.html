@@ -755,6 +755,9 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div>
         <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="admCopy">Änderungen für alle Radarten übernehmen</button></div><p class="note" id="admCopyNote"></p></section>
       <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
+      <details class="acc" id="guideAdmDetails"><summary>Bedienungsanleitung</summary><p class="note info" style="margin-top:0">Eigene Fassung der Bedienungsanleitung als Word-Datei (.docx) hochladen. Überschrift 2 = Kapitel, nummerierte Liste = Schritte (fett = Titel), Aufzählung = Punkte, Tabellen bleiben Tabellen. Am einfachsten die aktuelle Fassung als Word herunterladen, bearbeiten und wieder hochladen. Platzhalter {TABS}, {PAKETE} und {BASIC_PDF} setzt die App automatisch ein.</p><div id="guideAdm"><p class="note" id="guideAdmState" style="margin-top:0"></p>
+        <div class="row"><input type="file" id="guideFile" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><button class="btn small" type="button" id="guideUpBtn">Word-Datei hochladen</button><button class="btn ghost small" type="button" id="guideDocx">Aktuelle Fassung als Word herunterladen</button><button class="btn ghost small" type="button" id="guideReset" hidden>Standard der App verwenden</button></div>
+        <p class="note" id="guideAdmNote"></p></div></details>
       <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
       <div id="admMore"></div>
       <div id="admStdBox"></div>
@@ -4634,81 +4637,187 @@ function renderPdfTab(){
   const Bf=bf(); $("pdfWho").textContent=`${Bf.name||"Kein Name eingetragen (Tab „Befund“)"} · ${Bf.date?new Date(Bf.date).toLocaleDateString("de-DE"):""}`;
 }
 /* ===== Bedienungsanleitung als PDF (Tab „Daten“) =====
-   WICHTIG: Bei jeder Änderung an Abläufen, Tabs oder Buttons diesen Text mitpflegen und GUIDE_STAND anpassen.
-   Paketnamen, PDF-Inhalte von WiFitBasic und die Tab-Reihenfolge werden beim Erstellen live aus der App gelesen. */
-const GUIDE_STAND="27.11.2026";
-function guideContent(){
-  const web=!!window.WF, pk=(()=>{ try{ return allPkgs().map(x=>x.name).filter(Boolean); }catch(e){ return []; } })();
-  const basicPdf=(()=>{ try{ return PDF_SECS.filter(([k])=>BASIC_PDF.includes(k)).map(([,l])=>l).join(", "); }catch(e){ return ""; } })();
-  const tabs=[...document.querySelectorAll(".tab")].filter(t=>!t.classList.contains("adminOnly")).map(t=>t.textContent.trim());
+   WICHTIG: Bei jeder Änderung an Abläufen, Tabs oder Buttons diesen Text mitpflegen und GUIDE_STAND/GUIDE_STAND_ISO anpassen
+   (Vorlage: Claude-Docs-Dokument „Anleitung WiFitPro und WiFitBasic“). Platzhalter {TABS} {PAKETE} {BASIC_PDF} {STAND} setzt die App beim Erstellen ein.
+   Im Admin-Bereich kann eine eigene Fassung als Word-Datei hochgeladen werden (settings/guide); sie hat Vorrang vor diesem Text. */
+const GUIDE_STAND="27.11.2026", GUIDE_STAND_ISO="2026-11-27";
+let GUIDE_UP=null;   // hochgeladene Fassung {at,name,sections}
+function guideBuiltin(){
+  const web=!!window.WF, P=t=>({t:"p",text:t}), OL=items=>({t:"ol",items:items.map(([title,body])=>Array.isArray(body)?{title,bullets:body}:{title,body})});
   return [
-    {h:"Startseite",p:["Jedes Fitting beginnt mit zwei Fragen auf der Startseite: welches Fitting und welches Rad. Die App startet dabei immer mit leeren Personendaten."],
-     ol:[...(web?[["Anmelden","Mit deinem Konto einloggen. Ist dein Konto nur für WiFitBasic freigegeben, reagiert der Button WiFitPro nicht."]]:[]),
+    {h:"Startseite",blocks:[P("Jedes Fitting beginnt mit zwei Fragen auf der Startseite: welches Fitting und welches Rad. Die App startet dabei immer mit leeren Personendaten."),
+     OL([...(web?[["Anmelden","Mit deinem Konto einloggen. Ist dein Konto nur für WiFitBasic freigegeben, reagiert der Button WiFitPro nicht."]]:[]),
        ["Fitting wählen","„WiFitPro“ für das vollständige Fitting mit Befund und Ist-/Soll-Vergleich, „WiFitBasic“ für die schnelle Sitzpositionsberatung."],
-       ["Radart wählen","Rennrad, Gravel, Triathlonrad oder Mountainbike. Davon hängen Richtwerte, Größenempfehlung, Lenkerbreite und Vorschlag ab."]],
-     after:"Danach öffnet sich WiFitPro im Tab „Befund“, WiFitBasic im Tab „Person“. Fitting und Radart kannst du später jederzeit im Menü (Symbol mit drei Strichen links oben) wechseln."},
-    {h:"WiFitPro: das vollständige Fitting",p:[`In WiFitPro gehst du die Tabs von links nach rechts durch (${tabs.join(" · ")}); „Weiter“ am Ende jedes Tabs führt zum nächsten, „Zurück“ zum vorigen.`],
-     ol:[["Befund",["Unter „Kunde“ Name und Datum eintragen – sie erscheinen auf dem PDF.","Anamnese ausfüllen, z. B. den Umfang als Jahreskilometer oder km/Woche.","Beschwerden: erst die Körperregion wählen, dann die Seite (bei Bedarf abwählbar, z. B. Gesäß) und die Art der Beschwerde.","Statikbefund, Dynamischer Befund, Mobilitätstests und Krafttests nach Bedarf. Das kleine Bild neben einem Test zeigt, wie er durchgeführt wird."]],
+       ["Radart wählen","Rennrad, Gravel, Triathlonrad oder Mountainbike. Davon hängen Richtwerte, Größenempfehlung, Lenkerbreite und Vorschlag ab."]]),
+     P("Danach öffnet sich WiFitPro im Tab „Befund“, WiFitBasic im Tab „Person“. Fitting und Radart kannst du später jederzeit im Menü (Symbol mit drei Strichen links oben) wechseln.")]},
+    {h:"WiFitPro: das vollständige Fitting",blocks:[P("In WiFitPro gehst du die Tabs von links nach rechts durch ({TABS}); „Weiter“ am Ende jedes Tabs führt zum nächsten, „Zurück“ zum vorigen."),
+     OL([["Befund",["Unter „Kunde“ Name und Datum eintragen – sie erscheinen auf dem PDF.","Anamnese ausfüllen, z. B. den Umfang als Jahreskilometer oder km/Woche.","Beschwerden: erst die Körperregion wählen, dann die Seite (bei Bedarf abwählbar, z. B. Gesäß) und die Art der Beschwerde.","Statikbefund, Dynamischer Befund, Mobilitätstests und Krafttests nach Bedarf. Das kleine Bild neben einem Test zeigt, wie er durchgeführt wird."]],
        ["Bike Set Up",["Die Maße des mitgebrachten Rads als Ist-Zustand eintragen, die optimierte Position in der zweiten Spalte. Leere Felder der optimierten Spalte übernehmen den Ist-Wert."]],
        ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite.","Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen, Werte prüfen, übernehmen.","Neben jedem Maß zeigt eine Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
        ["Rad",["Marke, Modell und Größe wählen. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder mit „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
        ["Bauteile",["„Ist-Zustand laden“ oder „Optimierte Position laden“ übernimmt die Werte aus dem Bike Set Up.","Lenker, Vorbau, Schalt-/Bremsgriffe, Pedale und Schuhe aus den Listen wählen. Angezeigt werden die Teile zur Radmarke; mit „alle Lenker“ bzw. „alle Vorbauten“ siehst du alle.","Fehlende Maße direkt eintragen; neue Teile unter „Teile verwalten“ anlegen, Radmarken zuordnen und speichern."]],
        ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad.","Unter „Vorschlag vergleichen mit“ den Vorschlag neben die aktuelle Einstellung, die Ist- oder die optimierte Position stellen.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
-       ["PDF",[pk.length?`Ein Paket antippen (${pk.join(", ")}) oder die Inhalte einzeln anhaken.`:"Inhalte einzeln anhaken oder unter „Eigene Pakete und Voreinstellung“ ein Paket anlegen.","Bei Bedarf das PDF der Videoanalyse (Contemplas) und der Satteldruckmessung (Everve) hinzufügen; die App übernimmt nur deren Bilder.","„PDF erstellen“ erzeugt den Bericht mit Deckblatt, Logo und Kontaktdaten (einstellbar unter „Bericht: Logo und Kontaktdaten“)."]],
-       ["Daten",[...(web?["Unter „Konto“ das Passwort ändern oder abmelden."]:[]),"„Bedienungsanleitung herunterladen“ erzeugt diese Anleitung als PDF.","Mit „Daten sichern (.json)“ alles archivieren oder auf ein anderes Gerät mitnehmen; „Sicherung laden“ spielt es wieder ein."]]]},
-    {h:"WiFitBasic: die schnelle Beratung",p:["WiFitBasic ist die abgespeckte Ansicht für eine Sitzpositionsberatung ohne Befund und ohne Ist-Aufnahme. Die Tabs Befund, Bike Set Up und Daten sind ausgeblendet, Fachfelder für Profis ebenso."],
-     ol:[["Person","Fahrstil, Disziplin und Geschlecht wählen und alle Messwerte eintragen – von Hand oder mit „Messwerte aus Bild übernehmen“. Danach wird die Person gezeichnet und der Vorschlag für die Sitzposition auf dem Standardrad in passender Größe übernommen."],
+       ["PDF",["Ein Paket antippen ({PAKETE}) oder die Inhalte einzeln anhaken.","Bei Bedarf das PDF der Videoanalyse (Contemplas) und der Satteldruckmessung (Everve) hinzufügen; die App übernimmt nur deren Bilder.","„PDF erstellen“ erzeugt den Bericht mit Deckblatt, Logo und Kontaktdaten (einstellbar unter „Bericht: Logo und Kontaktdaten“)."]],
+       ["Daten",[...(web?["Unter „Konto“ das Passwort ändern oder abmelden."]:[]),"„Bedienungsanleitung herunterladen“ erzeugt diese Anleitung als PDF.","Mit „Daten sichern (.json)“ alles archivieren oder auf ein anderes Gerät mitnehmen; „Sicherung laden“ spielt es wieder ein."]]])]},
+    {h:"WiFitBasic: die schnelle Beratung",blocks:[P("WiFitBasic ist die abgespeckte Ansicht für eine Sitzpositionsberatung ohne Befund und ohne Ist-Aufnahme. Die Tabs Befund, Bike Set Up und Daten sind ausgeblendet, Fachfelder für Profis ebenso."),
+     OL([["Person","Fahrstil, Disziplin und Geschlecht wählen und alle Messwerte eintragen – von Hand oder mit „Messwerte aus Bild übernehmen“. Danach wird die Person gezeichnet und der Vorschlag für die Sitzposition auf dem Standardrad in passender Größe übernommen."],
        ["Rad","Marke, Modell und Größe wählen oder die Empfehlung (grüne Größe) übernehmen. Ein fehlendes Rad legst du mit „Geometrie aus Bild“ an."],
        ["Bauteile","Lenker, Vorbau, Griffe, Pedale und Schuhe wählen, soweit bekannt."],
        ["Sitzposition","Vorschlag prüfen, mit der aktuellen Einstellung vergleichen und „Vorschlag übernehmen“."],
-       ["PDF",`Die Inhalte sind immer offen${basicPdf?"; zur Wahl stehen "+basicPdf:""}. „PDF erstellen“ erzeugt den Bericht.`]],
-     after:"Zu WiFitPro wechselst du über das Menü (drei Striche links oben)."},
-    {h:"Bedienung",p:["Diese Elemente gelten in beiden Ansichten."],
-     table:[["Element","Wo","Was es tut"],
+       ["PDF","Die Inhalte sind immer offen; zur Wahl stehen {BASIC_PDF}. „PDF erstellen“ erzeugt den Bericht."]]),
+     P("Zu WiFitPro wechselst du über das Menü (drei Striche links oben).")]},
+    {h:"Bedienung",blocks:[P("Diese Elemente gelten in beiden Ansichten."),
+     {t:"table",rows:[["Element","Wo","Was es tut"],
        ["Menü (drei Striche)","links oben über der Zeichnung","Fitting und Radart wechseln; Person, Gelenkwinkel, Rahmenmaße, Knielot und Fadenkreuze ein- und ausblenden"],
        ["Kurbel","unter der Zeichnung","Play-Taste startet das Treten; das Rad im Kreis ziehen oder „3 Uhr“/„6 Uhr“ stellt die Kurbel"],
        ["i-Button","neben Überschriften und Feldern","zeigt eine Erklärung; am Handy einmal antippen, erneut tippen schließt sie"],
        ["Zurück / Weiter","am Ende jedes Tabs","springt zum vorigen bzw. nächsten Tab"],
        ["„… leeren“","rechts oben in jedem Tab","setzt nur diesen Tab zurück"],
-       ["Speichern","unter „Teile verwalten“ und „Räder verwalten“","sichert neue oder geänderte Teile und Räder dauerhaft"]],
-     after:"Eingaben zum Kunden bleiben erhalten, bis du die App neu startest. Vor dem Neuladen oder Schließen fragt die App nach, solange Kundendaten eingegeben sind."}];
+       ["Speichern","unter „Teile verwalten“ und „Räder verwalten“","sichert neue oder geänderte Teile und Räder dauerhaft"]]},
+     P("Eingaben zum Kunden bleiben erhalten, bis du die App neu startest. Vor dem Neuladen oder Schließen fragt die App nach, solange Kundendaten eingegeben sind.")]}];
 }
+/* Platzhalter durch aktuelle App-Werte ersetzen */
+function guideFill(s){
+  const tabs=[...document.querySelectorAll(".tab")].filter(t=>!t.classList.contains("adminOnly")).map(t=>t.textContent.trim()).join(" · ");
+  let pk=""; try{ pk=allPkgs().map(x=>x.name).filter(Boolean).join(", "); }catch(e){}
+  let bp=""; try{ bp=PDF_SECS.filter(([k])=>BASIC_PDF.includes(k)).map(([,l])=>l).join(", "); }catch(e){}
+  return String(s).replace(/\{TABS\}/g,tabs).replace(/\{PAKETE\}/g,pk||"eigene Pakete").replace(/\{BASIC_PDF\}/g,bp).replace(/\{STAND\}/g,GUIDE_STAND);
+}
+async function guideLoadUp(){ try{ if(FACT_DB){ const d=await FACT_DB.doc("settings/guide").get(); GUIDE_UP=d.exists&&d.data()&&d.data().sections?d.data():null; } }catch(e){} return GUIDE_UP; }
+const guideActive=()=>GUIDE_UP&&Array.isArray(GUIDE_UP.sections)&&GUIDE_UP.sections.length?GUIDE_UP.sections:guideBuiltin();
 async function guidePdf(){
   const note=t=>{ const n=$("guideNote"); if(n) n.textContent=t; };
   if(!window.jspdf){ note("PDF-Bibliothek wird noch geladen – bitte gleich noch einmal tippen."); return; }
-  note("Anleitung wird erstellt …");
-  const {jsPDF}=window.jspdf, doc=new jsPDF({unit:"mm",format:"a4"}), M=18, W=210-2*M, BLUE=[3,163,218], T=pdfTxt;
+  note("Anleitung wird erstellt …"); await guideLoadUp();
+  const {jsPDF}=window.jspdf, doc=new jsPDF({unit:"mm",format:"a4"}), M=18, W=210-2*M, BLUE=[3,163,218], T=s=>pdfTxt(guideFill(s));
+  const stand=GUIDE_UP&&GUIDE_UP.at?new Date(GUIDE_UP.at).toLocaleDateString("de-DE"):GUIDE_STAND;
   let y=0; const page=()=>{ doc.addPage(); y=22; }, need=h=>{ if(y+h>280) page(); };
-  const para=(txt,{size=10.5,style="normal",x=M,w=W,gap=1.5,color=[24,34,43]}={})=>{ doc.setFont("helvetica",style); doc.setFontSize(size); doc.setTextColor(...color);
+  const para=(txt,{size=10.5,style="normal",x=M,w=W,gap=1.5}={})=>{ doc.setFont("helvetica",style); doc.setFontSize(size); doc.setTextColor(24,34,43);
     const lines=doc.splitTextToSize(T(txt),w), lh=size*0.43; for(const ln of lines){ need(lh); doc.text(ln,x,y); y+=lh; } y+=gap; };
-  /* Deckblatt */
-  let cov=null; try{ cov=await customCover(await brandImg("brand/cover_custom.jpg"),"WiFit Bedienungsanleitung"); }catch(e){}   // gleiches Deckblatt wie die Reports
+  /* Deckblatt wie bei den Reports */
+  let cov=null; try{ cov=await customCover(await brandImg("brand/cover_custom.jpg"),"WiFit Bedienungsanleitung"); }catch(e){}
   if(cov){ doc.addImage(cov,"JPEG",0,0,210,297); doc.setTextColor(255); doc.setFont("helvetica","normal"); doc.setFontSize(15); doc.text("WiFitPro und WiFitBasic",105,158,{align:"center"});
-    doc.setFontSize(10.5); doc.text(T(`Stand ${GUIDE_STAND}`),105,166,{align:"center"}); }
-  else { doc.setFillColor(...BLUE); doc.rect(0,0,210,297,"F");
-    try{ const lg=await brandImg("brand/logo_stack.png"); doc.addImage(lg,"PNG",65,205,80,45.3); }catch(e){}
-    doc.setTextColor(255); doc.setFont("helvetica","bolditalic"); doc.setFontSize(34); doc.text("WiFit Bedienungsanleitung",M,90);
-    doc.setFont("helvetica","normal"); doc.setFontSize(16); doc.text("WiFitPro und WiFitBasic",M,102); doc.setFontSize(11); doc.text(T(`Stand ${GUIDE_STAND}`),M,114); }
+    doc.setFontSize(10.5); doc.text(T(`Stand ${stand}`),105,166,{align:"center"}); }
+  else { doc.setFillColor(...BLUE); doc.rect(0,0,210,297,"F"); doc.setTextColor(255); doc.setFont("helvetica","bolditalic"); doc.setFontSize(30); doc.text("WiFit Bedienungsanleitung",M,90);
+    doc.setFont("helvetica","normal"); doc.setFontSize(16); doc.text("WiFitPro und WiFitBasic",M,102); doc.setFontSize(11); doc.text(T(`Stand ${stand}`),M,114); }
   page();
-  for(const s of guideContent()){
+  for(const s of guideActive()){
     need(18); doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...BLUE); doc.text(T(s.h),M,y); y+=3;
     doc.setDrawColor(...BLUE); doc.setLineWidth(0.5); doc.line(M,y,M+W,y); y+=7;
-    for(const p of s.p||[]) para(p,{gap:3});
-    (s.ol||[]).forEach(([t,body],i)=>{ need(12); doc.setFont("helvetica","bold"); doc.setFontSize(11.5); doc.setTextColor(24,34,43); doc.text(T(`${i+1}. ${t}`),M,y); y+=5.5;
-      if(Array.isArray(body)) for(const b of body){ need(5); doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.text("•",M+4,y); para(b,{x:M+8,w:W-8,gap:1.2}); }
-      else para(body,{x:M+4,w:W-4,gap:1.2}); y+=2.5; });
-    if(s.table&&doc.autoTable){ doc.autoTable({startY:y,head:[s.table[0].map(T)],body:s.table.slice(1).map(r=>r.map(T)),margin:{left:M,right:M},styles:{fontSize:9.5,cellPadding:2.2,textColor:[24,34,43]},headStyles:{fillColor:BLUE,textColor:255},columnStyles:{0:{cellWidth:38,fontStyle:"bold"},1:{cellWidth:46}}}); y=doc.lastAutoTable.finalY+6; }
-    if(s.after) para(s.after,{gap:4});
+    for(const b of s.blocks||[]){
+      if(b.t==="p") para(b.text,{gap:3});
+      else if(b.t==="h3"){ need(10); para(b.text,{size:12,style:"bold",gap:1.5}); }
+      else if(b.t==="ul") for(const it of b.items){ need(5); doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.setTextColor(24,34,43); doc.text("•",M+2,y); para(it,{x:M+6,w:W-6,gap:1.2}); }
+      else if(b.t==="ol"){ b.items.forEach((it,i)=>{ need(12);
+        if(it.title){ doc.setFont("helvetica","bold"); doc.setFontSize(11.5); doc.setTextColor(24,34,43); doc.text(T(`${i+1}. ${it.title}`),M,y); y+=5.5; if(it.body) para(it.body,{x:M+4,w:W-4,gap:1.2}); }
+        else { doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.text(`${i+1}.`,M,y); para(it.body||"",{x:M+6,w:W-6,gap:1.2}); }
+        for(const bl of it.bullets||[]){ need(5); doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.text("•",M+4,y); para(bl,{x:M+8,w:W-8,gap:1.2}); }
+        y+=2.5; }); y+=1; }
+      else if(b.t==="table"&&doc.autoTable&&b.rows&&b.rows.length){ need(20); const nc=Math.max(...b.rows.map(r=>r.length));
+        doc.autoTable({startY:y,head:[b.rows[0].map(T)],body:b.rows.slice(1).map(r=>r.map(T)),margin:{left:M,right:M},styles:{fontSize:9.5,cellPadding:2.2,textColor:[24,34,43]},headStyles:{fillColor:BLUE,textColor:255},
+          columnStyles:nc===3?{0:{cellWidth:38,fontStyle:"bold"},1:{cellWidth:46}}:{0:{fontStyle:"bold"}}}); y=doc.lastAutoTable.finalY+6; }
+    }
     y+=4;
   }
-  const n=doc.getNumberOfPages(); for(let i=2;i<=n;i++){ doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(120); doc.text(T(`WiFit Bedienungsanleitung · Stand ${GUIDE_STAND}`),M,290); doc.text(`Seite ${i-1}/${n-1}`,210-M,290,{align:"right"}); }
+  const n=doc.getNumberOfPages(); for(let i=2;i<=n;i++){ doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(120); doc.text(T(`WiFit Bedienungsanleitung · Stand ${stand}`),M,290); doc.text(`Seite ${i-1}/${n-1}`,210-M,290,{align:"right"}); }
   const blob=doc.output("blob"), fname="WiFit_Bedienungsanleitung.pdf";
-  let dl=null; try{ dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null; }catch(e){}
-  if(dl){ try{ await dl.save({filename:fname,data:blob}); note("Anleitung gespeichert."); }catch(e){ note(e&&e.code==="declined"?"Speichern abgebrochen.":"Anleitung konnte nicht gespeichert werden."); } }
-  else { try{ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click(); a.remove(); note("Anleitung erstellt."); }catch(e){ note("Download ist in dieser Ansicht nicht verfügbar."); } }
+  await guideSave(blob,fname,note,"Anleitung");
   return blob;
 }
-document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("#guideBtn"); if(b){ e.preventDefault(); guidePdf(); } });
+async function guideSave(blob,fname,note,what){
+  let dl=null; try{ dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null; }catch(e){}
+  if(dl){ try{ await dl.save({filename:fname,data:blob}); note(what+" gespeichert."); }catch(e){ note(e&&e.code==="declined"?"Speichern abgebrochen.":what+" konnte nicht gespeichert werden."); } }
+  else { try{ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click(); a.remove(); note(what+" erstellt."); }catch(e){ note("Download ist in dieser Ansicht nicht verfügbar."); } }
+}
+/* ---- Word: Vorlage erzeugen und hochgeladene Datei einlesen ---- */
+const guideLib=(src,glob)=>window[glob]?Promise.resolve():new Promise((ok,no)=>{ const s=document.createElement("script"); s.src=src; s.onload=ok; s.onerror=()=>no(new Error("Bibliothek konnte nicht geladen werden")); document.head.appendChild(s); });
+async function guideDocx(){   /* aktuelle Anleitung als Word-Datei (mit Platzhaltern), zum Bearbeiten und Wieder-Hochladen */
+  await guideLib("https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js","JSZip");
+  const X=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const run=(t,b)=>`<w:r>${b?"<w:rPr><w:b/></w:rPr>":""}<w:t xml:space="preserve">${X(t)}</w:t></w:r>`;
+  const par=(inner,style,num)=>`<w:p><w:pPr>${style?`<w:pStyle w:val="${style}"/>`:""}${num?`<w:numPr><w:ilvl w:val="${num[1]}"/><w:numId w:val="${num[0]}"/></w:numPr>`:""}</w:pPr>${inner}</w:p>`;
+  let body=par(run("WiFit Bedienungsanleitung"),"Title")+par(run("Überschrift 2 = Kapitel, nummerierte Liste = Schritte (fett = Schritt-Titel), Aufzählung darunter = Punkte, Tabellen bleiben Tabellen. Platzhalter {TABS}, {PAKETE}, {BASIC_PDF} setzt die App automatisch ein."),"Hinweis");
+  let numN=2; const nums=[];
+  for(const s of guideActive()){ body+=par(run(s.h),"Heading2");
+    for(const b of s.blocks||[]){
+      if(b.t==="p") body+=par(run(b.text));
+      else if(b.t==="h3") body+=par(run(b.text),"Heading3");
+      else if(b.t==="ul") for(const it of b.items) body+=par(run(it),null,[1,0]);
+      else if(b.t==="ol"){ numN++; nums.push(numN); for(const it of b.items){ body+=par(it.title?run(it.title,true)+(it.body?run(": "+it.body):""):run(it.body||""),null,[numN,0]); for(const bl of it.bullets||[]) body+=par(run(bl),null,[numN,1]); } }
+      else if(b.t==="table"){ body+=`<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>${["top","left","bottom","right","insideH","insideV"].map(e=>`<w:${e} w:val="single" w:sz="4" w:color="999999"/>`).join("")}</w:tblBorders></w:tblPr>`+
+          b.rows.map((r,i)=>`<w:tr>${r.map(c=>`<w:tc><w:p>${run(c,i===0)}</w:p></w:tc>`).join("")}</w:tr>`).join("")+`</w:tbl>`+par(""); }
+    } }
+  const lvl=(i,fmt,txt,ind)=>`<w:lvl w:ilvl="${i}"><w:start w:val="1"/><w:numFmt w:val="${fmt}"/><w:lvlText w:val="${txt}"/><w:pPr><w:ind w:left="${ind}" w:hanging="360"/></w:pPr></w:lvl>`;
+  const numbering=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:abstractNum w:abstractNumId="0">${lvl(0,"bullet","•",720)}${lvl(1,"bullet","–",1440)}</w:abstractNum>
+<w:abstractNum w:abstractNumId="1">${lvl(0,"decimal","%1.",720)}${lvl(1,"bullet","•",1440)}</w:abstractNum>
+<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>${nums.map(n=>`<w:num w:numId="${n}"><w:abstractNumId w:val="1"/><w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride></w:num>`).join("")}</w:numbering>`;
+  const st=(id,name,extra)=>`<w:style w:type="paragraph" w:styleId="${id}"><w:name w:val="${name}"/><w:basedOn w:val="Normal"/><w:qFormat/>${extra}</w:style>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/><w:lang w:val="de-DE"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120"/></w:pPr></w:pPrDefault></w:docDefaults>
+<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
+${st("Title","Title",'<w:pPr><w:spacing w:after="240"/></w:pPr><w:rPr><w:b/><w:color w:val="03A3DA"/><w:sz w:val="48"/></w:rPr>')}
+${st("Heading2","heading 2",'<w:pPr><w:keepNext/><w:spacing w:before="360" w:after="120"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:color w:val="03A3DA"/><w:sz w:val="32"/></w:rPr>')}
+${st("Heading3","heading 3",'<w:pPr><w:keepNext/><w:spacing w:before="200" w:after="80"/><w:outlineLvl w:val="2"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/></w:rPr>')}
+${st("Hinweis","Hinweis",'<w:rPr><w:i/><w:color w:val="6B7785"/><w:sz w:val="18"/></w:rPr>')}
+</w:styles>`;
+  const docXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const z=new JSZip();
+  z.file("[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/></Types>`);
+  z.file("_rels/.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+  z.file("word/_rels/document.xml.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/></Relationships>`);
+  z.file("word/document.xml",docXml); z.file("word/styles.xml",styles); z.file("word/numbering.xml",numbering);
+  return z.generateAsync({type:"blob",mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+}
+/* Word-HTML (mammoth) in Kapitel/Blöcke umwandeln */
+function guideFromHtml(html){
+  const d=new DOMParser().parseFromString(`<div>${html}</div>`,"text/html").body.firstChild, txt=n=>(n.textContent||"").replace(/\s+/g," ").trim();
+  const secs=[]; let cur=null; const sec=()=>cur||(secs.push(cur={h:"Anleitung",blocks:[]}),cur);
+  const hs=[...d.children].map(e=>e.tagName); const secTag=hs.includes("H2")?"H2":"H1";
+  const liItem=li=>{ const c=li.cloneNode(true); const subs=[...c.querySelectorAll(":scope > ul, :scope > ol")]; subs.forEach(s=>s.remove());
+    const bullets=subs.flatMap(s=>[...s.children].filter(x=>x.tagName==="LI").map(txt)).filter(Boolean);
+    const f=c.firstElementChild&&/^(STRONG|B)$/.test(c.firstElementChild.tagName)&&c.textContent.trim().startsWith(c.firstElementChild.textContent.trim())?c.firstElementChild:(c.querySelector(":scope > p > strong:first-child")||null);
+    let title="", body=txt(c); if(f&&txt(f)&&body.startsWith(txt(f))){ title=txt(f).replace(/[:–-]\s*$/,""); body=body.slice(txt(f).length).replace(/^\s*[:–-]\s*/,"").trim(); }
+    return title?{title,body,bullets}:{body,bullets}; };
+  for(const e of d.children){ const t=e.tagName;
+    if(t===secTag){ const h=txt(e); if(h) secs.push(cur={h,blocks:[]}); continue; }
+    if(t==="H1"&&secTag==="H2") continue;   // Dokumenttitel
+    if(/^H[3-6]$/.test(t)){ const h=txt(e); if(h) sec().blocks.push({t:"h3",text:h}); continue; }
+    if(t==="P"){ const x=txt(e); if(x&&!/^Überschrift 2 = Kapitel/.test(x)) sec().blocks.push({t:"p",text:x}); continue; }
+    if(t==="OL") { const items=[...e.children].filter(x=>x.tagName==="LI").map(liItem); if(items.length) sec().blocks.push({t:"ol",items}); continue; }
+    if(t==="UL") { const items=[...e.children].filter(x=>x.tagName==="LI").map(txt).filter(Boolean); if(items.length) sec().blocks.push({t:"ul",items}); continue; }
+    if(t==="TABLE"){ const rows=[...e.querySelectorAll("tr")].map(r=>[...r.children].map(txt)); if(rows.length) sec().blocks.push({t:"table",rows}); continue; }
+    const x=txt(e); if(x) sec().blocks.push({t:"p",text:x}); }
+  return secs.filter(s=>s.blocks.length||s.h);
+}
+async function guideUpload(file){
+  const note=t=>{ const n=$("guideAdmNote"); if(n) n.textContent=t; };
+  if(!/\.docx$/i.test(file.name)){ note("Bitte eine Word-Datei im Format .docx wählen (ältere .doc-Dateien vorher in Word als .docx speichern)."); return; }
+  note("Word-Datei wird gelesen …");
+  try{ await guideLib("https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js","mammoth");
+    const r=await mammoth.convertToHtml({arrayBuffer:await file.arrayBuffer()},{styleMap:["p[style-name='Title'] => h1:fresh","p[style-name='Titel'] => h1:fresh"],convertImage:mammoth.images.imgElement(()=>Promise.resolve({src:""}))});
+    const sections=guideFromHtml(r.value); if(!sections.length||!sections.some(s=>s.blocks.length)){ note("In der Datei wurde kein Text gefunden."); return; }
+    const body={at:Date.now(),name:file.name,sections};
+    if(!FACT_DB){ note("Zentraler Speicher in dieser Ansicht nicht verfügbar – bitte die App angemeldet öffnen."); return; }
+    await FACT_DB.doc("settings/guide").set(JSON.parse(JSON.stringify(body))); GUIDE_UP=body;
+    note(`„${file.name}“ übernommen: ${sections.length} Kapitel. Die Anleitung im Tab „Daten“ verwendet ab jetzt diese Fassung.`); renderGuideAdm();
+  }catch(e){ note("Hochladen nicht möglich: "+(e&&e.message||e)); }
+}
+async function renderGuideAdm(){
+  const box=$("guideAdm"); if(!box) return; await guideLoadUp();
+  const up=GUIDE_UP&&GUIDE_UP.sections&&GUIDE_UP.sections.length, newer=up&&new Date(GUIDE_STAND_ISO).getTime()>GUIDE_UP.at;
+  $("guideAdmState").innerHTML=up?`Aktiv: eigene Fassung „${esc(GUIDE_UP.name||"Word-Datei")}“ vom ${new Date(GUIDE_UP.at).toLocaleDateString("de-DE")} (${GUIDE_UP.sections.length} Kapitel).${newer?` <b style="color:var(--dim)">Die Standard-Anleitung der App wurde danach aktualisiert (Stand ${GUIDE_STAND}) – Word-Datei herunterladen, prüfen und neu hochladen, oder Standard verwenden.</b>`:""}`:`Aktiv: Standard-Anleitung der App (Stand ${GUIDE_STAND}).`;
+  $("guideReset").hidden=!up;
+}
+document.addEventListener("click",async e=>{ const t=e.target.closest&&e.target.closest("#guideBtn,#guideDocx,#guideReset,#guideUpBtn"); if(!t) return; e.preventDefault();
+  const note=x=>{ const n=$(t.id==="guideBtn"?"guideNote":"guideAdmNote"); if(n) n.textContent=x; };
+  if(t.id==="guideBtn") return guidePdf();
+  if(t.id==="guideUpBtn") return $("guideFile").click();
+  if(t.id==="guideDocx"){ note("Word-Datei wird erstellt …"); try{ await guideLoadUp(); await guideSave(await guideDocx(),"WiFit_Bedienungsanleitung.docx",note,"Word-Datei"); }catch(err){ note("Word-Datei nicht möglich: "+(err.message||err)); } return; }
+  if(t.id==="guideReset"){ try{ await FACT_DB.doc("settings/guide").set({at:Date.now(),name:"",sections:null}); GUIDE_UP=null; note("Standard-Anleitung der App wird wieder verwendet."); renderGuideAdm(); }catch(err){ note("Zurücksetzen nicht möglich: "+(err.message||err)); } }
+});
+document.addEventListener("change",e=>{ if(e.target&&e.target.id==="guideFile"){ const f=e.target.files&&e.target.files[0]; if(f) guideUpload(f); e.target.value=""; } });
+document.addEventListener("toggle",e=>{ if(e.target&&e.target.id==="guideAdmDetails"&&e.target.open) renderGuideAdm(); },true);
 /* Firmen-Gestaltung: Deckblatt je Paket, Fußzeile auf den Report-Seiten, Rückseite (Bilder liegen neben der App) */
 const BRAND_CACHE={};
 async function brandImg(path){
