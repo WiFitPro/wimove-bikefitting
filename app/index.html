@@ -506,7 +506,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
           <div><label for="tShoulder">Schulter °</label><input type="number" id="tShoulder" step="1"></div>
           <div><label for="tElbow">Ellbogen °</label><input type="number" id="tElbow" step="1"></div>
         </div>
-        <label class="f" for="sugCmp">Vorschlag vergleichen mit</label>
+        <label class="f" for="sugCmp">Idealposition vergleichen mit</label>
         <select id="sugCmp"><option value="none">Kein Vergleich</option><option value="now">Aktuelle Einstellung</option><option value="ist">Ist-Position</option><option value="opt">Optimierte Position</option></select>
         <div id="sugTable" style="margin-top:10px"></div>
         <p class="note" id="kopsNote"></p>
@@ -592,7 +592,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <select id="sexSel"><option value="männlich">männlich</option><option value="weiblich">weiblich</option></select>
       </section>
       <section>
-        <h2 style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 0">Messwerte<button type="button" class="infoBtn" data-tip="Messwerte direkt eintragen. Neben jedem Maß steht die Norm für Körpergröße und Geschlecht.&#10;Datenbasis: ANSUR II (4.082 Männer, 1.986 Frauen). Je Maß gilt: Norm = a + b × Körpergröße. Die Streuung (SD) ist die übliche Abweichung bei Menschen gleicher Größe.&#10;Anzeige: „Norm 830 (+25 mm · +1,0 SD)“ = Normwert, Abweichung in mm und in Streuungen.&#10;● grün: bis 1 SD – normal&#10;● gelb: 1–2 SD – auffällig, Messung prüfen&#10;● rot: über 2 SD – deutlich abweichend, nachmessen&#10;Bewertet werden Schrittlänge, Brustbeinhöhe, Schulterhöhe, Schulterbreite, Fußlänge, Armlänge und die daraus berechneten Segmente (Ober-/Unterschenkel, Rumpf, Ober-/Unterarm)." aria-label="Info: Normwerte">i</button><button class="btn ghost small" type="button" id="measImgBtn" style="margin-left:auto;font-weight:500">Messwerte aus Bild übernehmen</button><button type="button" class="infoBtn" data-tip="So funktioniert es:&#10;1. Button antippen, dann einen Screenshot oder ein Foto der Messwerte hineinziehen, auswählen oder mit Strg/⌘+V einfügen (z. B. Messblatt, Formular, Tabelle, Notiz).&#10;2. Die App liest Körpergröße, Brustbein, Schrittlänge, Schulterbreite sowie Schulterhöhe, Handhöhe und Fußlänge links/rechts.&#10;3. Die erkannten Werte erscheinen in einer Liste neben den bisherigen Werten – dort prüfen, korrigieren oder abwählen.&#10;4. „Übernehmen“ trägt die angehakten Werte ein.&#10;Hinweise: cm werden in mm umgerechnet. Ohne Seitenangabe gilt ein Wert für links und rechts. Am besten klappt ein gerader, scharfer Ausschnitt mit gut lesbarer Schrift." aria-label="Info: Messwerte aus Bild">i</button></h2>
+        <h2 style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 0">Messwerte<button type="button" class="infoBtn" data-tip="Messwerte direkt eintragen. Neben jedem Maß steht die Norm für Körpergröße und Geschlecht.&#10;Datenbasis: ANSUR II (4.082 Männer, 1.986 Frauen). Je Maß gilt: Norm = a + b × Körpergröße. Die Streuung (SD) ist die übliche Abweichung bei Menschen gleicher Größe.&#10;Anzeige: „Norm 830 (+25 mm · +1,0 SD)“ = Normwert, Abweichung in mm und in Streuungen.&#10;● grün: bis 1 SD – normal&#10;● gelb: 1–2 SD – auffällig, Messung prüfen&#10;● rot: über 2 SD – deutlich abweichend, nachmessen&#10;Bewertet werden Schrittlänge, Brustbeinhöhe, Schulterhöhe, Schulterbreite, Fußlänge, Armlänge und die daraus berechneten Segmente (Ober-/Unterschenkel, Rumpf, Ober-/Unterarm)." aria-label="Info: Normwerte">i</button><button class="btn ghost small" type="button" id="measImgBtn" style="margin-left:auto;font-weight:500">Messwerte aus Bild übernehmen</button><button type="button" class="infoBtn" data-tip="So funktioniert es:&#10;1. Button antippen, dann einen Screenshot oder ein Foto der Messwerte hineinziehen, auswählen oder mit Strg/⌘+V einfügen (z. B. Messblatt, Formular, Tabelle, Notiz).&#10;2. Die App liest Körpergröße, Brustbein, Schrittlänge, Schulterbreite sowie Schulterhöhe, Handhöhe und Fußlänge links/rechts – deutsch oder englisch beschriftet (z. B. Height, Inseam, Torso Height, Shoulder Width, Foot Length).&#10;3. Die erkannten Werte erscheinen in einer Liste neben den bisherigen Werten – dort prüfen, korrigieren oder abwählen.&#10;4. „Übernehmen“ trägt die angehakten Werte ein.&#10;Hinweise: cm werden in mm umgerechnet. Ohne Seitenangabe gilt ein Wert für links und rechts. Am besten klappt ein gerader, scharfer Ausschnitt mit gut lesbarer Schrift." aria-label="Info: Messwerte aus Bild">i</button></h2>
         <p class="note" id="pReqNote" style="margin-top:0"></p>
         <div id="measImgBox"></div>
         <div id="pCommon"></div>
@@ -614,7 +614,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     <div class="panel" id="tab-bike" hidden>
       <div class="ptools"><button class="btn ghost small" id="bikeClear">Rad leeren</button></div>
       <section>
-        <h2>Fahrrad<button type="button" class="infoBtn" id="bikeInfo" data-tip="" aria-label="Info zur Raddatenbank">i</button></h2>
+        <h2 style="display:flex;align-items:center;flex-wrap:wrap;gap:6px 0">Fahrrad<button type="button" class="infoBtn" id="bikeInfo" data-tip="" aria-label="Info zur Raddatenbank">i</button><label class="toggle" style="margin-left:18px;font-size:13px;font-weight:500"><input type="checkbox" id="cmpAll"> alle Radkategorien</label></h2>
         <p class="src-line" id="srcLine" hidden></p>
         <div class="two">
           <div><label class="f" for="brandSel">Marke</label><select id="brandSel"></select></div>
@@ -869,7 +869,7 @@ const STYLE_T_DEF={
   tri:{comfort:{back:24,shoulder:88,elbow:100},endurance:{back:21,shoulder:89,elbow:97},sportlich:{back:18,shoulder:90,elbow:95},ambitioniert:{back:15,shoulder:91,elbow:92},professional:{back:12,shoulder:92,elbow:90}},
   mtb:{comfort:{back:59,shoulder:58,elbow:160},endurance:{back:56,shoulder:60,elbow:158},sportlich:{back:53,shoulder:62,elbow:155},ambitioniert:{back:50,shoulder:64,elbow:152},professional:{back:47,shoulder:66,elbow:150}}};
 const STEM_RANGE_T={road:[60,140],gravel:[50,130],tri:[60,130],mtb:[30,100]};   // Suchbereich Vorbaulänge (mm)
-const STEM_ANGLES_T={road:[-6,-10,-17],gravel:[-6,-10,6],tri:[-6,-10,-17],mtb:[0,-6,6]};
+const STEM_ANGLES_T={road:[-6,-17,-10,-12,-8,-4,0,6,10],gravel:[-6,0,6,-10,10,-17,-12,-8,-4,4,8,12,17],tri:[-6,-17,-10,-12,-8,-4,0,6,10],mtb:[0,-6,6,-10,10,15,25,35,-17]};   // handelsübliche Vorbauwinkel je Radart
 const STEM_ANGLE_T={road:-6,gravel:-6,tri:-6,mtb:0};   // Standard-Vorbauwinkel je Radart
 const KOPS_T={road:0,gravel:0,tri:50,mtb:0};          // Knielot-Ziel: Triathlon sitzt weiter vorn
 const PAD_STACKS=[30,50,70,90,110,130];      // Armpad-Höhen im Vorschlag (Triathlon)
@@ -997,8 +997,8 @@ function buildDB(p){
   const mk=list=>{ const brands=[],models={}; for(const x of list){ if(!models[x.b]){models[x.b]=[];brands.push(x.b);} if(!models[x.b].includes(x.m)) models[x.b].push(x.m); } return {brands,models}; };
   const all=mk(p.bikes), byT={}; for(const t of Object.keys(BTYPES)) byT[t]=mk(p.bikes.filter(x=>x.t===t));
   /* Marken- und Modelllisten zeigen nur Räder der gewählten Radart */
-  return {bikes:p.bikes,all,byT,get brands(){ const v=this.byT[btype()]; return v&&v.brands.length?v.brands:this.all.brands; },
-    get models(){ const v=this.byT[btype()]; return v&&v.brands.length?v.models:this.all.models; },unknown:p.unknown,empty:p.bikes.filter(x=>!x.hasData).length};
+  return {bikes:p.bikes,all,byT,get brands(){ if(S.cmpAll) return this.all.brands; const v=this.byT[btype()]; return v&&v.brands.length?v.brands:this.all.brands; },
+    get models(){ if(S.cmpAll) return this.all.models; const v=this.byT[btype()]; return v&&v.brands.length?v.models:this.all.models; },unknown:p.unknown,empty:p.bikes.filter(x=>!x.hasData).length};
 }
 const sizesOf=(b,m)=>DB.bikes.filter(x=>x.b===b&&x.m===m);
 const findBike=sel=>DB.bikes.find(x=>x.b===sel.b&&x.m===sel.m&&x.s===sel.s);
@@ -1708,7 +1708,15 @@ function suggest(){
   const integ=(()=>{ const b=FIT.lists.bars.find(x=>x.name===S.compSel.bar); return !!(b&&isFinite(b.angle)); })();
   /* Vorbauwinkel: mit gewähltem Vorbau/Cockpit dessen Winkel, sonst Standard −6°; steilere Winkel nur wenn die Position es deutlich verlangt */
   const saRef=(integ||S.compSel.stem)?c0.stemAngle:STEM_ANGLE_T[bt];
-  const angles=[...new Set([saRef,...(integ?[]:STEM_ANGLES_T[bt])])], SR=STEM_RANGE_T[bt], pads=aero?PAD_STACKS:[null];
+  const angles=[...new Set([saRef,...((integ||S.compSel.stem)?[]:STEM_ANGLES_T[bt])])],   // gewählter Vorbau/integriertes Cockpit: nur dessen Winkel
+    SR=STEM_RANGE_T[bt], pads=aero?PAD_STACKS:[null];
+  /* Idealposition (radunabhängig): Griffpunkt, an dem bei Ziel-Rückenwinkel auch Schulter- und Ellbogenwinkel genau den Zielwerten entsprechen */
+  let ideal=null; { const seat={x:-sb,y:Math.sqrt(sh*sh-sb*sb)}, Bi={...B,backAngle:back,_back:back};
+    const err=(x,y)=>{ try{ const R=riderPose({seat,grip:{x,y}},c0,Bi,90), J=jointAngles(R); return ((J.shoulder-T.shoulder))**2+((J.elbow-T.elbow)/(aero?50:1))**2+((J.back-back)*2)**2; }catch(e){ return 1e9; } };
+    let bx=600, by=650, be=err(bx,by);   // fester Startpunkt: Ergebnis hängt nicht vom Rad ab
+    for(const st of [20,8,3,1,0.5]){ const R0=st===20?200:st*4; let cx=bx, cy=by;
+      for(let x=cx-R0;x<=cx+R0;x+=st) for(let y=cy-R0;y<=cy+R0;y+=st){ const e=err(x,y); if(e<be){ be=e; bx=x; by=y; } } }
+    if(be<4) ideal={gx:bx,gy:by}; }
   let best=null;
   for(const sa of angles) for(let L=SR[0];L<=SR[1];L+=10) for(let sp=0;sp<=40;sp+=5) for(const ps of pads){
     const g=compute(vals,{...base.c,stemLen:L,spacer:sp,stemAngle:sa,...(ps===null?{}:{padStack:ps})}), G=g.grip;
@@ -1717,15 +1725,24 @@ function suggest(){
     const Sh=add(add(hip,mul(u,a)),mul({x:-u.y,y:u.x},hh));
     const bk=degs(Math.atan2(Sh.y-hip.y,Sh.x-hip.x));
     const E=aero?G:ik(Sh,G,L1,L2,-1).mid, shA=angAt(Sh,hip,E);
-    const cost=((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==saRef?0.3+Math.abs(sa-saRef)*0.06:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400
+    const cost=ideal
+      ? (Math.hypot(G.x-ideal.gx,G.y-ideal.gy)/5)**2+0.15*(((bk-back)/4)**2+((shA-T.shoulder)/8)**2)+(sa!==saRef?2+Math.abs(sa-saRef)*0.1:0)+0.15*((L-SI)/20)**2+sp/400+(ps===null?0:Math.abs(ps-70)/250)   /* Griff möglichst nah am Idealpunkt; anderer Vorbauwinkel nur, wenn er ≈ 7 mm näher bringt */
+      : ((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==saRef?0.3+Math.abs(sa-saRef)*0.06:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400
       +STEM_PREF*((L-SI)/20)**2+(ps===null?0:Math.abs(ps-70)/250);   /* Vorliebe für die zur Sitzposition passende Vorbaulänge (comfort 90 … professional 125 mm), Abweichung nur wenn die Winkel es verlangen */
     if(!best||cost<best.cost) best={L,sp,sa,ps,cost,grip:G,back:bk,shoulder:shA};
   }
   if(!best){ const g=compute(vals,base.c); best={L:c0.stemLen,sp:c0.spacer,sa:c0.stemAngle,grip:g.grip,back,shoulder:NaN,cost:Infinity}; }
+  /* Rahmenhinweis: Idealpunkt mit Vorbau/Spacer nicht erreichbar */
+  let frameHint=""; if(ideal&&best.grip){ const dx=best.grip.x-ideal.gx, dy=best.grip.y-ideal.gy, tol=15, msg=[];
+    if(dy>tol&&best.sp<=0) msg.push(`Lenker ${Math.round(dy)} mm zu hoch, obwohl keine Spacer mehr verbaut sind: Rahmen vorn zu hoch (Stack) – kleinere Größe oder Rahmen mit weniger Stack prüfen`);
+    if(dy<-tol&&best.sp>=40) msg.push(`Lenker ${Math.round(-dy)} mm zu tief, obwohl 40 mm Spacer verbaut sind: Rahmen vorn zu niedrig (Stack) – größere Größe oder Rahmen mit mehr Stack prüfen`);
+    if(dx>tol&&best.L<=SR[0]) msg.push(`Griff ${Math.round(dx)} mm zu weit vorn, obwohl schon der kürzeste Vorbau gewählt ist: Rahmen zu lang (Reach) – kleinere Größe prüfen`);
+    if(dx<-tol&&best.L>=SR[1]) msg.push(`Griff ${Math.round(-dx)} mm zu weit hinten, obwohl schon der längste Vorbau gewählt ist: Rahmen zu kurz (Reach) – größere Größe prüfen`);
+    frameHint=msg.join(" · "); }
   const parts={setback:Math.round(sb),saddleH:Math.round(sh),stemLen:best.L,spacer:best.sp,stemAngle:best.sa};
   if(aero&&best.ps!=null) parts.padStack=best.ps;
   const sy=Math.sqrt(sh*sh-sb*sb);
-  const val={sb,sh,sy,saRef,gt:best.grip,grip:best.grip,parts,back:best.back,backTarget:back,cost:best.cost,
+  const val={sb,sh,sy,saRef,gt:best.grip,grip:best.grip,parts,back:best.back,backTarget:back,cost:best.cost,ideal,frameHint,
     ev:evalPos({x:-sb,y:sy},best.grip,best.back)};
   sugCache={key,val}; return val;
 }
@@ -1769,30 +1786,37 @@ function renderSug(){
   /* Vorschlag erst, wenn alle Körpermaße eingetragen sind */
   const ready=personReady(); for(const el of [$("sugApply"),$("sugCmp"),document.querySelector('label[for="sugCmp"]'),$("sugParts"),$("autoBack")&&$("autoBack").closest("label")]) if(el) el.classList.toggle("notReady",!ready);
   if(!ready){ $("sugNote").textContent=""; $("sugTable").innerHTML=`<div class="riderHint" style="margin:6px 0;max-width:none">Der Vorschlag erscheint, sobald alle Körpermaße eingetragen sind.<button type="button" class="btn small" onclick="document.querySelector('[data-tab=person]').click()">Zu den Messwerten</button></div>`; return; }
-  const r=suggest(), mode=$("sugCmp").value;
-  const A={sx:r.sb,sy:r.sy,gx:r.grip.x,gy:r.grip.y,...r.ev};
+  const r=suggest(), mode=$("sugCmp").value, CA=crankAdvice(), BW=barWidthIdeal();
+  const A={sx:r.sb,sy:r.sy,gx:r.grip.x,gy:r.grip.y,...r.ev,bw:BW,crank:CA?CA.L:NaN};
   let Bv=null, lbl="";
-  if(mode==="now"){ const g=cur.g, cy=cur.cyc; Bv={sx:-g.seat.x,sy:g.seat.y,gx:g.grip.x,gy:g.grip.y,kneeMax:cy.kneeMax,kops:cur.kops.dx,hipMin:cy.hipMin,back:cur.J.back,shoulder:cur.J.shoulder,elbow:cur.J.elbow}; lbl="Aktuell"; }
+  if(mode==="now"){ const g=cur.g, cy=cur.cyc; Bv={sx:-g.seat.x,sy:g.seat.y,gx:g.grip.x,gy:g.grip.y,bw:S.comp.barWidth,crank:S.comp.crank,kneeMax:cy.kneeMax,kops:cur.kops.dx,hipMin:cy.hipMin,back:cur.J.back,shoulder:cur.J.shoulder,elbow:cur.J.elbow}; lbl="Aktuell"; }
   else if(mode!=="none"){ const p=FIT.setup&&FIT.setup.pos[mode]; if(validPos(p)){ Bv={...p,...evalPos({x:-p.sx,y:p.sy},{x:p.gx,y:p.gy})}; } lbl=mode==="ist"?"Ist":"Optimiert"; }
   const sh=p=>Math.hypot(p.sx,p.sy), drop=p=>p.sy-p.gy, dist=p=>Math.hypot(p.sy-p.gy,p.sx+p.gx);
   const rows=[["Sattel X (hinter Tretlager)",p=>p.sx,"mm"],["Sattel Y (über Tretlager)",p=>p.sy,"mm"],["Sattelhöhe",sh,"mm"],[gripLbl()+" X (vor Tretlager)",p=>p.gx,"mm"],[gripLbl()+" Y (über Tretlager)",p=>p.gy,"mm"],
-    ["Sattelüberhöhung",drop,"mm"],["Abstand Sattel–"+gripLbl(),dist,"mm"],
+    ["Sattelüberhöhung",drop,"mm"],["Abstand Sattel–"+gripLbl(),dist,"mm"],["Lenkerbreite"+(btype()==="mtb"?" (nach Körpergröße)":" (nach Schulterbreite)"),p=>p.bw,"mm"],["Kurbellänge (nach Schrittlänge)",p=>p.crank,"mm1"],
     ["Knie gestreckt",p=>p.kneeMax,"°"],["Knielot (3 Uhr)",p=>p.kops,"mm"],["Hüfte geschlossen",p=>p.hipMin,"°"],["Rücken",p=>p.back,"°"],["Schulter",p=>p.shoulder,"°"],["Ellbogen",p=>p.elbow,"°"]];
-  let h=`<table class="t"><tr><th></th><th>Vorschlag</th>${Bv?`<th>${lbl}</th><th>Δ</th>`:""}</tr>`;
-  for(const [n,f,u] of rows){ const a=f(A), b=Bv?f(Bv):NaN;
-    h+=`<tr><td>${n}</td><td>${Math.round(a)}${u==="°"?"°":""}</td>${Bv?`<td>${Math.round(b)}${u==="°"?"°":""}</td><td>${sgn(a-b)}</td>`:""}</tr>`; }
-  $("sugTable").innerHTML=h+"</table>"+(Bv||mode==="none"?"":`<p class="note">Für „${lbl}“ gibt es keine Werte im Blatt „Bike Set Up“.</p>`);
+  /* Ideal: nur aus Messwerten und Fahrstil (gleich für jedes Rad); Vorschlag: mit diesem Rahmen und den verfügbaren Teilen erreichbar */
+  const Tg=sugT(), I=r.ideal?{sx:r.sb,sy:r.sy,gx:r.ideal.gx,gy:r.ideal.gy,kneeMax:Tg.knee,kops:Tg.kops,hipMin:NaN,back:r.backTarget,shoulder:Tg.shoulder,elbow:Tg.elbow,bw:BW,crank:CA?CA.L:NaN}:null;
+  let h=`<table class="t"><tr><th></th>${I?`<th style="white-space:nowrap">Ideal${infoH("Zielposition nur aus Messwerten und Fahrstil: Sattel und Griffpunkt so, dass Kniestreckung, Knielot, Rücken-, Schulter- und Ellbogenwinkel genau die Zielwerte treffen. Für jedes Rad gleich.")}</th>`:""}<th style="white-space:nowrap">Vorschlag${infoH(SUG_INFO_BASE).replace('class="infoBtn"','class="infoBtn" id="sugInfo"')}</th>${Bv?`<th>${lbl}</th><th style="white-space:nowrap">Δ${infoH(I?"Unterschied zwischen Idealposition und "+lbl+" (Ideal minus "+lbl+"): so viel müsste sich ändern, um die Idealposition zu erreichen. Ohne Idealwert (z. B. Hüfte) wird der Vorschlag verglichen.":"Unterschied Vorschlag minus "+lbl+".")}</th>`:""}</tr>`;
+  const fmt=(v,u)=>!isFinite(v)?"–":u==="mm1"?String(Math.round(v*10)/10).replace(".",","):Math.round(v)+(u==="°"?"°":"");
+  for(const [n,f,u] of rows){ const av=f(A), b=Bv?f(Bv):NaN, iv=I?f(I):NaN, a=isFinite(iv)?iv:av;   // Vergleich mit der Idealposition (falls vorhanden)
+    h+=`<tr><td>${n}</td>${I?`<td class="r">${fmt(iv,u)}</td>`:""}<td>${fmt(av,u)}</td>${Bv?`<td>${fmt(b,u)}</td><td>${isFinite(a)&&isFinite(b)?(u==="mm1"?(a-b>0?"+":a-b<0?"−":"±")+String(Math.abs(Math.round((a-b)*10)/10)).replace(".",","):sgn(a-b)):"–"}</td>`:""}</tr>`; }
+  let idealNote=""; if(I){ const dx=r.grip.x-I.gx, dy=r.grip.y-I.gy, d=Math.hypot(dx,dy);
+    idealNote=`<p class="note" id="idealNote">${gripLbl()} im Vorschlag weicht ${d<3?"praktisch nicht":`um ${Math.round(d)} mm`} von der Idealposition ab${d<3?"":` (${Math.abs(dx)<1?"":`${Math.round(Math.abs(dx))} mm ${dx>0?"weiter vorn":"weiter hinten"}`}${Math.abs(dx)>=1&&Math.abs(dy)>=1?", ":""}${Math.abs(dy)<1?"":`${Math.round(Math.abs(dy))} mm ${dy>0?"höher":"tiefer"}`})`}.</p>`+(r.frameHint?`<p class="warn" id="frameHint">⚠ ${r.frameHint}.</p>`:""); }
+  $("sugTable").innerHTML=h+"</table>"+idealNote+(Bv||mode==="none"?"":`<p class="note">Für „${lbl}“ gibt es keine Werte im Blatt „Bike Set Up“.</p>`);
   const P2=r.parts;
   { /* für welches Rad gilt der Vorschlag, und lässt sich der Sattelversatz mit diesem Sitzrohr umsetzen? */
     const cb=findBike(S.sel), gS=compute(vals,{...S.comp,...P2}), rs=gS.railShift;
-    const extra=`<br><span class="note">Vorschlag für <b>${esc(cb?`${cb.b} ${cb.m} ${cb.s}`:"–")}</b> (Stack ${Math.round(vals.stack)} / Reach ${Math.round(vals.reach)} mm, Sitzwinkel ${(Math.round(vals.sta*10)/10).toLocaleString("de-DE")}°). Sattelhöhe und -versatz hängen nur von Körper, Kurbel, Pedal und Schuh ab; der Rahmen bestimmt Vorbau und Spacer.</span>`+
-      (Math.abs(rs)>35?`<br><span class="bad">Mit dem Sitzwinkel dieses Rahmens liegt der Sattel ${Math.round(Math.abs(rs))} mm ${rs<0?"hinter":"vor"} der Stützenachse – nur mit ${rs<0?"Versatzstütze (Setback)":"nach vorn versetzter Stütze oder einem Rahmen mit steilerem Sitzwinkel"} möglich.</span>`:"");
-    var sugExtra=extra; }
-  $("sugParts").innerHTML=`Bauteile für den Vorschlag: Sattelhöhe <b>${shWithCrank(P2.saddleH)} mm</b>, Versatz <b>${P2.setback} mm</b>, Vorbau <b>${P2.stemLen} mm</b> mit <b>${P2.stemAngle}°</b>, Spacer <b>${P2.spacer} mm</b>${isFinite(P2.padStack)?`, Armpad-Höhe <b>${P2.padStack} mm</b>`:""}, Lenkerbreite <b>${barWidthIdeal()} mm</b>${btype()==="mtb"?" (nach Körpergröße)":" (nach Schulterbreite)"}, ${crankTxt(crankAdvice())}. `+
-    `${S.bar==="aero"?"Mit dem Ellbogen auf dem Armpad":`Bei Ellbogen ${T.elbow}°`} ergibt das einen Rückenwinkel von ${Math.round(r.back)}° (Ziel ${Math.round(r.backTarget)}°) und einen Schulterwinkel von ${Math.round(r.ev.shoulder)}° (Ziel ${T.shoulder}°).`+
-    (Math.abs(r.back-r.backTarget)>5||Math.abs(r.ev.shoulder-T.shoulder)>10?" Mit Vorbau und Spacern lässt sich beides nicht gleichzeitig erreichen – Lenker-Reach oder ein anderer Rahmen (Stack/Reach) wären nötig.":"");
-  $("sugParts").innerHTML+=sugExtra;
+    const ca=crankAdvice(), tip=`Bauteile für den Vorschlag: Sattelhöhe ${shWithCrank(P2.saddleH)} mm, Versatz ${P2.setback} mm, Vorbau ${P2.stemLen} mm mit ${P2.stemAngle}°, Spacer ${P2.spacer} mm${isFinite(P2.padStack)?`, Armpad-Höhe ${P2.padStack} mm`:""}. `+
+      `${S.bar==="aero"?"Mit dem Ellbogen auf dem Armpad":`Bei Ellbogen ${T.elbow}°`} ergibt das einen Rückenwinkel von ${Math.round(r.back)}° (Ziel ${Math.round(r.backTarget)}°) und einen Schulterwinkel von ${Math.round(r.ev.shoulder)}° (Ziel ${T.shoulder}°).\n`+
+      `Vorschlag für ${cb?`${cb.b} ${cb.m} ${cb.s}`:"–"} (Stack ${Math.round(vals.stack)} / Reach ${Math.round(vals.reach)} mm, Sitzwinkel ${(Math.round(vals.sta*10)/10).toLocaleString("de-DE")}°). Sattelhöhe und -versatz hängen nur von Körper, Kurbel, Pedal und Schuh ab; der Rahmen bestimmt Vorbau und Spacer.`;
+    { const ib=document.getElementById("sugInfo"); if(ib){ const t=SUG_INFO_BASE+"\n\n"+tip; ib.dataset.tip=t; ib.setAttribute("aria-label","Info: "+t); } }
+    /* im Text bleiben nur Warnungen */
+    $("sugParts").innerHTML=[ca&&!ca.ok?`Kurbel ${String(ca.L).replace(".",",")} mm: <span class="bad">Hüfte oben ${String(Math.floor(ca.hip*10)/10).replace(".",",")}° unter dem Mindestwert (${ca.hipT}°), kürzere Kurbel prüfen</span>.`:"",
+      Math.abs(r.back-r.backTarget)>5||Math.abs(r.ev.shoulder-T.shoulder)>10?`<span class="bad">Rücken ${Math.round(r.back)}° (Ziel ${Math.round(r.backTarget)}°) und Schulter ${Math.round(r.ev.shoulder)}° (Ziel ${T.shoulder}°) lassen sich mit Vorbau und Spacern nicht gleichzeitig erreichen – Lenker-Reach oder ein anderer Rahmen (Stack/Reach) wären nötig.</span>`:"",
+      Math.abs(rs)>35?`<span class="bad">Mit dem Sitzwinkel dieses Rahmens liegt der Sattel ${Math.round(Math.abs(rs))} mm ${rs<0?"hinter":"vor"} der Stützenachse – nur mit ${rs<0?"Versatzstütze (Setback)":"nach vorn versetzter Stütze oder einem Rahmen mit steilerem Sitzwinkel"} möglich.</span>`:""].filter(Boolean).join("<br>"); }
 }
+const SUG_INFO_BASE="Die beste Einstellung mit diesem Rahmen und den verfügbaren Teilen: Vorbauten in 10-mm-Stufen, Spacer in 5-mm-Schritten, handelsübliche Vorbauwinkel. Der Sattel liegt immer auf der Idealposition; der Griff weicht je nach Stack und Reach des Rads davon ab.";
 /* Fadenkreuz folgt „Vorschlag vergleichen mit“: Ist/Optimiert zeigt diese Position, „Aktuelle Einstellung“ zeigt den Vorschlag */
 const targetKey=()=>({none:"vor",now:"vor",ist:"ist",opt:"opt"})[S.sugCmp||"now"]||"vor";   // ohne Vergleich: Fadenkreuz zeigt den Vorschlag
 function target(){
@@ -2364,8 +2388,9 @@ function paintSizeFit(){
 }
 function fillMain(){
   const {b,m}=S.sel;
-  document.getElementById("brandSel").innerHTML=DB.brands.map(x=>opt(x,x,x===b)).join("");
-  document.getElementById("modelSel").innerHTML=DB.models[b].map(x=>opt(x,x,x===m)).join("");
+  const brs=DB.brands.includes(b)?DB.brands:[b,...DB.brands], mds0=DB.models[b]||DB.all.models[b]||[], mds=mds0.includes(m)?mds0:[m,...mds0];   // gewähltes Rad bleibt sichtbar, auch aus anderer Radart
+  document.getElementById("brandSel").innerHTML=brs.map(x=>opt(x,x,x===b)).join("");
+  document.getElementById("modelSel").innerHTML=mds.map(x=>opt(x,x,x===m)).join("");
   document.getElementById("sizeChips").innerHTML=sizesOf(b,m).map(x=>`<button class="chip" aria-pressed="${x.s===S.sel.s}" data-s="${esc(x.s)}"${x.hasData?"":` disabled title="Keine Geometriedaten"`}>${esc(x.s)}</button>`).join("");
   paintSizeFit(); updateSizeFit();   // Größenempfehlung grün/orange/rot
 }
@@ -2395,11 +2420,14 @@ function fillCmp(){
   const slots=cmpSlots(); let last=-1; slots.forEach((sl,i)=>{ if(sl.b) last=i; });
   cmpRowsN=Math.min(CMP_MAX,Math.max(cmpRowsN||0,last+1));   /* standardmäßig kein Vergleich; Zeilen erst über „+“ */
   let h="", pending=false;
+  const ca=$("cmpAll"); if(ca) ca.checked=!!S.cmpAll;
+  const L=S.cmpAll?DB.all:{brands:DB.brands,models:DB.models};   // Haken „alle Radkategorien“: Räder aller Radarten zum Vergleich
   for(let i=0;i<cmpRowsN;i++){
     const sl=slots[i]||EMPTY_CMP(), F=sl.b?cmpFit[cmpFitKey(sl.b,sl.m)]:null; if(sl.b&&!F) pending=true;
+    const brs=sl.b&&!L.brands.includes(sl.b)?[sl.b,...L.brands]:L.brands, mds=sl.b?(L.models[sl.b]||DB.all.models[sl.b]||[]):[];
     h+=`<div class="cmpBlock"><div class="cmpRow">
-      <div><label class="f">Marke</label><select data-cmp="${i}" data-f="b">${opt("","Bitte wählen",!sl.b)+DB.brands.map(x=>opt(x,x,x===sl.b)).join("")}</select></div>
-      <div><label class="f">Modell</label><select data-cmp="${i}" data-f="m"${sl.b?"":" disabled"}>${sl.b?DB.models[sl.b].map(x=>opt(x,x,x===sl.m)).join(""):""}</select></div>
+      <div><label class="f">Marke</label><select data-cmp="${i}" data-f="b">${opt("","Bitte wählen",!sl.b)+brs.map(x=>opt(x,x,x===sl.b)).join("")}</select></div>
+      <div><label class="f">Modell</label><select data-cmp="${i}" data-f="m"${sl.b?"":" disabled"}>${(mds.includes(sl.m)||!sl.m?mds:[sl.m,...mds]).map(x=>opt(x,x,x===sl.m)).join("")}</select></div>
       ${sl.b?`<label class="cmpVis" style="--cc:${CMP_COLORS[i]}" title="In der Zeichnung ein-/ausblenden"><input type="checkbox" data-cmpvis="${i}"${sl.off?"":" checked"} aria-label="Vergleich ${i+1} in der Zeichnung zeigen"></label>`:"<span></span>"}
       <button type="button" class="btn ghost small cmpDel" data-cmpdel="${i}" title="Vergleich entfernen" aria-label="Vergleich ${i+1} entfernen">×</button></div>`;
     if(sl.b){ h+=`<label class="f">Größe</label><div class="chips">${sizesOf(sl.b,sl.m).map(x=>{ const f=F&&F.res[x.s];
@@ -2417,10 +2445,12 @@ function fillCmp(){
   box.querySelectorAll("[data-cmpdel]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.cmpdel, all=cmpSlots(); all.splice(i,1); all.push(EMPTY_CMP());
     S.cmp=all[0]; S.cmpX=all.slice(1,CMP_MAX); cmpRowsN=Math.max(0,cmpRowsN-1); fillCmp(); renderBikeResults(); render(); save(); });
   if($("cmpAdd")) $("cmpAdd").onclick=()=>{ cmpRowsN=Math.min(CMP_MAX,(cmpRowsN||0)+1); fillCmp(); };
+  if(ca) ca.onchange=()=>{ S.cmpAll=ca.checked; fillMain(); fillCmp(); save(); };   // gilt für Marke/Modell oben und für den Vergleich
   if(pending) updateCmpFit();
 }
 function selectMain(b,m,s){
-  if(!DB.models[b]) b=DB.brands[0]; if(!DB.models[b].includes(m)) m=DB.models[b][0];
+  if(!DB.models[b]&&!DB.all.models[b]) b=DB.brands[0];
+  { const own=DB.models[b]||DB.all.models[b], any=DB.all.models[b]||own; if(!(own.includes(m)||any.includes(m))) m=own[0]; }   // auch Modelle anderer Radarten zulassen
   if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s);
   const obPrev=(S.sel||{}).b; S.sel={b,m,s}; for(const k of Object.keys(S.edits)) if(!KEEP.includes(k)) delete S.edits[k];
   fillMain(); loadBike(); save();
@@ -2428,7 +2458,7 @@ function selectMain(b,m,s){
 }
 function selectCmp(b,m,s,i=0){
   let v=EMPTY_CMP();
-  if(b){ if(!DB.models[b].includes(m)) m=DB.models[b][0]; if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s); v={b,m,s}; const o=cmpSlots()[i]; if(o&&o.off) v.off=true; }
+  if(b){ const ms=DB.all.models[b]||DB.models[b]||[]; if(!ms.includes(m)) m=ms[0]; if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s); v={b,m,s}; const o=cmpSlots()[i]; if(o&&o.off) v.off=true; }
   cmpSlots(); if(i===0) S.cmp=v; else S.cmpX[i-1]=v;
   fillCmp(); renderBikeResults(); render(); save();
 }
@@ -2680,10 +2710,12 @@ $("resetStd").onclick=()=>{
 function renderDisc(){ const w=$("discWrap"), sel=$("discSel"); if(!w||!sel) return; const bt=btype(), L=DISC_T[bt]; w.hidden=!L||L.length<2; if(!L||L.length<2) return;   // Rennrad und Gravel haben keine Disziplin-Auswahl
   $("discLab").textContent="Disziplin"; const d=discOf(bt);
   sel.innerHTML=L.map(([k,l])=>`<option value="${k}"${k===d?" selected":""}>${l}</option>`).join(""); }
-$("discSel").onchange=e=>{ S.person["disc_"+btype()]=e.target.value; delete S.person.ov.backAngle; if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }
+/* Fahrstil/Disziplin gewechselt: alle Zielwerte (Knie, Knielot, Rücken, Schulter, Ellbogen) wieder auf die Richtwerte */
+function resetSugTargets(){ const o=sugOv(); if(o) for(const k of ["knee","kops","back","shoulder","elbow"]) delete o[k]; sugCache.key=""; }
+$("discSel").onchange=e=>{ S.person["disc_"+btype()]=e.target.value; delete S.person.ov.backAngle; delete S.person.ov.shoulderT; delete S.person.ov.elbowT; resetSugTargets();
   applyStyleStd(); sugCache.key=""; sizeFitCache.key=""; cmpFit={}; syncPerson(); render(); save(); };
 $("styleSel").onchange=e=>{ S.person.style=e.target.value; delete S.person.ov.backAngle; delete S.person.ov.shoulderT; delete S.person.ov.elbowT;
-  if(S.sugT){ delete S.sugT.back; delete S.sugT.shoulder; }   // Zielwerte folgen dem Fahrstil
+  resetSugTargets();   // Zielwerte folgen dem Fahrstil
   syncPerson(); render(); save(); };
 $("sexSel").onchange=e=>{ S.person.sex=e.target.value; syncPerson(); render(); save(); };
 $("autoBack").onchange=e=>{ S.person.autoBack=e.target.checked; delete S.person.ov.backAngle; syncPerson(); render(); save(); };
@@ -3321,16 +3353,16 @@ const MEAS_F=[   // Schlüssel, Bezeichnung, Feld-ID, Bereich in mm, Seite
   ["acromion","Schulterhöhe rechts","pn_acromion",[1050,1850],"R"],["hand","Handhöhe rechts","pn_hand",[500,1050],"R"],
   ["acromionL","Schulterhöhe links","pn_acromionL",[1050,1850],"L"],["handL","Handhöhe links","pn_handL",[500,1050],"L"],["shoulderW","Schulterbreite","pn_shoulderW",[250,560],""]];
 const MEAS_KW=[   // Erkennung der Bezeichnungen (klein, ohne Umlaute)
-  ["height",/^(korpergro(ss|ß)e|korperhohe|korpergrosse|grosse|große|grose|height|bodyheight|korperlange)$/],
-  ["sternum",/^(brustbein|brustbeins|brustbeinhohe|sternum|sternumhohe)$/],
-  ["inseam",/^(schrittlange|schritthohe|schrittlaenge|innenbeinlange|innenbein|inseam)$/],
-  ["shoulderW",/^(schulterbreite|shoulderwidth)$/],
-  ["acromion",/^(schulterhohe|schulterdach|schulterdachhohe|akromion|acromion|shoulderheight)$/],
-  ["hand",/^(handhohe|handheight)$/],
-  ["foot",/^(fu(ss|ß)lange|fuslange|fusslange|footlength|fusslaenge)$/]];
+  ["height",/^(korpergro(ss|ß)e|korperhohe|korpergrosse|grosse|große|grose|height|bodyheight|bodylength|stature|korperlange)$/],
+  ["sternum",/^(brustbein|brustbeins|brustbeinhohe|sternum|sternumhohe|torsoheight|sternumheight|sternalheight|sternalnotch|sternalnotchheight|chestheight)$/],
+  ["inseam",/^(schrittlange|schritthohe|schrittlaenge|innenbeinlange|innenbein|inseam|inseamheight|inseamlength|crotchheight)$/],
+  ["shoulderW",/^(schulterbreite|shoulderwidth|shoulderbreadth)$/],
+  ["acromion",/^(schulterhohe|schulterdach|schulterdachhohe|akromion|acromion|shoulderheight|acromionheight)$/],
+  ["hand",/^(handhohe|handheight|wristheight)$/],
+  ["foot",/^(fu(ss|ß)lange|fuslange|fusslange|footlength|fusslaenge|shoelength)$/]];   // deutsch und englisch
 const measKey=t=>String(t).toLowerCase().replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"ss").replace(/[^a-z]/g,"");
 const MEAS_CANON=[["height","korpergrosse"],["height","korperhohe"],["sternum","brustbein"],["sternum","brustbeins"],["sternum","brustbeinhohe"],["inseam","schrittlange"],["inseam","schritthohe"],["inseam","innenbeinlange"],
-  ["shoulderW","schulterbreite"],["acromion","schulterhohe"],["acromion","schulterdach"],["acromion","schulterdachhohe"],["hand","handhohe"],["foot","fusslange"]];
+  ["sternum","torsoheight"],["inseam","inseamheight"],["shoulderW","shoulderwidth"],["foot","footlength"],["acromion","shoulderheight"],["hand","handheight"],["shoulderW","schulterbreite"],["acromion","schulterhohe"],["acromion","schulterdach"],["acromion","schulterdachhohe"],["hand","handhohe"],["foot","fusslange"]];
 function measLev(a,b){ const m=a.length,n=b.length; if(Math.abs(m-n)>3) return 9; let p=Array.from({length:n+1},(_,j)=>j); for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
 function measKw(t){ const k=measKey(t); if(!k) return null; for(const [key,re] of MEAS_KW) if(re.test(k)) return key;
   if(k.length<8) return null; let best=null,bd=9; for(const [key,c] of MEAS_CANON){ const d=measLev(k,c); if(d<bd){ bd=d; best=key; } }   // OCR-Fehler wie „Schritthéhe“, „FuRlinge“
@@ -3345,8 +3377,8 @@ function measMm(v,rng,unit){ if(!isFinite(v)) return NaN; const [a,b]=rng;
   else if(!(v>=a&&v<=b)){ if(v*10>=a&&v*10<=b) v*=10; else if(v*1000>=a&&v*1000<=b) v*=1000; }
   return v>=a&&v<=b?Math.round(v):NaN; }
 /* Ergebnis {key:{v,side}} in Feldwerte umsetzen; ohne Seitenangabe gilt der Wert für links und rechts */
-function measAssign(found){ const out={};
-  const set=(k,v)=>{ const f=MEAS_F.find(x=>x[0]===k); const mm=measMm(v.v,f[3],v.unit); if(isFinite(mm)&&!isFinite(out[k])) out[k]=mm; };
+function measAssign(found){ const out={}, boxes={}; Object.defineProperty(out,"__boxes",{value:boxes,enumerable:false});   // Fundstellen der Zahlen für die Nachkontrolle
+  const set=(k,v)=>{ const f=MEAS_F.find(x=>x[0]===k); const mm=measMm(v.v,f[3],v.unit); if(isFinite(mm)&&!isFinite(out[k])){ out[k]=mm; if(v.box) boxes[k]={...v.box,unit:v.unit}; } };
   for(const r of found){ if(["height","sternum","inseam","shoulderW"].includes(r.key)) set(r.key,r);
     else { const L=r.key+"L"; if(r.side==="L") set(L,r); else if(r.side==="R") set(r.key,r); else { set(r.key,r); set(L,r); } } }
   return out; }
@@ -3360,31 +3392,59 @@ function measWords(data){ const w=[];
   for(const x of v){ const c=(x.y0+x.y1)/2, h=x.y1-x.y0; if(Math.abs(c-cy)>Math.max(h,ch)*0.6){ ln++; cy=c; ch=h; } x.line=String(ln); }
   return v.sort((a,b)=>+a.line-+b.line||a.x0-b.x0); }
 function measParseWords(w){
+  /* Tabellen mit Spalte „Measured value“/„Messwert“ und weiteren Spalten (berechnet, Durchschnitt): nur Zahlen links der Nebenspalten verwenden */
+  { const cy0=x=>(x.y0+x.y1)/2, mh=w.find(x=>/^(measured|gemessen|messwert|messwerte|istwert)$/.test(measKey(x.t)));
+    if(mh){ const oth=w.filter(x=>x.x0>mh.x1&&Math.abs(cy0(x)-cy0(mh))<(mh.y1-mh.y0)*2.5&&/^(calculated|average|berechnet|durchschnitt|mittelwert|norm|soll|dimensions|referenz)$/.test(measKey(x.t)));
+      if(oth.length){ const lim=Math.min(...oth.map(x=>x.x0))-(mh.y1-mh.y0); w=w.filter(x=>!(/\d/.test(x.t)&&(x.x0+x.x1)/2>lim)); } } }
   const found=[], isNum=t=>/\d/.test(t)&&/^[^A-Za-zÄÖÜäöüß]*\d[\d.,]*\s*(mm|cm|m)?[^A-Za-z]*$/i.test(t), unitOf=t=>{ const k=String(t).toLowerCase(); return /\bcm\b|\(cm\)|^cm$/.test(k)?"cm":/\bmm\b|\(mm\)|^mm$/.test(k)?"mm":""; };
-  const used=new Set();
+  const used=new Set(), firstOf={};
+  for(const x of w) if(!(x.line in firstOf)) firstOf[x.line]=measKey(x.t);
+  const DERIVED=/^(armlange|armlaenge|oberarm|unterarm|oberarmlange|unterarmlange|rumpf|rumpflange|oberschenkel|unterschenkel|oberschenkellange|unterschenkellange|beinlange)/;   // berechnete Zeilen (z. B. „Armlänge gesamt … Schulterdach – Handhöhe“) überspringen
+  const labelUsed=new Set();
+  /* alle Bezeichnungen vorab: ein Wert gehört zu der Bezeichnung links davon, die ihm in der Höhe am nächsten ist */
+  const labs=[]; for(let q=0;q<w.length;q++){ const t=w[q].t, nx=w[q+1]&&w[q+1].line===w[q].line?w[q+1].t:"", pv=w[q-1]&&w[q-1].line===w[q].line?w[q-1].t:"";
+    if(measKw(t)||(nx&&measKey(t).length>=3&&!measKw(nx)&&measKw(t+nx))||(measSide(pv)&&/^(shoulder|hand)$/.test(measKey(t)))) labs.push(q); }
+  const cyOf=x=>(x.y0+x.y1)/2;
+  const ownerOk=(c,i)=>{ let bq=-1,bd=1e9; for(const q of labs){ const z=w[q]; if(z.x0>=c.x0) continue; const d=Math.abs(cyOf(z)-cyOf(c))+(c.y0>z.y1?0:0); if(d<bd){ bd=d; bq=q; } } return bq<0||w[bq].line===w[i].line&&Math.abs(cyOf(w[bq])-cyOf(w[i]))<1||bq===i; };
   for(let i=0;i<w.length;i++){
+    if(DERIVED.test(firstOf[w[i].line]||"")||labelUsed.has(i)) continue;
     let key=measKw(w[i].t), j=i+1;
-    if(!key&&i+1<w.length&&w[i+1].line===w[i].line){ const k2=measKw(w[i].t+w[i+1].t); if(k2){ key=k2; j=i+2; } }   // „Fuß länge“, „Körper größe“
+    /* englisch: „Left shoulder“ / „Right hand“ (Spaltenköpfe über den Feldern) */
+    if(!key&&i>0&&w[i-1].line===w[i].line&&measSide(w[i-1].t)){ const k0=measKey(w[i].t); if(k0==="shoulder") key="acromion"; else if(k0==="hand") key="hand"; }
+    if(!key&&i+1<w.length&&w[i+1].line===w[i].line&&measKey(w[i].t).length>=3&&!measKw(w[i+1].t)&&!measSide(w[i].t)&&!/^(mm|cm)$/.test(measKey(w[i].t))){ const k2=measKw(w[i].t+w[i+1].t); if(k2){ key=k2; j=i+2; } }   // „Fuß länge“, „Körper größe“
     if(!key){ const k=measKey(w[i].t); if((k==="hohe"||k==="hoehe")&&i+2<w.length){ const a=measKey(w[i+1].t), b=measKey(w[i+2].t); if(a==="des"||a==="der") key=measKw(w[i+2].t+"hohe")||(/brustbein/.test(b)?"sternum":/schulter/.test(b)?"acromion":null); if(key) j=i+3; } }   // „Höhe des Brustbeins“
     if(!key) continue;
-    let side="", unit="", x0=w[i].x0, x1=w[j-1].x1, y0=Math.min(...w.slice(i,j).map(x=>x.y0)), y1=Math.max(...w.slice(i,j).map(x=>x.y1)), val=null;
+    while(j<w.length&&w[j].line===w[i].line&&/^(height|length|width|breadth|hohe|lange|breite)$/.test(measKey(w[j].t))) j++;   // „Inseam Height“: Folgewort gehört zur Bezeichnung
+    for(let q=i;q<j;q++) labelUsed.add(q);
+    const preSide=i>0&&w[i-1].line===w[i].line?measSide(w[i-1].t.replace(/[():]/g,"")):"";   // „Left Foot Length“
+    let side=preSide, unit="", x0=preSide?w[i-1].x0:w[i].x0, x1=w[j-1].x1, y0=Math.min(...w.slice(i,j).map(x=>x.y0)), y1=Math.max(...w.slice(i,j).map(x=>x.y1)), val=null;
+    let skipNorm=false; const lx1=w[j-1].x1;   // rechter Rand der Bezeichnung selbst
     for(let k=j;k<w.length&&w[k].line===w[i].line;k++){ const t=w[k].t;
+      if(skipNorm){ if(/\)/.test(t)) skipNorm=false; continue; }   // Hinweise wie „Norm 1521 (−11 mm · −1,0 SD)“ überspringen
+      if(/^(norm|soll|ziel|ref|referenz|mittel|mittelwert)$/.test(measKey(t))){ skipNorm=true; continue; }
       if(measKw(t)) break; const s=measSide(t.replace(/[():]/g,"")); if(s&&!side){ side=s; x1=w[k].x1; continue; }
       const u=unitOf(t); if(u&&!/\d/.test(t)){ unit=unit||u; x1=w[k].x1; continue; }
-      if(isNum(t)&&!used.has(k)){ val={k,v:measNum(t)}; const u2=unitOf(t)||(k+1<w.length&&w[k+1].line===w[i].line?unitOf(w[k+1].t):""); if(u2) unit=u2;
+      if(isNum(t)&&!used.has(k)){ { const fr=MEAS_F.find(x=>x[0]===key); if(fr&&!isFinite(measMm(measNum(t),fr[3],unit||unitOf(t)))) continue; }   // unplausibel (z. B. berechnete Nebenwerte) → weiter suchen
+        val={k,v:measNum(t)}; const u2=unitOf(t)||(k+1<w.length&&w[k+1].line===w[i].line?unitOf(w[k+1].t):""); if(u2) unit=u2;
         /* Tabelle mit Spalten „links“/„rechts“: zweiten Wert derselben Zeile der anderen Seite zuordnen */
         if(!side&&["acromion","hand","foot"].includes(key)){ let k2=-1; for(let q=k+1;q<w.length&&w[q].line===w[i].line;q++){ if(measKw(w[q].t)) break; if(isNum(w[q].t)){ k2=q; break; } }
           if(k2>=0){ const hdr=w.filter(x=>x.y1<=w[k].y0+2&&measSide(x.t.replace(/[():]/g,""))), sideAt=c=>{ let b=null,bd=1e9; for(const x of hdr){ const d=Math.abs((x.x0+x.x1)/2-(c.x0+c.x1)/2)+(w[k].y0-x.y1)*0.2; if(d<bd){ bd=d; b=x; } } return b?measSide(b.t.replace(/[():]/g,"")):""; };
             let s1=sideAt(w[k]), s2=sideAt(w[k2]); if(!s1||!s2||s1===s2){ s1="L"; s2="R"; }
-            used.add(k); used.add(k2); found.push({key,side:s1,v:val.v,unit},{key,side:s2,v:measNum(w[k2].t),unit}); val=null; side="done"; } }
+            used.add(k); used.add(k2); found.push({key,side:s1,v:val.v,unit,box:w[k]},{key,side:s2,v:measNum(w[k2].t),unit,box:w[k2]}); val=null; side="done"; } }
         break; }
       if(/^[([]?(mm|cm)[)\]]?:?$/i.test(t)) continue; x1=Math.max(x1,w[k].x1); }
     if(side==="done") continue;
+    if(!val){ const h=Math.max(8,y1-y0), cy=(y0+y1)/2; let best=null, bd=1e9;   // Wert rechts daneben, leicht versetzt (Eingabefeld höher/tiefer als die Bezeichnung)
+      for(let k=0;k<w.length;k++){ const c=w[k]; if(used.has(k)||!isNum(c.t)||c.x0<lx1) continue; const dy=Math.abs((c.y0+c.y1)/2-cy); if(dy>h*0.9||!ownerOk(c,i)) continue;
+        let blocked=false; for(let q=0;q<w.length;q++){ const z=w[q]; if(q>=i&&q<j) continue; if(measKw(z.t)&&z.x0>lx1&&z.x0<c.x0&&Math.abs((z.y0+z.y1)/2-cy)<h*0.6){ blocked=true; break; } } if(blocked) continue;   // nicht über die nächste Bezeichnung hinweg
+        const d=c.x0-lx1+dy*3; if(d<bd){ bd=d; best=k; } }
+      if(best!==null){ val={k:best,v:measNum(w[best].t)}; const u2=unitOf(w[best].t)||(best+1<w.length&&w[best+1].line===w[best].line?unitOf(w[best+1].t):""); if(u2) unit=u2; } }
     if(!val){ const h=Math.max(8,y1-y0); let best=null, bd=1e9;   // Wert darunter (Formular mit Feld unter der Bezeichnung)
       for(let k=0;k<w.length;k++){ const c=w[k]; if(used.has(k)||!isNum(c.t)||c.y0<y1-2||c.y0>y1+h*5) continue;
+        if(labs.some(q=>q!==i&&!(q>=i&&q<j)&&w[q].y0>y1-2&&w[q].y1<c.y0+2&&w[q].x0<c.x1&&w[q].x1>c.x0-h*6)) continue;   // eine andere Bezeichnung liegt dazwischen
         if(c.x1<x0-h*1.5||c.x0>Math.max(x1,x0+h*8)) continue; const d=(c.y0-y1)+Math.abs(c.x0-x0)*0.3; if(d<bd){ bd=d; best=k; } }
       if(best!==null){ val={k:best,v:measNum(w[best].t)}; const u2=unitOf(w[best].t)||(best+1<w.length&&w[best+1].line===w[best].line?unitOf(w[best+1].t):""); if(u2) unit=u2; } }
-    if(val&&isFinite(val.v)){ used.add(val.k); found.push({key,side,v:val.v,unit}); }
+    if(val&&isFinite(val.v)){ used.add(val.k); found.push({key,side,v:val.v,unit,box:w[val.k]}); }
   }
   return measAssign(found);
 }
@@ -3393,11 +3453,16 @@ async function measByClaude(blob){
   if(!sample) return null; try{ const lim=sample.limits?await sample.limits():null; if(lim&&!lim.images) return null; }catch(e){}
   const out=await sample.json(`Lies die Körpermaße einer Person aus dem Bild (Screenshot eines Messblatts, Formulars oder einer Tabelle). Antworte NUR mit JSON in genau dieser Form, Werte in Millimetern als Zahl oder null, wenn nicht im Bild:
 {"height":null,"sternum":null,"inseam":null,"shoulderW":null,"acromionR":null,"acromionL":null,"handR":null,"handL":null,"footR":null,"footL":null}
-Zuordnung: height=Körpergröße; sternum=Höhe des Brustbeins; inseam=Schrittlänge/Schritthöhe; shoulderW=Schulterbreite; acromion=Schulterhöhe/Schulterdach; hand=Handhöhe; foot=Fußlänge; R=rechts, L=links. Steht ein Maß ohne Seitenangabe, trage es bei R und L ein. Rechne cm in mm um (169,5 cm → 1695). Nichts erfinden.`,{images:[blob],modelTier:"default"});
+Zuordnung (auch englische Bezeichnungen): height=Körpergröße/Height; sternum=Höhe des Brustbeins/Torso Height/Sternum Height; inseam=Schrittlänge/Schritthöhe/Inseam Height; shoulderW=Schulterbreite/Shoulder Width; acromion=Schulterhöhe/Schulterdach/Shoulder (Height); hand=Handhöhe/Hand (Height); foot=Fußlänge/Foot Length; R=rechts/right, L=links/left. Bei Tabellen mit mehreren Spalten nur den gemessenen Wert (Measured value) nehmen, nicht berechnete oder Durchschnittswerte. Steht ein Maß ohne Seitenangabe, trage es bei R und L ein. Rechne cm in mm um (169,5 cm → 1695). Nimm immer den eingetragenen Messwert, nicht Normwerte oder Abweichungen daneben (z. B. „Norm 1521 (−11 mm · −1,0 SD)“) und nicht berechnete Werte wie „Armlänge gesamt“. Nichts erfinden.`,{images:[blob],modelTier:"default"});
   const map={height:"height",sternum:"sternum",inseam:"inseam",shoulderW:"shoulderW",acromionR:"acromion",acromionL:"acromionL",handR:"hand",handL:"handL",footR:"foot",footL:"footL"}, r={};
   for(const [a,k] of Object.entries(map)){ const f=MEAS_F.find(x=>x[0]===k), v=measMm(Number(out&&out[a]),f[3],""); if(isFinite(v)) r[k]=v; }
   return r;
 }
+/* kleine Screenshots: stark vergrößern und nur dunkle Schrift behalten (graue Feldrahmen und farbige Nebenwerte fallen weg) */
+function measPrepDark(img){ const sc=Math.min(4,Math.max(2,1700/Math.max(img.width,1))), cv=document.createElement("canvas"); cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+  const cx=cv.getContext("2d"); cx.imageSmoothingQuality="high"; cx.drawImage(img,0,0,cv.width,cv.height); const id=cx.getImageData(0,0,cv.width,cv.height), d=id.data;
+  for(let i=0;i<d.length;i+=4){ const g=d[i]*.3+d[i+1]*.59+d[i+2]*.11, sat=Math.max(d[i],d[i+1],d[i+2])-Math.min(d[i],d[i+1],d[i+2]), on=g<150&&sat<90; d[i]=d[i+1]=d[i+2]=on?0:255; }
+  cx.putImageData(id,0,0); return new Promise(ok=>cv.toBlob(ok,"image/png")); }
 function measPrepPlain(img){ const sc=Math.min(3,Math.max(1,2000/Math.max(img.width,1))), cv=document.createElement("canvas"); cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
   const cx=cv.getContext("2d"); cx.imageSmoothingQuality="high"; cx.drawImage(img,0,0,cv.width,cv.height); return new Promise(ok=>cv.toBlob(ok,"image/png")); }
 async function measByOcr(blob,note){
@@ -3405,8 +3470,34 @@ async function measByOcr(blob,note){
   note("Texterkennung läuft … (beim ersten Mal werden Sprachdaten geladen)");
   const img=await createImageBitmap(blob), w=await Tesseract.createWorker(["deu","eng"]);
   try{ await w.setParameters({preserve_interword_spaces:"1"}); let best={}, bn=-1;
-    for(const prep of [()=>measPrepPlain(img),()=>geoPrep(img,0)]){ for(const psm of ["3","11"]){ await w.setParameters({tessedit_pageseg_mode:psm});
-      const {data}=await w.recognize(await prep(),{},{text:true,tsv:true}); const r=measParseWords(measWords(data)), n=Object.keys(r).length; if(n>bn){ best=r; bn=n; } if(bn>=MEAS_F.length) return best; } }
+    const runs=[];
+    outer: for(const prep of [()=>measPrepPlain(img),()=>geoPrep(img,0),()=>measPrepDark(img)]){ const pb=await prep(); for(const psm of ["3","11"]){ await w.setParameters({tessedit_pageseg_mode:psm});
+      const {data}=await w.recognize(pb,{},{text:true,tsv:true}); const r=measParseWords(measWords(data)), n=Object.keys(r).length; for(const b of Object.values(r.__boxes||{})) b.blob=pb;
+      runs.push(r); if(n>bn){ best=r; bn=n; } if(bn>=MEAS_F.length) break outer; } }
+    /* fehlende Werte aus den anderen Durchläufen ergänzen */
+    for(const r of runs) if(r!==best) for(const k of Object.keys(r)) if(!isFinite(best[k])){ best[k]=r[k]; if(r.__boxes&&r.__boxes[k]) best.__boxes[k]=r.__boxes[k]; }
+    /* Nachkontrolle: jede gefundene Zahl einzeln, vergrößert und nur mit Ziffern lesen (schmale Schriften: „415“ statt „458“) */
+    if(best.__boxes){ note("Werte werden nachgeprüft …"); const bmp=new Map();
+      await w.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"0123456789.,"});
+      for(const [k,b] of Object.entries(best.__boxes)){ try{
+        if(!b.blob) continue; if(!bmp.has(b.blob)){ const bb=await createImageBitmap(b.blob); bmp.set(b.blob,bb.width/img.width); }
+        const bs=bmp.get(b.blob), bi=img;   // aus dem Originalbild ausschneiden (Koordinaten des vergrößerten Bilds zurückrechnen)
+        const h=(b.y1-b.y0)/bs, pad=h*0.35, padX=h*0.15, x0=Math.max(0,b.x0/bs-padX), y0=Math.max(0,b.y0/bs-pad), cw=Math.min(bi.width-x0,(b.x1-b.x0)/bs+2*padX), ch=Math.min(bi.height-y0,h+2*pad), sc=Math.max(1,90/ch);
+        const cv=document.createElement("canvas"); cv.width=Math.round(cw*sc)+40; cv.height=Math.round(ch*sc)+40; const cx=cv.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,cv.width,cv.height); cx.imageSmoothingQuality="high"; cx.drawImage(bi,x0,y0,cw,ch,20,20,cw*sc,ch*sc);
+        /* schwarz/weiß; dann mit verschiedenen Lücken-Grenzen die erste Zeichengruppe abschneiden (Pfeile eines Zahlenfelds, Einheiten) und das erste gültige Ergebnis nehmen */
+        const id=cx.getImageData(0,0,cv.width,cv.height), d=id.data, W2=cv.width, H2=cv.height, col=new Array(W2).fill(0);
+        { let sum=0,n=0; for(let i=0;i<d.length;i+=4){ sum+=d[i]*.3+d[i+1]*.59+d[i+2]*.11; n++; } const thr=Math.min(140,sum/n*0.6);
+          for(let y=0;y<H2;y++) for(let x=0;x<W2;x++){ const i=(y*W2+x)*4, g=d[i]*.3+d[i+1]*.59+d[i+2]*.11, on=g<thr; d[i]=d[i+1]=d[i+2]=on?0:255; if(on) col[x]++; }
+          cx.putImageData(id,0,0); }
+        let r0=-1,r1=-1; for(let y=0;y<H2;y++){ let on=0; for(let x=0;x<W2;x+=2) if(d[(y*W2+x)*4]===0){ on=1; break; } if(on){ if(r0<0) r0=y; r1=y; } }
+        const f=MEAS_F.find(x=>x[0]===k);
+        for(const fac of [0.45,0.22,0]){ let src=cv;
+          if(fac){ const gap=Math.max(4,Math.round((r1-r0+1)*fac)); let st=-1,en=-1,empty=0;
+            for(let x=0;x<W2;x++){ if(col[x]>0){ if(st<0) st=x; en=x; empty=0; } else if(st>=0){ if(++empty>gap) break; } }
+            if(!(st>=0&&en>st)) continue; src=document.createElement("canvas"); src.width=en-st+40; src.height=H2; const x2=src.getContext("2d"); x2.fillStyle="#fff"; x2.fillRect(0,0,src.width,H2); x2.drawImage(cv,st,0,en-st+1,H2,20,0,en-st+1,H2); }
+          const {data}=await w.recognize(await new Promise(ok=>src.toBlob(ok,"image/png"))), v=measMm(measNum((data.text||"").trim()),f[3],b.unit);
+          if(isFinite(v)&&(data.confidence||0)>=60){ best[k]=v; break; } }
+        }catch(e){} } }
     return best; } finally{ try{ await w.terminate(); }catch(e){} }
 }
 function renderMeasImg(){
@@ -4660,10 +4751,10 @@ function guideBuiltin(){   // Vorlage: Docs-Dokument „Anleitung WiFitPro und W
     {h:"WiFitPro: das ausführliche Bikefitting",blocks:[P("In WiFitPro gehst du die Tabs von links nach rechts durch ({TABS}); „Weiter“ am Ende jedes Tabs führt zum nächsten, „Zurück“ zum vorigen."),
      OL([["Befund",["Unter „Kunde“ Name und Datum eintragen – sie erscheinen auf dem PDF.","Anamnese ausfüllen, z. B. Umfang als Jahreskilometer oder km/Woche.","Beschwerden: erst die Körperregion wählen, dann die Seite (bei Bedarf abwählbar, z. B. Gesäß) und die Art der Beschwerde.","Statikbefund, Dynamischer Befund, Mobilitätstests und Krafttests nach Bedarf. Das kleine Bild neben einem Test zeigt, wie er durchgeführt wird."]],
        ["Bike Set Up",["Die Maße des mitgebrachten Rads als Ist-Zustand eintragen und die optimierte Position in der zweiten Spalte. Leere Felder der optimierten Spalte übernehmen den Ist-Wert."]],
-       ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen, Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
-       ["Rad",["Marke, Modell und Größe wählen. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
+       ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen (deutsch oder englisch beschriftet), Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
+       ["Rad",["Marke, Modell und Größe wählen; der Haken „alle Radkategorien“ neben „Fahrrad“ zeigt auch Räder anderer Radarten. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
        ["Bauteile",["„Ist-Zustand laden“ oder „Optimierte Position laden“ übernimmt die Werte aus dem Bike Set Up.","Lenker, Vorbau, Schalt-/Bremsgriffe, Pedale und Schuhe aus den Listen wählen. Angezeigt werden die Teile zur Radmarke; mit „alle Lenker“ bzw. „alle Vorbauten“ siehst du alle.","Fehlende Maße direkt eintragen; neue Teile unter „Teile verwalten“ anlegen und Radmarken zuordnen."]],
-       ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad.","Unter „Vorschlag vergleichen mit“ den Vorschlag neben die aktuelle Einstellung, die Ist- oder die optimierte Position stellen.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
+       ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad. Die Spalte „Ideal“ zeigt die Zielposition nur aus Messwerten und Fahrstil (für jedes Rad gleich), „Vorschlag“ das mit diesem Rad und den verfügbaren Teilen Erreichbare; darunter steht, wie weit der Griff von der Idealposition abweicht. Vorbaulänge, -winkel und Spacer wählt die App passend zu den gewählten Bauteilen (Lenker, Griffe) so, dass der Griff dem Idealpunkt möglichst nahe kommt; reicht das nicht, erscheint ein Hinweis zur Rahmengröße.","Unter „Idealposition vergleichen mit“ die aktuelle Einstellung, die Ist- oder die optimierte Position daneben stellen; Δ zeigt, wie viel bis zur Idealposition fehlt.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
        ["PDF",["Ein Paket antippen ({PAKETE}) oder Inhalte einzeln anhaken. Eigene Pakete können unter „Eigene Pakete und Voreinstellung“ angelegt und bearbeitet werden.","Bei Bedarf das PDF der Videoanalyse (Contemplas) und der Satteldruckmessung (Everve) hinzufügen; die App übernimmt nur deren Bilder.","Unter „Bericht: Logo und Kontaktdaten“ kann das eigene Logo hochgeladen und die Kontaktdaten eingefügt werden.","„PDF erstellen“ erzeugt den Bericht mit Deckblatt, den ausgewählten Inhalten, deinem Logo und deinen Kontaktdaten."]],
        ["Daten",["Unter „Konto“ das Passwort ändern oder abmelden.","„Bedienungsanleitung herunterladen“ erzeugt diese Anleitung als PDF.","Mit „Daten sichern (.json)“ alles archivieren oder auf ein anderes Gerät mitnehmen; „Sicherung laden“ spielt es wieder ein."]]])]},
     {h:"Bedienung",blocks:[P("Diese Elemente gelten in beiden Ansichten."),
