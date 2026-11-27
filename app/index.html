@@ -3345,8 +3345,8 @@ function measMm(v,rng,unit){ if(!isFinite(v)) return NaN; const [a,b]=rng;
   else if(!(v>=a&&v<=b)){ if(v*10>=a&&v*10<=b) v*=10; else if(v*1000>=a&&v*1000<=b) v*=1000; }
   return v>=a&&v<=b?Math.round(v):NaN; }
 /* Ergebnis {key:{v,side}} in Feldwerte umsetzen; ohne Seitenangabe gilt der Wert für links und rechts */
-function measAssign(found){ const out={};
-  const set=(k,v)=>{ const f=MEAS_F.find(x=>x[0]===k); const mm=measMm(v.v,f[3],v.unit); if(isFinite(mm)&&!isFinite(out[k])) out[k]=mm; };
+function measAssign(found){ const out={}, boxes={}; Object.defineProperty(out,"__boxes",{value:boxes,enumerable:false});   // Fundstellen der Zahlen für die Nachkontrolle
+  const set=(k,v)=>{ const f=MEAS_F.find(x=>x[0]===k); const mm=measMm(v.v,f[3],v.unit); if(isFinite(mm)&&!isFinite(out[k])){ out[k]=mm; if(v.box) boxes[k]={...v.box,unit:v.unit}; } };
   for(const r of found){ if(["height","sternum","inseam","shoulderW"].includes(r.key)) set(r.key,r);
     else { const L=r.key+"L"; if(r.side==="L") set(L,r); else if(r.side==="R") set(r.key,r); else { set(r.key,r); set(L,r); } } }
   return out; }
@@ -3361,14 +3361,20 @@ function measWords(data){ const w=[];
   return v.sort((a,b)=>+a.line-+b.line||a.x0-b.x0); }
 function measParseWords(w){
   const found=[], isNum=t=>/\d/.test(t)&&/^[^A-Za-zÄÖÜäöüß]*\d[\d.,]*\s*(mm|cm|m)?[^A-Za-z]*$/i.test(t), unitOf=t=>{ const k=String(t).toLowerCase(); return /\bcm\b|\(cm\)|^cm$/.test(k)?"cm":/\bmm\b|\(mm\)|^mm$/.test(k)?"mm":""; };
-  const used=new Set();
+  const used=new Set(), firstOf={};
+  for(const x of w) if(!(x.line in firstOf)) firstOf[x.line]=measKey(x.t);
+  const DERIVED=/^(armlange|armlaenge|oberarm|unterarm|oberarmlange|unterarmlange|rumpf|rumpflange|oberschenkel|unterschenkel|oberschenkellange|unterschenkellange|beinlange|torso)/;   // berechnete Zeilen (z. B. „Armlänge gesamt … Schulterdach – Handhöhe“) überspringen
   for(let i=0;i<w.length;i++){
+    if(DERIVED.test(firstOf[w[i].line]||"")) continue;
     let key=measKw(w[i].t), j=i+1;
     if(!key&&i+1<w.length&&w[i+1].line===w[i].line){ const k2=measKw(w[i].t+w[i+1].t); if(k2){ key=k2; j=i+2; } }   // „Fuß länge“, „Körper größe“
     if(!key){ const k=measKey(w[i].t); if((k==="hohe"||k==="hoehe")&&i+2<w.length){ const a=measKey(w[i+1].t), b=measKey(w[i+2].t); if(a==="des"||a==="der") key=measKw(w[i+2].t+"hohe")||(/brustbein/.test(b)?"sternum":/schulter/.test(b)?"acromion":null); if(key) j=i+3; } }   // „Höhe des Brustbeins“
     if(!key) continue;
     let side="", unit="", x0=w[i].x0, x1=w[j-1].x1, y0=Math.min(...w.slice(i,j).map(x=>x.y0)), y1=Math.max(...w.slice(i,j).map(x=>x.y1)), val=null;
+    let skipNorm=false;
     for(let k=j;k<w.length&&w[k].line===w[i].line;k++){ const t=w[k].t;
+      if(skipNorm){ if(/\)/.test(t)) skipNorm=false; continue; }   // Hinweise wie „Norm 1521 (−11 mm · −1,0 SD)“ überspringen
+      if(/^(norm|soll|ziel|ref|referenz|mittel|mittelwert)$/.test(measKey(t))){ skipNorm=true; continue; }
       if(measKw(t)) break; const s=measSide(t.replace(/[():]/g,"")); if(s&&!side){ side=s; x1=w[k].x1; continue; }
       const u=unitOf(t); if(u&&!/\d/.test(t)){ unit=unit||u; x1=w[k].x1; continue; }
       if(isNum(t)&&!used.has(k)){ val={k,v:measNum(t)}; const u2=unitOf(t)||(k+1<w.length&&w[k+1].line===w[i].line?unitOf(w[k+1].t):""); if(u2) unit=u2;
@@ -3376,7 +3382,7 @@ function measParseWords(w){
         if(!side&&["acromion","hand","foot"].includes(key)){ let k2=-1; for(let q=k+1;q<w.length&&w[q].line===w[i].line;q++){ if(measKw(w[q].t)) break; if(isNum(w[q].t)){ k2=q; break; } }
           if(k2>=0){ const hdr=w.filter(x=>x.y1<=w[k].y0+2&&measSide(x.t.replace(/[():]/g,""))), sideAt=c=>{ let b=null,bd=1e9; for(const x of hdr){ const d=Math.abs((x.x0+x.x1)/2-(c.x0+c.x1)/2)+(w[k].y0-x.y1)*0.2; if(d<bd){ bd=d; b=x; } } return b?measSide(b.t.replace(/[():]/g,"")):""; };
             let s1=sideAt(w[k]), s2=sideAt(w[k2]); if(!s1||!s2||s1===s2){ s1="L"; s2="R"; }
-            used.add(k); used.add(k2); found.push({key,side:s1,v:val.v,unit},{key,side:s2,v:measNum(w[k2].t),unit}); val=null; side="done"; } }
+            used.add(k); used.add(k2); found.push({key,side:s1,v:val.v,unit,box:w[k]},{key,side:s2,v:measNum(w[k2].t),unit,box:w[k2]}); val=null; side="done"; } }
         break; }
       if(/^[([]?(mm|cm)[)\]]?:?$/i.test(t)) continue; x1=Math.max(x1,w[k].x1); }
     if(side==="done") continue;
@@ -3384,7 +3390,7 @@ function measParseWords(w){
       for(let k=0;k<w.length;k++){ const c=w[k]; if(used.has(k)||!isNum(c.t)||c.y0<y1-2||c.y0>y1+h*5) continue;
         if(c.x1<x0-h*1.5||c.x0>Math.max(x1,x0+h*8)) continue; const d=(c.y0-y1)+Math.abs(c.x0-x0)*0.3; if(d<bd){ bd=d; best=k; } }
       if(best!==null){ val={k:best,v:measNum(w[best].t)}; const u2=unitOf(w[best].t)||(best+1<w.length&&w[best+1].line===w[best].line?unitOf(w[best+1].t):""); if(u2) unit=u2; } }
-    if(val&&isFinite(val.v)){ used.add(val.k); found.push({key,side,v:val.v,unit}); }
+    if(val&&isFinite(val.v)){ used.add(val.k); found.push({key,side,v:val.v,unit,box:w[val.k]}); }
   }
   return measAssign(found);
 }
@@ -3393,7 +3399,7 @@ async function measByClaude(blob){
   if(!sample) return null; try{ const lim=sample.limits?await sample.limits():null; if(lim&&!lim.images) return null; }catch(e){}
   const out=await sample.json(`Lies die Körpermaße einer Person aus dem Bild (Screenshot eines Messblatts, Formulars oder einer Tabelle). Antworte NUR mit JSON in genau dieser Form, Werte in Millimetern als Zahl oder null, wenn nicht im Bild:
 {"height":null,"sternum":null,"inseam":null,"shoulderW":null,"acromionR":null,"acromionL":null,"handR":null,"handL":null,"footR":null,"footL":null}
-Zuordnung: height=Körpergröße; sternum=Höhe des Brustbeins; inseam=Schrittlänge/Schritthöhe; shoulderW=Schulterbreite; acromion=Schulterhöhe/Schulterdach; hand=Handhöhe; foot=Fußlänge; R=rechts, L=links. Steht ein Maß ohne Seitenangabe, trage es bei R und L ein. Rechne cm in mm um (169,5 cm → 1695). Nichts erfinden.`,{images:[blob],modelTier:"default"});
+Zuordnung: height=Körpergröße; sternum=Höhe des Brustbeins; inseam=Schrittlänge/Schritthöhe; shoulderW=Schulterbreite; acromion=Schulterhöhe/Schulterdach; hand=Handhöhe; foot=Fußlänge; R=rechts, L=links. Steht ein Maß ohne Seitenangabe, trage es bei R und L ein. Rechne cm in mm um (169,5 cm → 1695). Nimm immer den eingetragenen Messwert, nicht Normwerte oder Abweichungen daneben (z. B. „Norm 1521 (−11 mm · −1,0 SD)“) und nicht berechnete Werte wie „Armlänge gesamt“. Nichts erfinden.`,{images:[blob],modelTier:"default"});
   const map={height:"height",sternum:"sternum",inseam:"inseam",shoulderW:"shoulderW",acromionR:"acromion",acromionL:"acromionL",handR:"hand",handL:"handL",footR:"foot",footL:"footL"}, r={};
   for(const [a,k] of Object.entries(map)){ const f=MEAS_F.find(x=>x[0]===k), v=measMm(Number(out&&out[a]),f[3],""); if(isFinite(v)) r[k]=v; }
   return r;
@@ -3405,8 +3411,24 @@ async function measByOcr(blob,note){
   note("Texterkennung läuft … (beim ersten Mal werden Sprachdaten geladen)");
   const img=await createImageBitmap(blob), w=await Tesseract.createWorker(["deu","eng"]);
   try{ await w.setParameters({preserve_interword_spaces:"1"}); let best={}, bn=-1;
-    for(const prep of [()=>measPrepPlain(img),()=>geoPrep(img,0)]){ for(const psm of ["3","11"]){ await w.setParameters({tessedit_pageseg_mode:psm});
-      const {data}=await w.recognize(await prep(),{},{text:true,tsv:true}); const r=measParseWords(measWords(data)), n=Object.keys(r).length; if(n>bn){ best=r; bn=n; } if(bn>=MEAS_F.length) return best; } }
+    let bestBlob=null;
+    outer: for(const prep of [()=>measPrepPlain(img),()=>geoPrep(img,0)]){ const pb=await prep(); for(const psm of ["3","11"]){ await w.setParameters({tessedit_pageseg_mode:psm});
+      const {data}=await w.recognize(pb,{},{text:true,tsv:true}); const r=measParseWords(measWords(data)), n=Object.keys(r).length; if(n>bn){ best=r; bn=n; bestBlob=pb; } if(bn>=MEAS_F.length) break outer; } }
+    /* Nachkontrolle: jede gefundene Zahl einzeln, vergrößert und nur mit Ziffern lesen (schmale Schriften: „415“ statt „458“) */
+    if(bestBlob&&best.__boxes){ note("Werte werden nachgeprüft …"); const bi=await createImageBitmap(bestBlob);
+      await w.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"0123456789.,"});
+      for(const [k,b] of Object.entries(best.__boxes)){ try{
+        const h=b.y1-b.y0, pad=Math.round(h*0.35), x0=Math.max(0,b.x0-pad), y0=Math.max(0,b.y0-pad), cw=Math.min(bi.width-x0,b.x1-b.x0+2*pad), ch=Math.min(bi.height-y0,h+2*pad), sc=Math.max(1,90/ch);
+        const cv=document.createElement("canvas"); cv.width=Math.round(cw*sc)+40; cv.height=Math.round(ch*sc)+40; const cx=cv.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,cv.width,cv.height); cx.imageSmoothingQuality="high"; cx.drawImage(bi,x0,y0,cw,ch,20,20,cw*sc,ch*sc);
+        /* schwarz/weiß und nur die erste Zeichengruppe behalten (Pfeile eines Zahlenfelds, Einheiten u. Ä. abschneiden) */
+        { const id=cx.getImageData(0,0,cv.width,cv.height), d=id.data, W2=cv.width, H2=cv.height, col=new Array(W2).fill(0);
+          let sum=0,n=0; for(let i=0;i<d.length;i+=4){ sum+=d[i]*.3+d[i+1]*.59+d[i+2]*.11; n++; } const thr=Math.min(140,sum/n*0.6);
+          for(let y=0;y<H2;y++) for(let x=0;x<W2;x++){ const i=(y*W2+x)*4, g=d[i]*.3+d[i+1]*.59+d[i+2]*.11, on=g<thr; d[i]=d[i+1]=d[i+2]=on?0:255; if(on) col[x]++; }
+          cx.putImageData(id,0,0); let r0=-1,r1=-1; for(let y=0;y<H2;y++){ let on=0; for(let x=0;x<W2;x+=2) if(d[(y*W2+x)*4]===0){ on=1; break; } if(on){ if(r0<0) r0=y; r1=y; } } const gap=Math.max(4,Math.round((r1-r0+1)*0.22)); let st=-1,en=-1,empty=0;
+          for(let x=0;x<W2;x++){ if(col[x]>0){ if(st<0) st=x; en=x; empty=0; } else if(st>=0){ if(++empty>gap) break; } }
+          if(st>=0&&en>st){ const c2=document.createElement("canvas"); c2.width=en-st+40; c2.height=H2; const x2=c2.getContext("2d"); x2.fillStyle="#fff"; x2.fillRect(0,0,c2.width,H2); x2.drawImage(cv,st,0,en-st+1,H2,20,0,en-st+1,H2); cv.width=c2.width; cv.getContext("2d").drawImage(c2,0,0); } }
+        const {data}=await w.recognize(await new Promise(ok=>cv.toBlob(ok,"image/png"))), f=MEAS_F.find(x=>x[0]===k), v=measMm(measNum((data.text||"").trim()),f[3],b.unit);
+        if(isFinite(v)&&(data.confidence||0)>=60) best[k]=v; }catch(e){} } }
     return best; } finally{ try{ await w.terminate(); }catch(e){} }
 }
 function renderMeasImg(){
