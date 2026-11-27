@@ -268,7 +268,7 @@ select.bfi.ppRegion{font:500 15px/1.25 "Barlow",system-ui,sans-serif;padding:6px
 summary .infoBtn{margin-right:auto}
 .lbl .infoBtn{margin-left:-3px;top:-.2em}
 #infoTip{white-space:pre-line;position:fixed;z-index:300;max-width:min(340px,calc(100vw - 16px));background:#1F2A33;color:#fff;font-size:13px;line-height:1.45;padding:9px 11px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}
-.geoWrap{overflow-x:auto;margin-top:8px}.geoT{border-collapse:collapse;font-size:14px}.geoT th{text-align:left;font-weight:600;padding:3px 6px;white-space:nowrap}.geoT td{padding:2px 3px}.geoT .geoIn{width:66px;min-width:0;padding:5px 6px;text-align:right}.geoT thead .geoIn{text-align:center;font-weight:700}.geoT .geoSz{display:flex;align-items:center;gap:2px}.geoT .geoDel{border:0;background:none;color:var(--muted,#888);cursor:pointer;font-size:15px;padding:0 2px;line-height:1}.geoT .geoDel:hover{color:#C0392B}.geoT .geoAdd{white-space:nowrap}.geoBad{border-color:#C0392B!important;background:#FDECEA!important}
+.geoWrap{overflow-x:auto;margin-top:8px}.geoT{border-collapse:collapse;font-size:14px}.geoT th{text-align:left;font-weight:600;padding:3px 6px;white-space:nowrap}.geoT td{padding:2px 3px}.geoT .geoIn{width:66px;min-width:0;padding:5px 6px;text-align:right}.geoT thead .geoIn{text-align:center;font-weight:700}.geoT .geoSz{display:flex;align-items:center;gap:2px}.geoT .geoDel{border:0;background:none;color:var(--muted,#888);cursor:pointer;font-size:15px;padding:0 2px;line-height:1}.geoT .geoDel:hover{color:#C0392B}.geoT .geoAdd{white-space:nowrap}.geoBad{border-color:#C0392B!important;background:#FDECEA!important;color:#18222B!important}
 .viewMenu{position:relative;display:inline-block;margin-bottom:10px}
 .bikeTag{text-align:right;line-height:1.05}.bikeTag h1{font-size:28px}.bikeTag .kicker{font-size:13px;margin:0}.bikeTag .size-big{margin-top:0}
 .viewMenu>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:10px;font-size:17px;font-weight:600;padding:9px 16px;border:1px solid var(--rule);border-radius:8px;background:var(--field);color:var(--ink);letter-spacing:.02em;user-select:none}
@@ -370,7 +370,7 @@ select{font:inherit;width:100%;padding:7px 8px;border:1px solid var(--rule);bord
 .chip{font:600 16px "Barlow Condensed","Arial Narrow",sans-serif;min-width:44px;padding:6px 10px;border-radius:6px;border:1px solid var(--rule);background:var(--field);color:var(--ink);cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--frame);border-color:var(--frame);color:#fff}
 .chip:disabled{opacity:.4;cursor:not-allowed;text-decoration:line-through}
-.chip.fit-g{border:2px solid #2e8b57;background:#e3f3e9} .chip.fit-o{border:2px solid #e08a00;background:#fdf0dc} .chip.fit-r{border:2px solid #c0392b;background:#fbe3e0}
+.chip.fit-g{border:2px solid #2e8b57;background:#e3f3e9;color:#18222B} .chip.fit-o{border:2px solid #e08a00;background:#fdf0dc;color:#18222B} .chip.fit-r{border:2px solid #c0392b;background:#fbe3e0;color:#18222B}   /* helle Flächen: Schrift immer dunkel (auch im Dunkelmodus) */
 .chip.fit-g[aria-pressed="true"]{background:#2e8b57;color:#fff} .chip.fit-o[aria-pressed="true"]{background:#e08a00;color:#fff} .chip.fit-r[aria-pressed="true"]{background:#c0392b;color:#fff}
 .chip.fit-best{box-shadow:0 0 0 3px rgba(46,139,87,.3)}
 .fitdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 4px 0 8px;vertical-align:middle} .fitdot.g{background:#2e8b57;margin-left:0} .fitdot.o{background:#e08a00} .fitdot.r{background:#c0392b}
@@ -430,8 +430,8 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
     <h2 id="startT">Bikefitting</h2>
     <p id="startQ">Welches Fitting möchtest du machen?</p>
     <div class="startBtns">
-      <button class="startBtn pro" type="button" id="startPro">WiFitPro</button>
       <button class="startBtn basic" type="button" id="startBasic">WiFitBasic</button>
+      <button class="startBtn pro" type="button" id="startPro">WiFitPro</button>
     </div>
     <div class="startBtns types" id="startTypes" hidden>
       <button class="startBtn basic" type="button" data-bt="road">Rennrad</button>
@@ -592,8 +592,9 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <select id="sexSel"><option value="männlich">männlich</option><option value="weiblich">weiblich</option></select>
       </section>
       <section>
-        <h2>Messwerte<button type="button" class="infoBtn" data-tip="Messwerte direkt eintragen. Neben jedem Maß steht die Norm für Körpergröße und Geschlecht.&#10;Datenbasis: ANSUR II (4.082 Männer, 1.986 Frauen). Je Maß gilt: Norm = a + b × Körpergröße. Die Streuung (SD) ist die übliche Abweichung bei Menschen gleicher Größe.&#10;Anzeige: „Norm 830 (+25 mm · +1,0 SD)“ = Normwert, Abweichung in mm und in Streuungen.&#10;● grün: bis 1 SD – normal&#10;● gelb: 1–2 SD – auffällig, Messung prüfen&#10;● rot: über 2 SD – deutlich abweichend, nachmessen&#10;Bewertet werden Schrittlänge, Brustbeinhöhe, Schulterhöhe, Schulterbreite, Fußlänge, Armlänge und die daraus berechneten Segmente (Ober-/Unterschenkel, Rumpf, Ober-/Unterarm)." aria-label="Info: Normwerte">i</button></h2>
+        <h2 style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 0">Messwerte<button type="button" class="infoBtn" data-tip="Messwerte direkt eintragen. Neben jedem Maß steht die Norm für Körpergröße und Geschlecht.&#10;Datenbasis: ANSUR II (4.082 Männer, 1.986 Frauen). Je Maß gilt: Norm = a + b × Körpergröße. Die Streuung (SD) ist die übliche Abweichung bei Menschen gleicher Größe.&#10;Anzeige: „Norm 830 (+25 mm · +1,0 SD)“ = Normwert, Abweichung in mm und in Streuungen.&#10;● grün: bis 1 SD – normal&#10;● gelb: 1–2 SD – auffällig, Messung prüfen&#10;● rot: über 2 SD – deutlich abweichend, nachmessen&#10;Bewertet werden Schrittlänge, Brustbeinhöhe, Schulterhöhe, Schulterbreite, Fußlänge, Armlänge und die daraus berechneten Segmente (Ober-/Unterschenkel, Rumpf, Ober-/Unterarm)." aria-label="Info: Normwerte">i</button><button class="btn ghost small" type="button" id="measImgBtn" style="margin-left:auto;font-weight:500">Messwerte aus Bild übernehmen</button><button type="button" class="infoBtn" data-tip="So funktioniert es:&#10;1. Button antippen, dann einen Screenshot oder ein Foto der Messwerte hineinziehen, auswählen oder mit Strg/⌘+V einfügen (z. B. Messblatt, Formular, Tabelle, Notiz).&#10;2. Die App liest Körpergröße, Brustbein, Schrittlänge, Schulterbreite sowie Schulterhöhe, Handhöhe und Fußlänge links/rechts.&#10;3. Die erkannten Werte erscheinen in einer Liste neben den bisherigen Werten – dort prüfen, korrigieren oder abwählen.&#10;4. „Übernehmen“ trägt die angehakten Werte ein.&#10;Hinweise: cm werden in mm umgerechnet. Ohne Seitenangabe gilt ein Wert für links und rechts. Am besten klappt ein gerader, scharfer Ausschnitt mit gut lesbarer Schrift." aria-label="Info: Messwerte aus Bild">i</button></h2>
         <p class="note" id="pReqNote" style="margin-top:0"></p>
+        <div id="measImgBox"></div>
         <div id="pCommon"></div>
         <div id="pFootL"></div>
         <div id="pFootR"></div>
@@ -679,6 +680,12 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="row" style="margin-top:8px"><button class="btn small" id="acPwBtn" type="button">Passwort ändern</button><button class="btn ghost small wfOut" type="button">Abmelden</button></div>
         <p class="note" id="acNote"></p>
       </section>
+      <section>
+        <h2>Bedienungsanleitung</h2>
+        <p class="note info" style="margin-top:0">Schritt-für-Schritt-Anleitung für WiFitPro und WiFitBasic</p>
+        <div class="row"><button class="btn small" type="button" id="guideBtn">Bedienungsanleitung herunterladen</button></div>
+        <p class="note" id="guideNote"></p>
+      </section>
       <section hidden>
         <h2>Passwort für WiFitPro</h2>
         <p class="note" id="pwNote" style="margin-top:0"></p>
@@ -756,6 +763,9 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="row"><button class="btn ghost small" id="userReload" type="button">Liste aktualisieren</button></div>
         <div id="userAdmin"></div>
       </details>
+      <details class="acc" id="guideAdmDetails" style="margin-top:18px"><summary>Bedienungsanleitung</summary><p class="note info" style="margin-top:0">Eigene Fassung der Bedienungsanleitung als Word-Datei (.docx) hochladen. Überschrift 2 = Kapitel, nummerierte Liste = Schritte (fett = Titel), Aufzählung = Punkte, Tabellen bleiben Tabellen. Am einfachsten die aktuelle Fassung als Word herunterladen, bearbeiten und wieder hochladen. Platzhalter {TABS}, {PAKETE} und {BASIC_PDF} setzt die App automatisch ein.</p><div id="guideAdm"><p class="note" id="guideAdmState" style="margin-top:0"></p>
+        <div class="row"><input type="file" id="guideFile" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><button class="btn small" type="button" id="guideUpBtn">Word-Datei hochladen</button><button class="btn ghost small" type="button" id="guideDocx">Aktuelle Fassung als Word herunterladen</button><button class="btn ghost small" type="button" id="guideReset" hidden>Standard der App verwenden</button></div>
+        <p class="note" id="guideAdmNote"></p></div></details>
     </div>
   </aside>
 </div>
@@ -2741,15 +2751,17 @@ function infoize(root=document){
     p.hidden=true;
   });
 }
-{ const tip=document.createElement("div"); tip.id="infoTip"; tip.hidden=true; tip.setAttribute("role","tooltip"); document.body.appendChild(tip); let cur=null;
-  const show=b=>{ cur=b; tip.textContent=b.dataset.tip; tip.hidden=false; const r=b.getBoundingClientRect(), w=tip.offsetWidth, h=tip.offsetHeight;
+{ const tip=document.createElement("div"); tip.id="infoTip"; tip.hidden=true; tip.setAttribute("role","tooltip"); document.body.appendChild(tip); let cur=null, shownAt=0, touchAt=0; const touchy=()=>Date.now()-touchAt<1000;   // bei Touch nur Antippen (click) auswerten
+  document.addEventListener("pointerdown",e=>{ if(e.pointerType&&e.pointerType!=="mouse") touchAt=Date.now(); },true);
+  document.addEventListener("touchstart",()=>{ touchAt=Date.now(); },{capture:true,passive:true});
+  const show=b=>{ if(cur!==b||tip.hidden) shownAt=Date.now(); cur=b; tip.textContent=b.dataset.tip; tip.hidden=false; const r=b.getBoundingClientRect(), w=tip.offsetWidth, h=tip.offsetHeight;
     tip.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2))+"px"; tip.style.top=(r.bottom+8+h>innerHeight-8?Math.max(8,r.top-8-h):r.bottom+8)+"px"; };
   const hide=()=>{ cur=null; tip.hidden=true; };
-  document.addEventListener("mouseover",e=>{ const b=e.target.closest&&e.target.closest(".infoBtn"); if(b) show(b); });
-  document.addEventListener("mouseout",e=>{ const b=e.target.closest&&e.target.closest(".infoBtn"); if(b&&!b.contains(e.relatedTarget)) hide(); });
-  document.addEventListener("focusin",e=>{ if(e.target.classList&&e.target.classList.contains("infoBtn")) show(e.target); });
-  document.addEventListener("focusout",e=>{ if(e.target.classList&&e.target.classList.contains("infoBtn")) hide(); });
-  document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest(".infoBtn"); if(b){ e.preventDefault(); e.stopPropagation(); cur===b&&!tip.hidden?hide():show(b); } else if(cur) hide(); },true);
+  document.addEventListener("mouseover",e=>{ if(touchy()) return; const b=e.target.closest&&e.target.closest(".infoBtn"); if(b) show(b); });
+  document.addEventListener("mouseout",e=>{ if(touchy()) return; const b=e.target.closest&&e.target.closest(".infoBtn"); if(b&&!b.contains(e.relatedTarget)) hide(); });
+  document.addEventListener("focusin",e=>{ if(touchy()) return; if(e.target.classList&&e.target.classList.contains("infoBtn")) show(e.target); });
+  document.addEventListener("focusout",e=>{ if(touchy()) return; if(e.target.classList&&e.target.classList.contains("infoBtn")) hide(); });
+  document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest(".infoBtn"); if(b){ e.preventDefault(); e.stopPropagation(); (cur===b&&!tip.hidden&&(touchy()||Date.now()-shownAt>500))?hide():show(b); }   /* Touch: mouseover/focus öffnen schon beim Antippen – dann nicht gleich wieder schließen */ else if(cur) hide(); },true);
   addEventListener("scroll",hide,true);
   infoize(); new MutationObserver(()=>infoize()).observe(document.body,{childList:true,subtree:true}); }
 /* Zurück- und Weiter-Button am Ende jedes Tabs: springt zum vorigen bzw. nächsten sichtbaren Tab */
@@ -3302,6 +3314,139 @@ function renderGeoImg(){
     dz.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("geoFile").click(); } }); }
   document.removeEventListener("paste",geoPaste); document.addEventListener("paste",geoPaste);
 }
+/* ===== Messwerte aus Bild: Screenshot (z. B. Messblatt, Formular) einlesen und in die Messfelder übernehmen ===== */
+const MEAS_F=[   // Schlüssel, Bezeichnung, Feld-ID, Bereich in mm, Seite
+  ["height","Körpergröße","pn_height",[1300,2200],""],["sternum","Höhe Brustbein","pn_sternum",[1050,1850],""],["inseam","Schrittlänge","pn_inseam",[600,1100],""],
+  ["footL","Fußlänge links","pn_footL",[180,340],"L"],["foot","Fußlänge rechts","pn_foot",[180,340],"R"],
+  ["acromion","Schulterhöhe rechts","pn_acromion",[1050,1850],"R"],["hand","Handhöhe rechts","pn_hand",[500,1050],"R"],
+  ["acromionL","Schulterhöhe links","pn_acromionL",[1050,1850],"L"],["handL","Handhöhe links","pn_handL",[500,1050],"L"],["shoulderW","Schulterbreite","pn_shoulderW",[250,560],""]];
+const MEAS_KW=[   // Erkennung der Bezeichnungen (klein, ohne Umlaute)
+  ["height",/^(korpergro(ss|ß)e|korperhohe|korpergrosse|grosse|große|grose|height|bodyheight|korperlange)$/],
+  ["sternum",/^(brustbein|brustbeins|brustbeinhohe|sternum|sternumhohe)$/],
+  ["inseam",/^(schrittlange|schritthohe|schrittlaenge|innenbeinlange|innenbein|inseam)$/],
+  ["shoulderW",/^(schulterbreite|shoulderwidth)$/],
+  ["acromion",/^(schulterhohe|schulterdach|schulterdachhohe|akromion|acromion|shoulderheight)$/],
+  ["hand",/^(handhohe|handheight)$/],
+  ["foot",/^(fu(ss|ß)lange|fuslange|fusslange|footlength|fusslaenge)$/]];
+const measKey=t=>String(t).toLowerCase().replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"ss").replace(/[^a-z]/g,"");
+const MEAS_CANON=[["height","korpergrosse"],["height","korperhohe"],["sternum","brustbein"],["sternum","brustbeins"],["sternum","brustbeinhohe"],["inseam","schrittlange"],["inseam","schritthohe"],["inseam","innenbeinlange"],
+  ["shoulderW","schulterbreite"],["acromion","schulterhohe"],["acromion","schulterdach"],["acromion","schulterdachhohe"],["hand","handhohe"],["foot","fusslange"]];
+function measLev(a,b){ const m=a.length,n=b.length; if(Math.abs(m-n)>3) return 9; let p=Array.from({length:n+1},(_,j)=>j); for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
+function measKw(t){ const k=measKey(t); if(!k) return null; for(const [key,re] of MEAS_KW) if(re.test(k)) return key;
+  if(k.length<8) return null; let best=null,bd=9; for(const [key,c] of MEAS_CANON){ const d=measLev(k,c); if(d<bd){ bd=d; best=key; } }   // OCR-Fehler wie „Schritthéhe“, „FuRlinge“
+  return bd<=Math.max(2,Math.floor(k.length/5))?best:null; }
+function measSide(t){ const k=measKey(t); return /^(links|li|left|l)$/.test(k)?"L":/^(rechts|re|right|r)$/.test(k)?"R":""; }
+function measNum(t){ let s=String(t).replace(/[^\d.,]/g,""); if(!s) return NaN;
+  if(/^\d{1,2}[.,]\d{3}$/.test(s)) s=s.replace(/[.,]/,"");   // 1.695 → 1695
+  return parseFloat(s.replace(",",".")); }
+/* Wert in mm bringen (cm/m erkennen) und auf Plausibilität prüfen */
+function measMm(v,rng,unit){ if(!isFinite(v)) return NaN; const [a,b]=rng;
+  if(unit==="cm") v*=10; else if(unit==="m") v*=1000;
+  else if(!(v>=a&&v<=b)){ if(v*10>=a&&v*10<=b) v*=10; else if(v*1000>=a&&v*1000<=b) v*=1000; }
+  return v>=a&&v<=b?Math.round(v):NaN; }
+/* Ergebnis {key:{v,side}} in Feldwerte umsetzen; ohne Seitenangabe gilt der Wert für links und rechts */
+function measAssign(found){ const out={};
+  const set=(k,v)=>{ const f=MEAS_F.find(x=>x[0]===k); const mm=measMm(v.v,f[3],v.unit); if(isFinite(mm)&&!isFinite(out[k])) out[k]=mm; };
+  for(const r of found){ if(["height","sternum","inseam","shoulderW"].includes(r.key)) set(r.key,r);
+    else { const L=r.key+"L"; if(r.side==="L") set(L,r); else if(r.side==="R") set(r.key,r); else { set(r.key,r); set(L,r); } } }
+  return out; }
+/* Texterkennung: Wörter mit Position aus Tesseract (TSV) */
+function measWords(data){ const w=[];
+  if(data&&data.tsv){ for(const ln of data.tsv.split("\n")){ const c=ln.split("\t"); if(c.length<12||c[0]!=="5") continue; const t=c.slice(11).join(" ").trim(); if(!t) continue;
+    w.push({t,line:c[2]+"."+c[3]+"."+c[4],x0:+c[6],y0:+c[7],x1:+c[6]+(+c[8]),y1:+c[7]+(+c[9])}); } }
+  else if(data&&data.words) for(const x of data.words) w.push({t:x.text,line:"",x0:x.bbox.x0,y0:x.bbox.y0,x1:x.bbox.x1,y1:x.bbox.y1});
+  /* Zeilen nach senkrechter Lage bilden (Tesseract trennt Tabellenzellen oft in eigene Zeilen); Trennstriche weg */
+  const v=w.filter(x=>/[0-9A-Za-zÄÖÜäöüß]/.test(x.t)).sort((a,b)=>(a.y0+a.y1)-(b.y0+b.y1)); let ln=-1, cy=-1e9, ch=0;
+  for(const x of v){ const c=(x.y0+x.y1)/2, h=x.y1-x.y0; if(Math.abs(c-cy)>Math.max(h,ch)*0.6){ ln++; cy=c; ch=h; } x.line=String(ln); }
+  return v.sort((a,b)=>+a.line-+b.line||a.x0-b.x0); }
+function measParseWords(w){
+  const found=[], isNum=t=>/\d/.test(t)&&/^[^A-Za-zÄÖÜäöüß]*\d[\d.,]*\s*(mm|cm|m)?[^A-Za-z]*$/i.test(t), unitOf=t=>{ const k=String(t).toLowerCase(); return /\bcm\b|\(cm\)|^cm$/.test(k)?"cm":/\bmm\b|\(mm\)|^mm$/.test(k)?"mm":""; };
+  const used=new Set();
+  for(let i=0;i<w.length;i++){
+    let key=measKw(w[i].t), j=i+1;
+    if(!key&&i+1<w.length&&w[i+1].line===w[i].line){ const k2=measKw(w[i].t+w[i+1].t); if(k2){ key=k2; j=i+2; } }   // „Fuß länge“, „Körper größe“
+    if(!key){ const k=measKey(w[i].t); if((k==="hohe"||k==="hoehe")&&i+2<w.length){ const a=measKey(w[i+1].t), b=measKey(w[i+2].t); if(a==="des"||a==="der") key=measKw(w[i+2].t+"hohe")||(/brustbein/.test(b)?"sternum":/schulter/.test(b)?"acromion":null); if(key) j=i+3; } }   // „Höhe des Brustbeins“
+    if(!key) continue;
+    let side="", unit="", x0=w[i].x0, x1=w[j-1].x1, y0=Math.min(...w.slice(i,j).map(x=>x.y0)), y1=Math.max(...w.slice(i,j).map(x=>x.y1)), val=null;
+    for(let k=j;k<w.length&&w[k].line===w[i].line;k++){ const t=w[k].t;
+      if(measKw(t)) break; const s=measSide(t.replace(/[():]/g,"")); if(s&&!side){ side=s; x1=w[k].x1; continue; }
+      const u=unitOf(t); if(u&&!/\d/.test(t)){ unit=unit||u; x1=w[k].x1; continue; }
+      if(isNum(t)&&!used.has(k)){ val={k,v:measNum(t)}; const u2=unitOf(t)||(k+1<w.length&&w[k+1].line===w[i].line?unitOf(w[k+1].t):""); if(u2) unit=u2;
+        /* Tabelle mit Spalten „links“/„rechts“: zweiten Wert derselben Zeile der anderen Seite zuordnen */
+        if(!side&&["acromion","hand","foot"].includes(key)){ let k2=-1; for(let q=k+1;q<w.length&&w[q].line===w[i].line;q++){ if(measKw(w[q].t)) break; if(isNum(w[q].t)){ k2=q; break; } }
+          if(k2>=0){ const hdr=w.filter(x=>x.y1<=w[k].y0+2&&measSide(x.t.replace(/[():]/g,""))), sideAt=c=>{ let b=null,bd=1e9; for(const x of hdr){ const d=Math.abs((x.x0+x.x1)/2-(c.x0+c.x1)/2)+(w[k].y0-x.y1)*0.2; if(d<bd){ bd=d; b=x; } } return b?measSide(b.t.replace(/[():]/g,"")):""; };
+            let s1=sideAt(w[k]), s2=sideAt(w[k2]); if(!s1||!s2||s1===s2){ s1="L"; s2="R"; }
+            used.add(k); used.add(k2); found.push({key,side:s1,v:val.v,unit},{key,side:s2,v:measNum(w[k2].t),unit}); val=null; side="done"; } }
+        break; }
+      if(/^[([]?(mm|cm)[)\]]?:?$/i.test(t)) continue; x1=Math.max(x1,w[k].x1); }
+    if(side==="done") continue;
+    if(!val){ const h=Math.max(8,y1-y0); let best=null, bd=1e9;   // Wert darunter (Formular mit Feld unter der Bezeichnung)
+      for(let k=0;k<w.length;k++){ const c=w[k]; if(used.has(k)||!isNum(c.t)||c.y0<y1-2||c.y0>y1+h*5) continue;
+        if(c.x1<x0-h*1.5||c.x0>Math.max(x1,x0+h*8)) continue; const d=(c.y0-y1)+Math.abs(c.x0-x0)*0.3; if(d<bd){ bd=d; best=k; } }
+      if(best!==null){ val={k:best,v:measNum(w[best].t)}; const u2=unitOf(w[best].t)||(best+1<w.length&&w[best+1].line===w[best].line?unitOf(w[best+1].t):""); if(u2) unit=u2; } }
+    if(val&&isFinite(val.v)){ used.add(val.k); found.push({key,side,v:val.v,unit}); }
+  }
+  return measAssign(found);
+}
+async function measByClaude(blob){
+  let sample=null; try{ sample=window.claude&&window.claude.use?await window.claude.use("sample"):null; }catch(e){}
+  if(!sample) return null; try{ const lim=sample.limits?await sample.limits():null; if(lim&&!lim.images) return null; }catch(e){}
+  const out=await sample.json(`Lies die Körpermaße einer Person aus dem Bild (Screenshot eines Messblatts, Formulars oder einer Tabelle). Antworte NUR mit JSON in genau dieser Form, Werte in Millimetern als Zahl oder null, wenn nicht im Bild:
+{"height":null,"sternum":null,"inseam":null,"shoulderW":null,"acromionR":null,"acromionL":null,"handR":null,"handL":null,"footR":null,"footL":null}
+Zuordnung: height=Körpergröße; sternum=Höhe des Brustbeins; inseam=Schrittlänge/Schritthöhe; shoulderW=Schulterbreite; acromion=Schulterhöhe/Schulterdach; hand=Handhöhe; foot=Fußlänge; R=rechts, L=links. Steht ein Maß ohne Seitenangabe, trage es bei R und L ein. Rechne cm in mm um (169,5 cm → 1695). Nichts erfinden.`,{images:[blob],modelTier:"default"});
+  const map={height:"height",sternum:"sternum",inseam:"inseam",shoulderW:"shoulderW",acromionR:"acromion",acromionL:"acromionL",handR:"hand",handL:"handL",footR:"foot",footL:"footL"}, r={};
+  for(const [a,k] of Object.entries(map)){ const f=MEAS_F.find(x=>x[0]===k), v=measMm(Number(out&&out[a]),f[3],""); if(isFinite(v)) r[k]=v; }
+  return r;
+}
+function measPrepPlain(img){ const sc=Math.min(3,Math.max(1,2000/Math.max(img.width,1))), cv=document.createElement("canvas"); cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+  const cx=cv.getContext("2d"); cx.imageSmoothingQuality="high"; cx.drawImage(img,0,0,cv.width,cv.height); return new Promise(ok=>cv.toBlob(ok,"image/png")); }
+async function measByOcr(blob,note){
+  if(!window.Tesseract){ tessP=tessP||new Promise((ok,no)=>{ const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"; s.onload=ok; s.onerror=()=>no(new Error("Texterkennung konnte nicht geladen werden")); document.head.appendChild(s); }); await tessP; }
+  note("Texterkennung läuft … (beim ersten Mal werden Sprachdaten geladen)");
+  const img=await createImageBitmap(blob), w=await Tesseract.createWorker(["deu","eng"]);
+  try{ await w.setParameters({preserve_interword_spaces:"1"}); let best={}, bn=-1;
+    for(const prep of [()=>measPrepPlain(img),()=>geoPrep(img,0)]){ for(const psm of ["3","11"]){ await w.setParameters({tessedit_pageseg_mode:psm});
+      const {data}=await w.recognize(await prep(),{},{text:true,tsv:true}); const r=measParseWords(measWords(data)), n=Object.keys(r).length; if(n>bn){ best=r; bn=n; } if(bn>=MEAS_F.length) return best; } }
+    return best; } finally{ try{ await w.terminate(); }catch(e){} }
+}
+function renderMeasImg(){
+  const box=$("measImgBox"); if(!box) return; if(box.innerHTML){ box.innerHTML=""; document.removeEventListener("paste",measPaste); return; }
+  box.innerHTML=`<div class="suadd"><h3 style="margin:0 0 6px">Messwerte aus Bild</h3>
+    <p class="note info" style="margin-top:0">Screenshot oder Foto mit den Messwerten wählen oder mit Strg/⌘+V einfügen. Die erkannten Werte werden zum Prüfen angezeigt – erst „Übernehmen“ trägt sie ein.</p>
+    <label class="geoDrop" id="measDrop" tabindex="0"><input type="file" accept="image/*" id="measFile" hidden><b>Bild hierher ziehen</b><span>oder klicken zum Auswählen · Strg/⌘+V zum Einfügen</span></label>
+    <div class="row"><button class="btn ghost small" type="button" id="measCancel">Schließen</button></div>
+    <p class="note" id="measNote"></p><div id="measRes"></div></div>`;
+  $("measCancel").onclick=()=>{ box.innerHTML=""; document.removeEventListener("paste",measPaste); };
+  $("measFile").onchange=e=>{ const f=e.target.files&&e.target.files[0]; if(f) measRun(f); e.target.value=""; };
+  { const dz=$("measDrop"), on=v=>dz.classList.toggle("over",v);
+    ["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{ e.preventDefault(); e.dataTransfer.dropEffect="copy"; on(true); }));
+    ["dragleave","dragend"].forEach(t=>dz.addEventListener(t,e=>{ if(!dz.contains(e.relatedTarget)) on(false); }));
+    dz.addEventListener("drop",e=>{ e.preventDefault(); on(false); const f=[...(e.dataTransfer.files||[])].find(x=>x.type.startsWith("image/")); if(f) measRun(f); else $("measNote").textContent="Bitte eine Bilddatei (PNG, JPG …) hineinziehen."; });
+    dz.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("measFile").click(); } }); }
+  document.removeEventListener("paste",measPaste); document.addEventListener("paste",measPaste);
+}
+function measPaste(e){ if(!$("measFile")) return document.removeEventListener("paste",measPaste);
+  const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.type&&x.type.startsWith("image/")); if(!it) return; e.preventDefault(); measRun(it.getAsFile()); }
+async function measRun(blob){
+  const note=t=>{ const n=$("measNote"); if(n) n.textContent=t; }, res=$("measRes"); if(res) res.innerHTML="";
+  note("Bild wird ausgewertet …"); let r=null;
+  try{ r=await measByClaude(blob); }catch(e){ r=null; }
+  if(!r||!Object.keys(r).length){ try{ r=await measByOcr(blob,note); }catch(e){ note("Texterkennung nicht möglich: "+(e.message||e)); return; } }
+  if(!r||!Object.keys(r).length){ note("Im Bild wurden keine Messwerte erkannt. Bitte einen schärferen Ausschnitt verwenden oder die Werte von Hand eintragen."); return; }
+  const n=Object.keys(r).length; note(`${n} von ${MEAS_F.length} Werten erkannt – bitte prüfen.`);
+  const cur=k=>{ const el=$(MEAS_F.find(x=>x[0]===k)[2]); return el?el.value:""; };
+  res.innerHTML=`<div class="clg" style="grid-template-columns:24px minmax(0,1.6fr) 90px 80px;margin-top:8px"><span></span><b>Maß</b><b>Erkannt (mm)</b><b>Bisher</b>
+    ${MEAS_F.map(([k,l])=>`<input type="checkbox" data-mk="${k}" ${isFinite(r[k])?"checked":"disabled"} aria-label="${l} übernehmen" style="width:auto"><span>${l}</span><input type="number" data-mv="${k}" value="${isFinite(r[k])?r[k]:""}" placeholder="–" step="1"><span class="note" style="margin:0">${esc(cur(k))||"–"}</span>`).join("")}</div>
+    <div class="row" style="margin-top:10px"><button class="btn small" type="button" id="measApply">Übernehmen</button></div>`;
+  res.querySelectorAll("[data-mv]").forEach(i=>i.oninput=()=>{ const c=res.querySelector(`[data-mk="${i.dataset.mv}"]`); c.disabled=!i.value; c.checked=!!i.value; });
+  $("measApply").onclick=()=>{ let k=0;
+    for(const [key,,id,rng] of MEAS_F){ const c=res.querySelector(`[data-mk="${key}"]`), v=Number(res.querySelector(`[data-mv="${key}"]`).value), el=$(id);
+      if(!c.checked||!el||!isFinite(v)||!v) continue; el.value=Math.round(v); el.dispatchEvent(new Event("input",{bubbles:true})); el.dispatchEvent(new Event("change",{bubbles:true})); k++; }
+    $("measImgBox").innerHTML=""; document.removeEventListener("paste",measPaste);
+    const pn=$("pReqNote"); if(pn&&k){ const t=pn.textContent; setTimeout(()=>{ const p2=$("pReqNote"); if(p2&&!p2.textContent) { p2.textContent=`${k} Messwerte aus dem Bild übernommen.`; setTimeout(()=>{ if(p2.textContent.endsWith("übernommen.")) p2.textContent=""; },5000); } },50); }
+  };
+}
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("#measImgBtn"); if(b){ e.preventDefault(); renderMeasImg(); } });
 function geoPaste(e){ if(!$("geoFile")) return document.removeEventListener("paste",geoPaste);
   const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.type&&x.type.startsWith("image/")); if(!it) return; e.preventDefault(); geoRun(it.getAsFile()); }
 async function geoRun(blob){
@@ -3362,7 +3507,7 @@ function geoTable(r){
 /* Neues Rad: erst Marke, Modell und Radart – sobald eingetragen, erscheint die Tabelle; Größen als Spalten frei hinzufügen */
 function renderNewBikeStart(){
   const box=$("newBikeBox"); if(!box) return; if($("geoImgBox")) $("geoImgBox").innerHTML="";
-  box.innerHTML=`<div class="suadd"><div class="row" style="justify-content:space-between;align-items:center;margin:0 0 6px"><h3 style="margin:0">Rad anlegen</h3><button class="btn small" type="button" id="nbGeo" title="Screenshot einer Geometrietabelle auslesen – alle Größen auf einmal">Geometrie aus Bild …</button></div>
+  box.innerHTML=`<div class="suadd"><div class="row" style="justify-content:space-between;align-items:center;margin:0 0 6px"><h3 style="margin:0">Rad anlegen</h3><span style="display:inline-flex;align-items:flex-start"><button class="btn small" type="button" id="nbGeo" title="Screenshot einer Geometrietabelle auslesen – alle Größen auf einmal">Geometrie aus Bild …</button><button type="button" class="infoBtn" data-tip="So funktioniert es:&#10;1. Button antippen, dann einen Screenshot der Geometrietabelle des Herstellers hineinziehen, auswählen oder mit Strg/⌘+V einfügen.&#10;2. Die App liest Marke, Modell, Größen und je Größe Reach, Stack, Lenk- und Sitzwinkel, Oberrohr, Steuerrohr, Sitzrohr, Kettenstrebe, Radstand und Tretlagerabsenkung.&#10;3. Die Werte erscheinen zum Prüfen in einer Tabelle – fehlende oder falsch gelesene Werte dort korrigieren.&#10;4. Erst „Speichern“ legt das Rad mit allen Größen an.&#10;Hinweise: Am besten nur die Tabelle ausschneiden, ohne Werbung oder Zeichnung. Fehlt die Kettenstrebe, wird sie aus Radstand und Front-Center berechnet." aria-label="Info: Geometrie aus Bild">i</button></span></div>
     <p class="note info" style="margin-top:0">Marke, Modell und Radart eintragen, dann erscheint die Tabelle. Größen mit „+ Größe“ als Spalten hinzufügen. Oder mit „Geometrie aus Bild“ eine Geometrietabelle einlesen.</p>
     <div class="two"><div><label class="f" for="nbM">Marke</label><input class="bfi" id="nbM"></div><div><label class="f" for="nbMo">Modell</label><input class="bfi" id="nbMo"></div>
     <div><label class="f" for="nbA">Radart</label><select id="nbA"><option value="">– bitte wählen –</option>${Object.entries(BTYPES).map(([k,l])=>`<option value="${k}">${l}</option>`).join("")}</select></div></div>
@@ -3383,7 +3528,7 @@ function renderBikeForm(boxId="newBikeBox",onSaved=null){
   const cb=findBike(S.sel), v=vals||{};
   const pre={marke:cb?cb.b:"",reach:v.reach,stack:v.stack,steuerwinkel:v.hta,sitzwinkel:v.sta,steuerrohr:v.htl,sitzrohr:v.stl,kettenstrebe:v.cs,tretlageroffset:v.bbDrop};
   if(boxId==="newBikeBox"&&$("geoImgBox")) $("geoImgBox").innerHTML="";
-  box.innerHTML=`<div class="suadd"><div class="row" style="justify-content:space-between;align-items:center;margin:0 0 6px"><h3 style="margin:0">Rad anlegen</h3>${boxId==="newBikeBox"?'<button class="btn small" type="button" id="nbGeo" title="Screenshot einer Geometrietabelle auslesen – alle Größen auf einmal">Geometrie aus Bild …</button>':""}</div><p class="note info" style="margin-top:0">Vorausgefüllt mit dem aktuellen Rad – Werte überschreiben. Oder mit „Geometrie aus Bild“ eine Geometrietabelle einlesen.</p><div class="two">${BIKE_F.map(([k,l,t])=>`<div><label class="f" for="nb_${k}">${l}</label><input class="bfi" id="nb_${k}" ${t?"":'inputmode="decimal"'} value="${t?"":(isFinite(pre[k])?Math.round(pre[k]*10)/10:"")}"></div>`).join("")}</div>
+  box.innerHTML=`<div class="suadd"><div class="row" style="justify-content:space-between;align-items:center;margin:0 0 6px"><h3 style="margin:0">Rad anlegen</h3>${boxId==="newBikeBox"?'<span style="display:inline-flex;align-items:flex-start"><button class="btn small" type="button" id="nbGeo" title="Screenshot einer Geometrietabelle auslesen – alle Größen auf einmal">Geometrie aus Bild …</button><button type="button" class="infoBtn" data-tip="So funktioniert es:&#10;1. Button antippen, dann einen Screenshot der Geometrietabelle des Herstellers hineinziehen, auswählen oder mit Strg/⌘+V einfügen.&#10;2. Die App liest Marke, Modell, Größen und je Größe Reach, Stack, Lenk- und Sitzwinkel, Oberrohr, Steuerrohr, Sitzrohr, Kettenstrebe, Radstand und Tretlagerabsenkung.&#10;3. Die Werte erscheinen zum Prüfen in einer Tabelle – fehlende oder falsch gelesene Werte dort korrigieren.&#10;4. Erst „Speichern“ legt das Rad mit allen Größen an.&#10;Hinweise: Am besten nur die Tabelle ausschneiden, ohne Werbung oder Zeichnung. Fehlt die Kettenstrebe, wird sie aus Radstand und Front-Center berechnet." aria-label="Info: Geometrie aus Bild">i</button></span>':""}</div><p class="note info" style="margin-top:0">Vorausgefüllt mit dem aktuellen Rad – Werte überschreiben. Oder mit „Geometrie aus Bild“ eine Geometrietabelle einlesen.</p><div class="two">${BIKE_F.map(([k,l,t])=>`<div><label class="f" for="nb_${k}">${l}</label><input class="bfi" id="nb_${k}" ${t?"":'inputmode="decimal"'} value="${t?"":(isFinite(pre[k])?Math.round(pre[k]*10)/10:"")}"></div>`).join("")}</div>
     <div class="row" style="margin-top:10px"><button class="btn small" id="nbSave">Speichern und auswählen</button><button class="btn ghost small" id="nbCancel">Abbrechen</button></div><p class="note warn" id="nbErr"></p></div>`;
   if($("nbGeo")) $("nbGeo").onclick=()=>{ box.innerHTML=""; renderGeoImg(); };   // stattdessen Tabelle aus Bild einlesen
   $("nbCancel").onclick=()=>{ box.innerHTML=""; };
@@ -4491,6 +4636,188 @@ function renderPdfTab(){
   pdfToggleLabel(); renderPkgMgr();
   const Bf=bf(); $("pdfWho").textContent=`${Bf.name||"Kein Name eingetragen (Tab „Befund“)"} · ${Bf.date?new Date(Bf.date).toLocaleDateString("de-DE"):""}`;
 }
+/* ===== Bedienungsanleitung als PDF (Tab „Daten“) =====
+   WICHTIG: Bei jeder Änderung an Abläufen, Tabs oder Buttons diesen Text mitpflegen und GUIDE_STAND/GUIDE_STAND_ISO anpassen
+   (Vorlage: Claude-Docs-Dokument „Anleitung WiFitPro und WiFitBasic“). Platzhalter {TABS} {PAKETE} {BASIC_PDF} {STAND} setzt die App beim Erstellen ein.
+   Im Admin-Bereich kann eine eigene Fassung als Word-Datei hochgeladen werden (settings/guide); sie hat Vorrang vor diesem Text. */
+const GUIDE_STAND="27.11.2026", GUIDE_STAND_ISO="2026-11-27";
+let GUIDE_UP=null;   // hochgeladene Fassung {at,name,sections}
+function guideBuiltin(){   // Vorlage: Docs-Dokument „Anleitung WiFitPro und WiFitBasic“; immer für die Web-App formuliert
+  const P=t=>({t:"p",text:t}), OL=items=>({t:"ol",items:items.map(([title,body])=>Array.isArray(body)?{title,bullets:body}:{title,body})});
+  return [
+    {h:"Startseite",blocks:[P("Jedes Fitting beginnt mit zwei Fragen auf der Startseite: welches Fitting und welches Rad. Die App startet dabei immer mit leeren Personendaten."),
+     OL([["Anmelden","Mit deinem Konto einloggen. Ist dein Konto nur für WiFitBasic freigegeben, wird der Button WiFitPro nicht angezeigt."],
+       ["Fitting wählen","„WiFitBasic“ ist für die schnelle Rahmengrößen- und Sitzpositionsberatung, „WiFitPro“ ermöglicht ein komplettes, ausführliches Bikefitting inkl. Befundaufnahme und Ist-/Soll-Vergleich."],
+       ["Radart wählen","Rennrad, Gravel, Triathlonrad oder Mountainbike. Davon hängen Richtwerte, Größenempfehlung, Lenkerbreite und Vorschlag ab."]]),
+     P("WiFitPro öffnet sich im Tab „Befund“, WiFitBasic im Tab „Person“. Fitting und Radart kannst du später jederzeit im Menü (drei Striche links oben) wechseln.")]},
+    {h:"WiFitBasic: Rahmengrößenbestimmung und Sitzpositionsberatung",blocks:[P("WiFitBasic ist die abgespeckte Ansicht für eine Sitzpositionsberatung ohne Befund und ohne Ist-Aufnahme. Die Tabs Befund, Bike Set Up und Daten sind ausgeblendet, Fachfelder für Profis ebenso."),
+     OL([["Person","Fahrstil, Disziplin und Geschlecht wählen und alle Messwerte eintragen – von Hand oder mit „Messwerte aus Bild übernehmen“. Danach wird die Person gezeichnet und der Vorschlag für die Sitzposition auf dem Standardrad in passender Größe übernommen."],
+       ["Rad","Marke, Modell und Größe wählen oder die Empfehlung (grüne Größe) übernehmen. Ein fehlendes Rad legst du mit „Geometrie aus Bild“ an."],
+       ["Bauteile","Lenker, Vorbau, Griffe, Pedale und Schuhe wählen, soweit bekannt."],
+       ["Sitzposition","Vorschlag prüfen, mit der aktuellen Einstellung vergleichen und „Vorschlag übernehmen“."],
+       ["PDF","Die Inhalte sind immer offen; zur Wahl stehen {BASIC_PDF}. „PDF erstellen“ erzeugt den Bericht mit der Überschrift WiFitBasic."]]),
+     P("Zu WiFitPro wechselst du über das Menü (drei Striche links oben).")]},
+    {h:"WiFitPro: das ausführliche Bikefitting",blocks:[P("In WiFitPro gehst du die Tabs von links nach rechts durch ({TABS}); „Weiter“ am Ende jedes Tabs führt zum nächsten, „Zurück“ zum vorigen."),
+     OL([["Befund",["Unter „Kunde“ Name und Datum eintragen – sie erscheinen auf dem PDF.","Anamnese ausfüllen, z. B. Umfang als Jahreskilometer oder km/Woche.","Beschwerden: erst die Körperregion wählen, dann die Seite (bei Bedarf abwählbar, z. B. Gesäß) und die Art der Beschwerde.","Statikbefund, Dynamischer Befund, Mobilitätstests und Krafttests nach Bedarf. Das kleine Bild neben einem Test zeigt, wie er durchgeführt wird."]],
+       ["Bike Set Up",["Die Maße des mitgebrachten Rads als Ist-Zustand eintragen und die optimierte Position in der zweiten Spalte. Leere Felder der optimierten Spalte übernehmen den Ist-Wert."]],
+       ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen, Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
+       ["Rad",["Marke, Modell und Größe wählen. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
+       ["Bauteile",["„Ist-Zustand laden“ oder „Optimierte Position laden“ übernimmt die Werte aus dem Bike Set Up.","Lenker, Vorbau, Schalt-/Bremsgriffe, Pedale und Schuhe aus den Listen wählen. Angezeigt werden die Teile zur Radmarke; mit „alle Lenker“ bzw. „alle Vorbauten“ siehst du alle.","Fehlende Maße direkt eintragen; neue Teile unter „Teile verwalten“ anlegen und Radmarken zuordnen."]],
+       ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad.","Unter „Vorschlag vergleichen mit“ den Vorschlag neben die aktuelle Einstellung, die Ist- oder die optimierte Position stellen.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
+       ["PDF",["Ein Paket antippen ({PAKETE}) oder Inhalte einzeln anhaken. Eigene Pakete können unter „Eigene Pakete und Voreinstellung“ angelegt und bearbeitet werden.","Bei Bedarf das PDF der Videoanalyse (Contemplas) und der Satteldruckmessung (Everve) hinzufügen; die App übernimmt nur deren Bilder.","Unter „Bericht: Logo und Kontaktdaten“ kann das eigene Logo hochgeladen und die Kontaktdaten eingefügt werden.","„PDF erstellen“ erzeugt den Bericht mit Deckblatt, den ausgewählten Inhalten, deinem Logo und deinen Kontaktdaten."]],
+       ["Daten",["Unter „Konto“ das Passwort ändern oder abmelden.","„Bedienungsanleitung herunterladen“ erzeugt diese Anleitung als PDF.","Mit „Daten sichern (.json)“ alles archivieren oder auf ein anderes Gerät mitnehmen; „Sicherung laden“ spielt es wieder ein."]]])]},
+    {h:"Bedienung",blocks:[P("Diese Elemente gelten in beiden Ansichten."),
+     {t:"table",rows:[["Element","Wo","Was es tut"],
+       ["Menü (drei Striche)","links oben über der Zeichnung","Fitting (WiFitPro/WiFitBasic) und Radart wechseln, Anzeige von Person, Gelenkwinkeln, Rahmenmaßen, Knielot und Fadenkreuzen ein- und ausschalten"],
+       ["Kurbel","unter der Zeichnung","Play-Taste startet das Treten; das Rad im Kreis ziehen oder „3 Uhr“/„6 Uhr“ stellt die Kurbel"],
+       ["i-Button","neben Überschriften und Feldern","zeigt eine Erklärung; am Handy einmal antippen, erneut tippen schließt sie"],
+       ["Zurück / Weiter","am Ende jedes Tabs","springt zum vorigen bzw. nächsten Tab"],
+       ["„… leeren“","rechts oben in jedem Tab","setzt nur diesen Tab zurück"],
+       ["Speichern","unter „Teile verwalten“ und „Räder verwalten“","sichert neue oder geänderte Teile und Räder dauerhaft"]]},
+     P("Eingaben zum Kunden bleiben erhalten, bis du die App neu startest. Vor dem Neuladen oder Schließen fragt die App nach, solange Kundendaten eingegeben sind.")]}];
+}
+/* Platzhalter durch aktuelle App-Werte ersetzen */
+function guideFill(s){
+  const tabs=[...document.querySelectorAll(".tab")].filter(t=>!t.classList.contains("adminOnly")).map(t=>t.textContent.trim()).join(" · ");
+  let pk=""; try{ pk=allPkgs().map(x=>x.name).filter(Boolean).join(", "); }catch(e){}
+  let bp=""; try{ bp=PDF_SECS.filter(([k])=>BASIC_PDF.includes(k)).map(([,l])=>l).join(", "); }catch(e){}
+  return String(s).replace(/\{TABS\}/g,tabs).replace(/\{PAKETE\}/g,pk||"eigene Pakete").replace(/\{BASIC_PDF\}/g,bp).replace(/\{STAND\}/g,GUIDE_STAND);
+}
+async function guideLoadUp(){ try{ if(FACT_DB){ const d=await FACT_DB.doc("settings/guide").get(); GUIDE_UP=d.exists&&d.data()&&d.data().sections?d.data():null; } }catch(e){} return GUIDE_UP; }
+const guideActive=()=>GUIDE_UP&&Array.isArray(GUIDE_UP.sections)&&GUIDE_UP.sections.length?GUIDE_UP.sections:guideBuiltin();
+async function guidePdf(){
+  const note=t=>{ const n=$("guideNote"); if(n) n.textContent=t; };
+  if(!window.jspdf){ note("PDF-Bibliothek wird noch geladen – bitte gleich noch einmal tippen."); return; }
+  note("Anleitung wird erstellt …"); await guideLoadUp();
+  const {jsPDF}=window.jspdf, doc=new jsPDF({unit:"mm",format:"a4"}), M=18, W=210-2*M, BLUE=[3,163,218], T=s=>pdfTxt(guideFill(s));
+  const stand=GUIDE_UP&&GUIDE_UP.at?new Date(GUIDE_UP.at).toLocaleDateString("de-DE"):GUIDE_STAND;
+  let y=0; const page=()=>{ doc.addPage(); y=22; }, need=h=>{ if(y+h>280) page(); };
+  const para=(txt,{size=10.5,style="normal",x=M,w=W,gap=1.5}={})=>{ doc.setFont("helvetica",style); doc.setFontSize(size); doc.setTextColor(24,34,43);
+    const lines=doc.splitTextToSize(T(txt),w), lh=size*0.43; for(const ln of lines){ need(lh); doc.text(ln,x,y); y+=lh; } y+=gap; };
+  /* Deckblatt wie bei den Reports */
+  let cov=null; try{ cov=await customCover(await brandImg("brand/cover_custom.jpg"),"WiFit Bedienungsanleitung"); }catch(e){}
+  if(cov){ doc.addImage(cov,"JPEG",0,0,210,297); doc.setTextColor(255); doc.setFont("helvetica","normal"); doc.setFontSize(15); doc.text("WiFitPro und WiFitBasic",105,158,{align:"center"});
+    doc.setFontSize(10.5); doc.text(T(`Stand ${stand}`),105,166,{align:"center"}); }
+  else { doc.setFillColor(...BLUE); doc.rect(0,0,210,297,"F"); doc.setTextColor(255); doc.setFont("helvetica","bolditalic"); doc.setFontSize(30); doc.text("WiFit Bedienungsanleitung",M,90);
+    doc.setFont("helvetica","normal"); doc.setFontSize(16); doc.text("WiFitPro und WiFitBasic",M,102); doc.setFontSize(11); doc.text(T(`Stand ${stand}`),M,114); }
+  page();
+  for(const s of guideActive()){
+    need(18); doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...BLUE); doc.text(T(s.h),M,y); y+=3;
+    doc.setDrawColor(...BLUE); doc.setLineWidth(0.5); doc.line(M,y,M+W,y); y+=7;
+    for(const b of s.blocks||[]){
+      if(b.t==="p") para(b.text,{gap:3});
+      else if(b.t==="h3"){ need(10); para(b.text,{size:12,style:"bold",gap:1.5}); }
+      else if(b.t==="ul") for(const it of b.items){ need(5); doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.setTextColor(24,34,43); doc.text("•",M+2,y); para(it,{x:M+6,w:W-6,gap:1.2}); }
+      else if(b.t==="ol"){ b.items.forEach((it,i)=>{ need(12);
+        if(it.title){ doc.setFont("helvetica","bold"); doc.setFontSize(11.5); doc.setTextColor(24,34,43); doc.text(T(`${i+1}. ${it.title}`),M,y); y+=5.5; if(it.body) para(it.body,{x:M+4,w:W-4,gap:1.2}); }
+        else { doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.text(`${i+1}.`,M,y); para(it.body||"",{x:M+6,w:W-6,gap:1.2}); }
+        for(const bl of it.bullets||[]){ need(5); doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.text("•",M+4,y); para(bl,{x:M+8,w:W-8,gap:1.2}); }
+        y+=2.5; }); y+=1; }
+      else if(b.t==="table"&&doc.autoTable&&b.rows&&b.rows.length){ need(20); const nc=Math.max(...b.rows.map(r=>r.length));
+        doc.autoTable({startY:y,head:[b.rows[0].map(T)],body:b.rows.slice(1).map(r=>r.map(T)),margin:{left:M,right:M},styles:{fontSize:9.5,cellPadding:2.2,textColor:[24,34,43]},headStyles:{fillColor:BLUE,textColor:255},
+          columnStyles:nc===3?{0:{cellWidth:38,fontStyle:"bold"},1:{cellWidth:46}}:{0:{fontStyle:"bold"}}}); y=doc.lastAutoTable.finalY+6; }
+    }
+    y+=4;
+  }
+  const n=doc.getNumberOfPages(); for(let i=2;i<=n;i++){ doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(120); doc.text(T(`WiFit Bedienungsanleitung · Stand ${stand}`),M,290); doc.text(`Seite ${i-1}/${n-1}`,210-M,290,{align:"right"}); }
+  const blob=doc.output("blob"), fname="WiFit_Bedienungsanleitung.pdf";
+  await guideSave(blob,fname,note,"Anleitung");
+  return blob;
+}
+async function guideSave(blob,fname,note,what){
+  let dl=null; try{ dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null; }catch(e){}
+  if(dl){ try{ await dl.save({filename:fname,data:blob}); note(what+" gespeichert."); }catch(e){ note(e&&e.code==="declined"?"Speichern abgebrochen.":what+" konnte nicht gespeichert werden."); } }
+  else { try{ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click(); a.remove(); note(what+" erstellt."); }catch(e){ note("Download ist in dieser Ansicht nicht verfügbar."); } }
+}
+/* ---- Word: Vorlage erzeugen und hochgeladene Datei einlesen ---- */
+const guideLib=(src,glob)=>window[glob]?Promise.resolve():new Promise((ok,no)=>{ const s=document.createElement("script"); s.src=src; s.onload=ok; s.onerror=()=>no(new Error("Bibliothek konnte nicht geladen werden")); document.head.appendChild(s); });
+async function guideDocx(){   /* aktuelle Anleitung als Word-Datei (mit Platzhaltern), zum Bearbeiten und Wieder-Hochladen */
+  await guideLib("https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js","JSZip");
+  const X=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const run=(t,b)=>`<w:r>${b?"<w:rPr><w:b/></w:rPr>":""}<w:t xml:space="preserve">${X(t)}</w:t></w:r>`;
+  const par=(inner,style,num)=>`<w:p><w:pPr>${style?`<w:pStyle w:val="${style}"/>`:""}${num?`<w:numPr><w:ilvl w:val="${num[1]}"/><w:numId w:val="${num[0]}"/></w:numPr>`:""}</w:pPr>${inner}</w:p>`;
+  let body=par(run("WiFit Bedienungsanleitung"),"Title")+par(run("Überschrift 2 = Kapitel, nummerierte Liste = Schritte (fett = Schritt-Titel), Aufzählung darunter = Punkte, Tabellen bleiben Tabellen. Platzhalter {TABS}, {PAKETE}, {BASIC_PDF} setzt die App automatisch ein."),"Hinweis");
+  let numN=2; const nums=[];
+  for(const s of guideActive()){ body+=par(run(s.h),"Heading2");
+    for(const b of s.blocks||[]){
+      if(b.t==="p") body+=par(run(b.text));
+      else if(b.t==="h3") body+=par(run(b.text),"Heading3");
+      else if(b.t==="ul") for(const it of b.items) body+=par(run(it),null,[1,0]);
+      else if(b.t==="ol"){ numN++; nums.push(numN); for(const it of b.items){ body+=par(it.title?run(it.title,true)+(it.body?run(": "+it.body):""):run(it.body||""),null,[numN,0]); for(const bl of it.bullets||[]) body+=par(run(bl),null,[numN,1]); } }
+      else if(b.t==="table"){ body+=`<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>${["top","left","bottom","right","insideH","insideV"].map(e=>`<w:${e} w:val="single" w:sz="4" w:color="999999"/>`).join("")}</w:tblBorders></w:tblPr>`+
+          b.rows.map((r,i)=>`<w:tr>${r.map(c=>`<w:tc><w:p>${run(c,i===0)}</w:p></w:tc>`).join("")}</w:tr>`).join("")+`</w:tbl>`+par(""); }
+    } }
+  const lvl=(i,fmt,txt,ind)=>`<w:lvl w:ilvl="${i}"><w:start w:val="1"/><w:numFmt w:val="${fmt}"/><w:lvlText w:val="${txt}"/><w:pPr><w:ind w:left="${ind}" w:hanging="360"/></w:pPr></w:lvl>`;
+  const numbering=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:abstractNum w:abstractNumId="0">${lvl(0,"bullet","•",720)}${lvl(1,"bullet","–",1440)}</w:abstractNum>
+<w:abstractNum w:abstractNumId="1">${lvl(0,"decimal","%1.",720)}${lvl(1,"bullet","•",1440)}</w:abstractNum>
+<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>${nums.map(n=>`<w:num w:numId="${n}"><w:abstractNumId w:val="1"/><w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride></w:num>`).join("")}</w:numbering>`;
+  const st=(id,name,extra)=>`<w:style w:type="paragraph" w:styleId="${id}"><w:name w:val="${name}"/><w:basedOn w:val="Normal"/><w:qFormat/>${extra}</w:style>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/><w:lang w:val="de-DE"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120"/></w:pPr></w:pPrDefault></w:docDefaults>
+<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
+${st("Title","Title",'<w:pPr><w:spacing w:after="240"/></w:pPr><w:rPr><w:b/><w:color w:val="03A3DA"/><w:sz w:val="48"/></w:rPr>')}
+${st("Heading2","heading 2",'<w:pPr><w:keepNext/><w:spacing w:before="360" w:after="120"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:color w:val="03A3DA"/><w:sz w:val="32"/></w:rPr>')}
+${st("Heading3","heading 3",'<w:pPr><w:keepNext/><w:spacing w:before="200" w:after="80"/><w:outlineLvl w:val="2"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/></w:rPr>')}
+${st("Hinweis","Hinweis",'<w:rPr><w:i/><w:color w:val="6B7785"/><w:sz w:val="18"/></w:rPr>')}
+</w:styles>`;
+  const docXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const z=new JSZip();
+  z.file("[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/></Types>`);
+  z.file("_rels/.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+  z.file("word/_rels/document.xml.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/></Relationships>`);
+  z.file("word/document.xml",docXml); z.file("word/styles.xml",styles); z.file("word/numbering.xml",numbering);
+  return z.generateAsync({type:"blob",mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+}
+/* Word-HTML (mammoth) in Kapitel/Blöcke umwandeln */
+function guideFromHtml(html){
+  const d=new DOMParser().parseFromString(`<div>${html}</div>`,"text/html").body.firstChild, txt=n=>(n.textContent||"").replace(/\s+/g," ").trim();
+  const secs=[]; let cur=null; const sec=()=>cur||(secs.push(cur={h:"Anleitung",blocks:[]}),cur);
+  const hs=[...d.children].map(e=>e.tagName); const secTag=hs.includes("H2")?"H2":"H1";
+  const liItem=li=>{ const c=li.cloneNode(true); const subs=[...c.querySelectorAll(":scope > ul, :scope > ol")]; subs.forEach(s=>s.remove());
+    const bullets=subs.flatMap(s=>[...s.children].filter(x=>x.tagName==="LI").map(txt)).filter(Boolean);
+    const f=c.firstElementChild&&/^(STRONG|B)$/.test(c.firstElementChild.tagName)&&c.textContent.trim().startsWith(c.firstElementChild.textContent.trim())?c.firstElementChild:(c.querySelector(":scope > p > strong:first-child")||null);
+    let title="", body=txt(c); if(f&&txt(f)&&body.startsWith(txt(f))){ title=txt(f).replace(/[:–-]\s*$/,""); body=body.slice(txt(f).length).replace(/^\s*[:–-]\s*/,"").trim(); }
+    return title?{title,body,bullets}:{body,bullets}; };
+  for(const e of d.children){ const t=e.tagName;
+    if(t===secTag){ const h=txt(e); if(h) secs.push(cur={h,blocks:[]}); continue; }
+    if(t==="H1"&&secTag==="H2") continue;   // Dokumenttitel
+    if(/^H[3-6]$/.test(t)){ const h=txt(e); if(h) sec().blocks.push({t:"h3",text:h}); continue; }
+    if(t==="P"){ const x=txt(e); if(x&&!/^Überschrift 2 = Kapitel/.test(x)) sec().blocks.push({t:"p",text:x}); continue; }
+    if(t==="OL") { const items=[...e.children].filter(x=>x.tagName==="LI").map(liItem); if(items.length) sec().blocks.push({t:"ol",items}); continue; }
+    if(t==="UL") { const items=[...e.children].filter(x=>x.tagName==="LI").map(txt).filter(Boolean); if(items.length) sec().blocks.push({t:"ul",items}); continue; }
+    if(t==="TABLE"){ const rows=[...e.querySelectorAll("tr")].map(r=>[...r.children].map(txt)); if(rows.length) sec().blocks.push({t:"table",rows}); continue; }
+    const x=txt(e); if(x) sec().blocks.push({t:"p",text:x}); }
+  return secs.filter(s=>s.blocks.length||s.h);
+}
+async function guideUpload(file){
+  const note=t=>{ const n=$("guideAdmNote"); if(n) n.textContent=t; };
+  if(!/\.docx$/i.test(file.name)){ note("Bitte eine Word-Datei im Format .docx wählen (ältere .doc-Dateien vorher in Word als .docx speichern)."); return; }
+  note("Word-Datei wird gelesen …");
+  try{ await guideLib("https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js","mammoth");
+    const r=await mammoth.convertToHtml({arrayBuffer:await file.arrayBuffer()},{styleMap:["p[style-name='Title'] => h1:fresh","p[style-name='Titel'] => h1:fresh"],convertImage:mammoth.images.imgElement(()=>Promise.resolve({src:""}))});
+    const sections=guideFromHtml(r.value); if(!sections.length||!sections.some(s=>s.blocks.length)){ note("In der Datei wurde kein Text gefunden."); return; }
+    const body={at:Date.now(),name:file.name,sections};
+    if(!FACT_DB){ note("Zentraler Speicher in dieser Ansicht nicht verfügbar – bitte die App angemeldet öffnen."); return; }
+    await FACT_DB.doc("settings/guide").set(JSON.parse(JSON.stringify(body))); GUIDE_UP=body;
+    note(`„${file.name}“ übernommen: ${sections.length} Kapitel. Die Anleitung im Tab „Daten“ verwendet ab jetzt diese Fassung.`); renderGuideAdm();
+  }catch(e){ note("Hochladen nicht möglich: "+(e&&e.message||e)); }
+}
+async function renderGuideAdm(){
+  const box=$("guideAdm"); if(!box) return; await guideLoadUp();
+  const up=GUIDE_UP&&GUIDE_UP.sections&&GUIDE_UP.sections.length, newer=up&&new Date(GUIDE_STAND_ISO).getTime()>GUIDE_UP.at;
+  $("guideAdmState").innerHTML=up?`Aktiv: eigene Fassung „${esc(GUIDE_UP.name||"Word-Datei")}“ vom ${new Date(GUIDE_UP.at).toLocaleDateString("de-DE")} (${GUIDE_UP.sections.length} Kapitel).${newer?` <b style="color:var(--dim)">Die Standard-Anleitung der App wurde danach aktualisiert (Stand ${GUIDE_STAND}) – Word-Datei herunterladen, prüfen und neu hochladen, oder Standard verwenden.</b>`:""}`:`Aktiv: Standard-Anleitung der App (Stand ${GUIDE_STAND}).`;
+  $("guideReset").hidden=!up;
+}
+document.addEventListener("click",async e=>{ const t=e.target.closest&&e.target.closest("#guideBtn,#guideDocx,#guideReset,#guideUpBtn"); if(!t) return; e.preventDefault();
+  const note=x=>{ const n=$(t.id==="guideBtn"?"guideNote":"guideAdmNote"); if(n) n.textContent=x; };
+  if(t.id==="guideBtn") return guidePdf();
+  if(t.id==="guideUpBtn") return $("guideFile").click();
+  if(t.id==="guideDocx"){ note("Word-Datei wird erstellt …"); try{ await guideLoadUp(); await guideSave(await guideDocx(),"WiFit_Bedienungsanleitung.docx",note,"Word-Datei"); }catch(err){ note("Word-Datei nicht möglich: "+(err.message||err)); } return; }
+  if(t.id==="guideReset"){ try{ await FACT_DB.doc("settings/guide").set({at:Date.now(),name:"",sections:null}); GUIDE_UP=null; note("Standard-Anleitung der App wird wieder verwendet."); renderGuideAdm(); }catch(err){ note("Zurücksetzen nicht möglich: "+(err.message||err)); } }
+});
+document.addEventListener("change",e=>{ if(e.target&&e.target.id==="guideFile"){ const f=e.target.files&&e.target.files[0]; if(f) guideUpload(f); e.target.value=""; } });
+document.addEventListener("toggle",e=>{ if(e.target&&e.target.id==="guideAdmDetails"&&e.target.open) renderGuideAdm(); },true);
 /* Firmen-Gestaltung: Deckblatt je Paket, Fußzeile auf den Report-Seiten, Rückseite (Bilder liegen neben der App) */
 const BRAND_CACHE={};
 async function brandImg(path){
