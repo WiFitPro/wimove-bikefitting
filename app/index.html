@@ -592,7 +592,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <select id="sexSel"><option value="männlich">männlich</option><option value="weiblich">weiblich</option></select>
       </section>
       <section>
-        <h2 style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 0">Messwerte<button type="button" class="infoBtn" data-tip="Messwerte direkt eintragen. Neben jedem Maß steht die Norm für Körpergröße und Geschlecht.&#10;Datenbasis: ANSUR II (4.082 Männer, 1.986 Frauen). Je Maß gilt: Norm = a + b × Körpergröße. Die Streuung (SD) ist die übliche Abweichung bei Menschen gleicher Größe.&#10;Anzeige: „Norm 830 (+25 mm · +1,0 SD)“ = Normwert, Abweichung in mm und in Streuungen.&#10;● grün: bis 1 SD – normal&#10;● gelb: 1–2 SD – auffällig, Messung prüfen&#10;● rot: über 2 SD – deutlich abweichend, nachmessen&#10;Bewertet werden Schrittlänge, Brustbeinhöhe, Schulterhöhe, Schulterbreite, Fußlänge, Armlänge und die daraus berechneten Segmente (Ober-/Unterschenkel, Rumpf, Ober-/Unterarm)." aria-label="Info: Normwerte">i</button><button class="btn ghost small" type="button" id="measImgBtn" style="margin-left:auto;font-weight:500">Messwerte aus Bild übernehmen</button><button type="button" class="infoBtn" data-tip="So funktioniert es:&#10;1. Button antippen, dann einen Screenshot oder ein Foto der Messwerte hineinziehen, auswählen oder mit Strg/⌘+V einfügen (z. B. Messblatt, Formular, Tabelle, Notiz).&#10;2. Die App liest Körpergröße, Brustbein, Schrittlänge, Schulterbreite sowie Schulterhöhe, Handhöhe und Fußlänge links/rechts.&#10;3. Die erkannten Werte erscheinen in einer Liste neben den bisherigen Werten – dort prüfen, korrigieren oder abwählen.&#10;4. „Übernehmen“ trägt die angehakten Werte ein.&#10;Hinweise: cm werden in mm umgerechnet. Ohne Seitenangabe gilt ein Wert für links und rechts. Am besten klappt ein gerader, scharfer Ausschnitt mit gut lesbarer Schrift." aria-label="Info: Messwerte aus Bild">i</button></h2>
+        <h2 style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 0">Messwerte<button type="button" class="infoBtn" data-tip="Messwerte direkt eintragen. Neben jedem Maß steht die Norm für Körpergröße und Geschlecht.&#10;Datenbasis: ANSUR II (4.082 Männer, 1.986 Frauen). Je Maß gilt: Norm = a + b × Körpergröße. Die Streuung (SD) ist die übliche Abweichung bei Menschen gleicher Größe.&#10;Anzeige: „Norm 830 (+25 mm · +1,0 SD)“ = Normwert, Abweichung in mm und in Streuungen.&#10;● grün: bis 1 SD – normal&#10;● gelb: 1–2 SD – auffällig, Messung prüfen&#10;● rot: über 2 SD – deutlich abweichend, nachmessen&#10;Bewertet werden Schrittlänge, Brustbeinhöhe, Schulterhöhe, Schulterbreite, Fußlänge, Armlänge und die daraus berechneten Segmente (Ober-/Unterschenkel, Rumpf, Ober-/Unterarm)." aria-label="Info: Normwerte">i</button><button class="btn ghost small" type="button" id="measImgBtn" style="margin-left:auto;font-weight:500">Messwerte aus Bild übernehmen</button><button type="button" class="infoBtn" data-tip="So funktioniert es:&#10;1. Button antippen, dann einen Screenshot oder ein Foto der Messwerte hineinziehen, auswählen oder mit Strg/⌘+V einfügen (z. B. Messblatt, Formular, Tabelle, Notiz).&#10;2. Die App liest Körpergröße, Brustbein, Schrittlänge, Schulterbreite sowie Schulterhöhe, Handhöhe und Fußlänge links/rechts – deutsch oder englisch beschriftet (z. B. Height, Inseam, Torso Height, Shoulder Width, Foot Length).&#10;3. Die erkannten Werte erscheinen in einer Liste neben den bisherigen Werten – dort prüfen, korrigieren oder abwählen.&#10;4. „Übernehmen“ trägt die angehakten Werte ein.&#10;Hinweise: cm werden in mm umgerechnet. Ohne Seitenangabe gilt ein Wert für links und rechts. Am besten klappt ein gerader, scharfer Ausschnitt mit gut lesbarer Schrift." aria-label="Info: Messwerte aus Bild">i</button></h2>
         <p class="note" id="pReqNote" style="margin-top:0"></p>
         <div id="measImgBox"></div>
         <div id="pCommon"></div>
@@ -3329,16 +3329,16 @@ const MEAS_F=[   // Schlüssel, Bezeichnung, Feld-ID, Bereich in mm, Seite
   ["acromion","Schulterhöhe rechts","pn_acromion",[1050,1850],"R"],["hand","Handhöhe rechts","pn_hand",[500,1050],"R"],
   ["acromionL","Schulterhöhe links","pn_acromionL",[1050,1850],"L"],["handL","Handhöhe links","pn_handL",[500,1050],"L"],["shoulderW","Schulterbreite","pn_shoulderW",[250,560],""]];
 const MEAS_KW=[   // Erkennung der Bezeichnungen (klein, ohne Umlaute)
-  ["height",/^(korpergro(ss|ß)e|korperhohe|korpergrosse|grosse|große|grose|height|bodyheight|korperlange)$/],
-  ["sternum",/^(brustbein|brustbeins|brustbeinhohe|sternum|sternumhohe)$/],
-  ["inseam",/^(schrittlange|schritthohe|schrittlaenge|innenbeinlange|innenbein|inseam)$/],
-  ["shoulderW",/^(schulterbreite|shoulderwidth)$/],
-  ["acromion",/^(schulterhohe|schulterdach|schulterdachhohe|akromion|acromion|shoulderheight)$/],
-  ["hand",/^(handhohe|handheight)$/],
-  ["foot",/^(fu(ss|ß)lange|fuslange|fusslange|footlength|fusslaenge)$/]];
+  ["height",/^(korpergro(ss|ß)e|korperhohe|korpergrosse|grosse|große|grose|height|bodyheight|bodylength|stature|korperlange)$/],
+  ["sternum",/^(brustbein|brustbeins|brustbeinhohe|sternum|sternumhohe|torsoheight|sternumheight|sternalheight|sternalnotch|sternalnotchheight|chestheight)$/],
+  ["inseam",/^(schrittlange|schritthohe|schrittlaenge|innenbeinlange|innenbein|inseam|inseamheight|inseamlength|crotchheight)$/],
+  ["shoulderW",/^(schulterbreite|shoulderwidth|shoulderbreadth)$/],
+  ["acromion",/^(schulterhohe|schulterdach|schulterdachhohe|akromion|acromion|shoulderheight|acromionheight)$/],
+  ["hand",/^(handhohe|handheight|wristheight)$/],
+  ["foot",/^(fu(ss|ß)lange|fuslange|fusslange|footlength|fusslaenge|shoelength)$/]];   // deutsch und englisch
 const measKey=t=>String(t).toLowerCase().replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/ß/g,"ss").replace(/[^a-z]/g,"");
 const MEAS_CANON=[["height","korpergrosse"],["height","korperhohe"],["sternum","brustbein"],["sternum","brustbeins"],["sternum","brustbeinhohe"],["inseam","schrittlange"],["inseam","schritthohe"],["inseam","innenbeinlange"],
-  ["shoulderW","schulterbreite"],["acromion","schulterhohe"],["acromion","schulterdach"],["acromion","schulterdachhohe"],["hand","handhohe"],["foot","fusslange"]];
+  ["sternum","torsoheight"],["inseam","inseamheight"],["shoulderW","shoulderwidth"],["foot","footlength"],["acromion","shoulderheight"],["hand","handheight"],["shoulderW","schulterbreite"],["acromion","schulterhohe"],["acromion","schulterdach"],["acromion","schulterdachhohe"],["hand","handhohe"],["foot","fusslange"]];
 function measLev(a,b){ const m=a.length,n=b.length; if(Math.abs(m-n)>3) return 9; let p=Array.from({length:n+1},(_,j)=>j); for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
 function measKw(t){ const k=measKey(t); if(!k) return null; for(const [key,re] of MEAS_KW) if(re.test(k)) return key;
   if(k.length<8) return null; let best=null,bd=9; for(const [key,c] of MEAS_CANON){ const d=measLev(k,c); if(d<bd){ bd=d; best=key; } }   // OCR-Fehler wie „Schritthéhe“, „FuRlinge“
@@ -3368,24 +3368,40 @@ function measWords(data){ const w=[];
   for(const x of v){ const c=(x.y0+x.y1)/2, h=x.y1-x.y0; if(Math.abs(c-cy)>Math.max(h,ch)*0.6){ ln++; cy=c; ch=h; } x.line=String(ln); }
   return v.sort((a,b)=>+a.line-+b.line||a.x0-b.x0); }
 function measParseWords(w){
+  /* Tabellen mit Spalte „Measured value“/„Messwert“ und weiteren Spalten (berechnet, Durchschnitt): nur Zahlen links der Nebenspalten verwenden */
+  { const cy0=x=>(x.y0+x.y1)/2, mh=w.find(x=>/^(measured|gemessen|messwert|messwerte|istwert)$/.test(measKey(x.t)));
+    if(mh){ const oth=w.filter(x=>x.x0>mh.x1&&Math.abs(cy0(x)-cy0(mh))<(mh.y1-mh.y0)*2.5&&/^(calculated|average|berechnet|durchschnitt|mittelwert|norm|soll|dimensions|referenz)$/.test(measKey(x.t)));
+      if(oth.length){ const lim=Math.min(...oth.map(x=>x.x0))-(mh.y1-mh.y0); w=w.filter(x=>!(/\d/.test(x.t)&&(x.x0+x.x1)/2>lim)); } } }
   const found=[], isNum=t=>/\d/.test(t)&&/^[^A-Za-zÄÖÜäöüß]*\d[\d.,]*\s*(mm|cm|m)?[^A-Za-z]*$/i.test(t), unitOf=t=>{ const k=String(t).toLowerCase(); return /\bcm\b|\(cm\)|^cm$/.test(k)?"cm":/\bmm\b|\(mm\)|^mm$/.test(k)?"mm":""; };
   const used=new Set(), firstOf={};
   for(const x of w) if(!(x.line in firstOf)) firstOf[x.line]=measKey(x.t);
-  const DERIVED=/^(armlange|armlaenge|oberarm|unterarm|oberarmlange|unterarmlange|rumpf|rumpflange|oberschenkel|unterschenkel|oberschenkellange|unterschenkellange|beinlange|torso)/;   // berechnete Zeilen (z. B. „Armlänge gesamt … Schulterdach – Handhöhe“) überspringen
+  const DERIVED=/^(armlange|armlaenge|oberarm|unterarm|oberarmlange|unterarmlange|rumpf|rumpflange|oberschenkel|unterschenkel|oberschenkellange|unterschenkellange|beinlange)/;   // berechnete Zeilen (z. B. „Armlänge gesamt … Schulterdach – Handhöhe“) überspringen
+  const labelUsed=new Set();
+  /* alle Bezeichnungen vorab: ein Wert gehört zu der Bezeichnung links davon, die ihm in der Höhe am nächsten ist */
+  const labs=[]; for(let q=0;q<w.length;q++){ const t=w[q].t, nx=w[q+1]&&w[q+1].line===w[q].line?w[q+1].t:"", pv=w[q-1]&&w[q-1].line===w[q].line?w[q-1].t:"";
+    if(measKw(t)||(nx&&measKey(t).length>=3&&!measKw(nx)&&measKw(t+nx))||(measSide(pv)&&/^(shoulder|hand)$/.test(measKey(t)))) labs.push(q); }
+  const cyOf=x=>(x.y0+x.y1)/2;
+  const ownerOk=(c,i)=>{ let bq=-1,bd=1e9; for(const q of labs){ const z=w[q]; if(z.x0>=c.x0) continue; const d=Math.abs(cyOf(z)-cyOf(c))+(c.y0>z.y1?0:0); if(d<bd){ bd=d; bq=q; } } return bq<0||w[bq].line===w[i].line&&Math.abs(cyOf(w[bq])-cyOf(w[i]))<1||bq===i; };
   for(let i=0;i<w.length;i++){
-    if(DERIVED.test(firstOf[w[i].line]||"")) continue;
+    if(DERIVED.test(firstOf[w[i].line]||"")||labelUsed.has(i)) continue;
     let key=measKw(w[i].t), j=i+1;
-    if(!key&&i+1<w.length&&w[i+1].line===w[i].line){ const k2=measKw(w[i].t+w[i+1].t); if(k2){ key=k2; j=i+2; } }   // „Fuß länge“, „Körper größe“
+    /* englisch: „Left shoulder“ / „Right hand“ (Spaltenköpfe über den Feldern) */
+    if(!key&&i>0&&w[i-1].line===w[i].line&&measSide(w[i-1].t)){ const k0=measKey(w[i].t); if(k0==="shoulder") key="acromion"; else if(k0==="hand") key="hand"; }
+    if(!key&&i+1<w.length&&w[i+1].line===w[i].line&&measKey(w[i].t).length>=3&&!measKw(w[i+1].t)&&!measSide(w[i].t)&&!/^(mm|cm)$/.test(measKey(w[i].t))){ const k2=measKw(w[i].t+w[i+1].t); if(k2){ key=k2; j=i+2; } }   // „Fuß länge“, „Körper größe“
     if(!key){ const k=measKey(w[i].t); if((k==="hohe"||k==="hoehe")&&i+2<w.length){ const a=measKey(w[i+1].t), b=measKey(w[i+2].t); if(a==="des"||a==="der") key=measKw(w[i+2].t+"hohe")||(/brustbein/.test(b)?"sternum":/schulter/.test(b)?"acromion":null); if(key) j=i+3; } }   // „Höhe des Brustbeins“
     if(!key) continue;
-    let side="", unit="", x0=w[i].x0, x1=w[j-1].x1, y0=Math.min(...w.slice(i,j).map(x=>x.y0)), y1=Math.max(...w.slice(i,j).map(x=>x.y1)), val=null;
-    let skipNorm=false;
+    while(j<w.length&&w[j].line===w[i].line&&/^(height|length|width|breadth|hohe|lange|breite)$/.test(measKey(w[j].t))) j++;   // „Inseam Height“: Folgewort gehört zur Bezeichnung
+    for(let q=i;q<j;q++) labelUsed.add(q);
+    const preSide=i>0&&w[i-1].line===w[i].line?measSide(w[i-1].t.replace(/[():]/g,"")):"";   // „Left Foot Length“
+    let side=preSide, unit="", x0=preSide?w[i-1].x0:w[i].x0, x1=w[j-1].x1, y0=Math.min(...w.slice(i,j).map(x=>x.y0)), y1=Math.max(...w.slice(i,j).map(x=>x.y1)), val=null;
+    let skipNorm=false; const lx1=w[j-1].x1;   // rechter Rand der Bezeichnung selbst
     for(let k=j;k<w.length&&w[k].line===w[i].line;k++){ const t=w[k].t;
       if(skipNorm){ if(/\)/.test(t)) skipNorm=false; continue; }   // Hinweise wie „Norm 1521 (−11 mm · −1,0 SD)“ überspringen
       if(/^(norm|soll|ziel|ref|referenz|mittel|mittelwert)$/.test(measKey(t))){ skipNorm=true; continue; }
       if(measKw(t)) break; const s=measSide(t.replace(/[():]/g,"")); if(s&&!side){ side=s; x1=w[k].x1; continue; }
       const u=unitOf(t); if(u&&!/\d/.test(t)){ unit=unit||u; x1=w[k].x1; continue; }
-      if(isNum(t)&&!used.has(k)){ val={k,v:measNum(t)}; const u2=unitOf(t)||(k+1<w.length&&w[k+1].line===w[i].line?unitOf(w[k+1].t):""); if(u2) unit=u2;
+      if(isNum(t)&&!used.has(k)){ { const fr=MEAS_F.find(x=>x[0]===key); if(fr&&!isFinite(measMm(measNum(t),fr[3],unit||unitOf(t)))) continue; }   // unplausibel (z. B. berechnete Nebenwerte) → weiter suchen
+        val={k,v:measNum(t)}; const u2=unitOf(t)||(k+1<w.length&&w[k+1].line===w[i].line?unitOf(w[k+1].t):""); if(u2) unit=u2;
         /* Tabelle mit Spalten „links“/„rechts“: zweiten Wert derselben Zeile der anderen Seite zuordnen */
         if(!side&&["acromion","hand","foot"].includes(key)){ let k2=-1; for(let q=k+1;q<w.length&&w[q].line===w[i].line;q++){ if(measKw(w[q].t)) break; if(isNum(w[q].t)){ k2=q; break; } }
           if(k2>=0){ const hdr=w.filter(x=>x.y1<=w[k].y0+2&&measSide(x.t.replace(/[():]/g,""))), sideAt=c=>{ let b=null,bd=1e9; for(const x of hdr){ const d=Math.abs((x.x0+x.x1)/2-(c.x0+c.x1)/2)+(w[k].y0-x.y1)*0.2; if(d<bd){ bd=d; b=x; } } return b?measSide(b.t.replace(/[():]/g,"")):""; };
@@ -3394,8 +3410,14 @@ function measParseWords(w){
         break; }
       if(/^[([]?(mm|cm)[)\]]?:?$/i.test(t)) continue; x1=Math.max(x1,w[k].x1); }
     if(side==="done") continue;
+    if(!val){ const h=Math.max(8,y1-y0), cy=(y0+y1)/2; let best=null, bd=1e9;   // Wert rechts daneben, leicht versetzt (Eingabefeld höher/tiefer als die Bezeichnung)
+      for(let k=0;k<w.length;k++){ const c=w[k]; if(used.has(k)||!isNum(c.t)||c.x0<lx1) continue; const dy=Math.abs((c.y0+c.y1)/2-cy); if(dy>h*0.9||!ownerOk(c,i)) continue;
+        let blocked=false; for(let q=0;q<w.length;q++){ const z=w[q]; if(q>=i&&q<j) continue; if(measKw(z.t)&&z.x0>lx1&&z.x0<c.x0&&Math.abs((z.y0+z.y1)/2-cy)<h*0.6){ blocked=true; break; } } if(blocked) continue;   // nicht über die nächste Bezeichnung hinweg
+        const d=c.x0-lx1+dy*3; if(d<bd){ bd=d; best=k; } }
+      if(best!==null){ val={k:best,v:measNum(w[best].t)}; const u2=unitOf(w[best].t)||(best+1<w.length&&w[best+1].line===w[best].line?unitOf(w[best+1].t):""); if(u2) unit=u2; } }
     if(!val){ const h=Math.max(8,y1-y0); let best=null, bd=1e9;   // Wert darunter (Formular mit Feld unter der Bezeichnung)
       for(let k=0;k<w.length;k++){ const c=w[k]; if(used.has(k)||!isNum(c.t)||c.y0<y1-2||c.y0>y1+h*5) continue;
+        if(labs.some(q=>q!==i&&!(q>=i&&q<j)&&w[q].y0>y1-2&&w[q].y1<c.y0+2&&w[q].x0<c.x1&&w[q].x1>c.x0-h*6)) continue;   // eine andere Bezeichnung liegt dazwischen
         if(c.x1<x0-h*1.5||c.x0>Math.max(x1,x0+h*8)) continue; const d=(c.y0-y1)+Math.abs(c.x0-x0)*0.3; if(d<bd){ bd=d; best=k; } }
       if(best!==null){ val={k:best,v:measNum(w[best].t)}; const u2=unitOf(w[best].t)||(best+1<w.length&&w[best+1].line===w[best].line?unitOf(w[best+1].t):""); if(u2) unit=u2; } }
     if(val&&isFinite(val.v)){ used.add(val.k); found.push({key,side,v:val.v,unit,box:w[val.k]}); }
@@ -3407,11 +3429,16 @@ async function measByClaude(blob){
   if(!sample) return null; try{ const lim=sample.limits?await sample.limits():null; if(lim&&!lim.images) return null; }catch(e){}
   const out=await sample.json(`Lies die Körpermaße einer Person aus dem Bild (Screenshot eines Messblatts, Formulars oder einer Tabelle). Antworte NUR mit JSON in genau dieser Form, Werte in Millimetern als Zahl oder null, wenn nicht im Bild:
 {"height":null,"sternum":null,"inseam":null,"shoulderW":null,"acromionR":null,"acromionL":null,"handR":null,"handL":null,"footR":null,"footL":null}
-Zuordnung: height=Körpergröße; sternum=Höhe des Brustbeins; inseam=Schrittlänge/Schritthöhe; shoulderW=Schulterbreite; acromion=Schulterhöhe/Schulterdach; hand=Handhöhe; foot=Fußlänge; R=rechts, L=links. Steht ein Maß ohne Seitenangabe, trage es bei R und L ein. Rechne cm in mm um (169,5 cm → 1695). Nimm immer den eingetragenen Messwert, nicht Normwerte oder Abweichungen daneben (z. B. „Norm 1521 (−11 mm · −1,0 SD)“) und nicht berechnete Werte wie „Armlänge gesamt“. Nichts erfinden.`,{images:[blob],modelTier:"default"});
+Zuordnung (auch englische Bezeichnungen): height=Körpergröße/Height; sternum=Höhe des Brustbeins/Torso Height/Sternum Height; inseam=Schrittlänge/Schritthöhe/Inseam Height; shoulderW=Schulterbreite/Shoulder Width; acromion=Schulterhöhe/Schulterdach/Shoulder (Height); hand=Handhöhe/Hand (Height); foot=Fußlänge/Foot Length; R=rechts/right, L=links/left. Bei Tabellen mit mehreren Spalten nur den gemessenen Wert (Measured value) nehmen, nicht berechnete oder Durchschnittswerte. Steht ein Maß ohne Seitenangabe, trage es bei R und L ein. Rechne cm in mm um (169,5 cm → 1695). Nimm immer den eingetragenen Messwert, nicht Normwerte oder Abweichungen daneben (z. B. „Norm 1521 (−11 mm · −1,0 SD)“) und nicht berechnete Werte wie „Armlänge gesamt“. Nichts erfinden.`,{images:[blob],modelTier:"default"});
   const map={height:"height",sternum:"sternum",inseam:"inseam",shoulderW:"shoulderW",acromionR:"acromion",acromionL:"acromionL",handR:"hand",handL:"handL",footR:"foot",footL:"footL"}, r={};
   for(const [a,k] of Object.entries(map)){ const f=MEAS_F.find(x=>x[0]===k), v=measMm(Number(out&&out[a]),f[3],""); if(isFinite(v)) r[k]=v; }
   return r;
 }
+/* kleine Screenshots: stark vergrößern und nur dunkle Schrift behalten (graue Feldrahmen und farbige Nebenwerte fallen weg) */
+function measPrepDark(img){ const sc=Math.min(4,Math.max(2,1700/Math.max(img.width,1))), cv=document.createElement("canvas"); cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+  const cx=cv.getContext("2d"); cx.imageSmoothingQuality="high"; cx.drawImage(img,0,0,cv.width,cv.height); const id=cx.getImageData(0,0,cv.width,cv.height), d=id.data;
+  for(let i=0;i<d.length;i+=4){ const g=d[i]*.3+d[i+1]*.59+d[i+2]*.11, sat=Math.max(d[i],d[i+1],d[i+2])-Math.min(d[i],d[i+1],d[i+2]), on=g<150&&sat<90; d[i]=d[i+1]=d[i+2]=on?0:255; }
+  cx.putImageData(id,0,0); return new Promise(ok=>cv.toBlob(ok,"image/png")); }
 function measPrepPlain(img){ const sc=Math.min(3,Math.max(1,2000/Math.max(img.width,1))), cv=document.createElement("canvas"); cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
   const cx=cv.getContext("2d"); cx.imageSmoothingQuality="high"; cx.drawImage(img,0,0,cv.width,cv.height); return new Promise(ok=>cv.toBlob(ok,"image/png")); }
 async function measByOcr(blob,note){
@@ -3419,24 +3446,34 @@ async function measByOcr(blob,note){
   note("Texterkennung läuft … (beim ersten Mal werden Sprachdaten geladen)");
   const img=await createImageBitmap(blob), w=await Tesseract.createWorker(["deu","eng"]);
   try{ await w.setParameters({preserve_interword_spaces:"1"}); let best={}, bn=-1;
-    let bestBlob=null;
-    outer: for(const prep of [()=>measPrepPlain(img),()=>geoPrep(img,0)]){ const pb=await prep(); for(const psm of ["3","11"]){ await w.setParameters({tessedit_pageseg_mode:psm});
-      const {data}=await w.recognize(pb,{},{text:true,tsv:true}); const r=measParseWords(measWords(data)), n=Object.keys(r).length; if(n>bn){ best=r; bn=n; bestBlob=pb; } if(bn>=MEAS_F.length) break outer; } }
+    const runs=[];
+    outer: for(const prep of [()=>measPrepPlain(img),()=>geoPrep(img,0),()=>measPrepDark(img)]){ const pb=await prep(); for(const psm of ["3","11"]){ await w.setParameters({tessedit_pageseg_mode:psm});
+      const {data}=await w.recognize(pb,{},{text:true,tsv:true}); const r=measParseWords(measWords(data)), n=Object.keys(r).length; for(const b of Object.values(r.__boxes||{})) b.blob=pb;
+      runs.push(r); if(n>bn){ best=r; bn=n; } if(bn>=MEAS_F.length) break outer; } }
+    /* fehlende Werte aus den anderen Durchläufen ergänzen */
+    for(const r of runs) if(r!==best) for(const k of Object.keys(r)) if(!isFinite(best[k])){ best[k]=r[k]; if(r.__boxes&&r.__boxes[k]) best.__boxes[k]=r.__boxes[k]; }
     /* Nachkontrolle: jede gefundene Zahl einzeln, vergrößert und nur mit Ziffern lesen (schmale Schriften: „415“ statt „458“) */
-    if(bestBlob&&best.__boxes){ note("Werte werden nachgeprüft …"); const bi=await createImageBitmap(bestBlob);
+    if(best.__boxes){ note("Werte werden nachgeprüft …"); const bmp=new Map();
       await w.setParameters({tessedit_pageseg_mode:"7",tessedit_char_whitelist:"0123456789.,"});
       for(const [k,b] of Object.entries(best.__boxes)){ try{
-        const h=b.y1-b.y0, pad=Math.round(h*0.35), x0=Math.max(0,b.x0-pad), y0=Math.max(0,b.y0-pad), cw=Math.min(bi.width-x0,b.x1-b.x0+2*pad), ch=Math.min(bi.height-y0,h+2*pad), sc=Math.max(1,90/ch);
+        if(!b.blob) continue; if(!bmp.has(b.blob)){ const bb=await createImageBitmap(b.blob); bmp.set(b.blob,bb.width/img.width); }
+        const bs=bmp.get(b.blob), bi=img;   // aus dem Originalbild ausschneiden (Koordinaten des vergrößerten Bilds zurückrechnen)
+        const h=(b.y1-b.y0)/bs, pad=h*0.35, padX=h*0.15, x0=Math.max(0,b.x0/bs-padX), y0=Math.max(0,b.y0/bs-pad), cw=Math.min(bi.width-x0,(b.x1-b.x0)/bs+2*padX), ch=Math.min(bi.height-y0,h+2*pad), sc=Math.max(1,90/ch);
         const cv=document.createElement("canvas"); cv.width=Math.round(cw*sc)+40; cv.height=Math.round(ch*sc)+40; const cx=cv.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,cv.width,cv.height); cx.imageSmoothingQuality="high"; cx.drawImage(bi,x0,y0,cw,ch,20,20,cw*sc,ch*sc);
-        /* schwarz/weiß und nur die erste Zeichengruppe behalten (Pfeile eines Zahlenfelds, Einheiten u. Ä. abschneiden) */
-        { const id=cx.getImageData(0,0,cv.width,cv.height), d=id.data, W2=cv.width, H2=cv.height, col=new Array(W2).fill(0);
-          let sum=0,n=0; for(let i=0;i<d.length;i+=4){ sum+=d[i]*.3+d[i+1]*.59+d[i+2]*.11; n++; } const thr=Math.min(140,sum/n*0.6);
+        /* schwarz/weiß; dann mit verschiedenen Lücken-Grenzen die erste Zeichengruppe abschneiden (Pfeile eines Zahlenfelds, Einheiten) und das erste gültige Ergebnis nehmen */
+        const id=cx.getImageData(0,0,cv.width,cv.height), d=id.data, W2=cv.width, H2=cv.height, col=new Array(W2).fill(0);
+        { let sum=0,n=0; for(let i=0;i<d.length;i+=4){ sum+=d[i]*.3+d[i+1]*.59+d[i+2]*.11; n++; } const thr=Math.min(140,sum/n*0.6);
           for(let y=0;y<H2;y++) for(let x=0;x<W2;x++){ const i=(y*W2+x)*4, g=d[i]*.3+d[i+1]*.59+d[i+2]*.11, on=g<thr; d[i]=d[i+1]=d[i+2]=on?0:255; if(on) col[x]++; }
-          cx.putImageData(id,0,0); let r0=-1,r1=-1; for(let y=0;y<H2;y++){ let on=0; for(let x=0;x<W2;x+=2) if(d[(y*W2+x)*4]===0){ on=1; break; } if(on){ if(r0<0) r0=y; r1=y; } } const gap=Math.max(4,Math.round((r1-r0+1)*0.22)); let st=-1,en=-1,empty=0;
-          for(let x=0;x<W2;x++){ if(col[x]>0){ if(st<0) st=x; en=x; empty=0; } else if(st>=0){ if(++empty>gap) break; } }
-          if(st>=0&&en>st){ const c2=document.createElement("canvas"); c2.width=en-st+40; c2.height=H2; const x2=c2.getContext("2d"); x2.fillStyle="#fff"; x2.fillRect(0,0,c2.width,H2); x2.drawImage(cv,st,0,en-st+1,H2,20,0,en-st+1,H2); cv.width=c2.width; cv.getContext("2d").drawImage(c2,0,0); } }
-        const {data}=await w.recognize(await new Promise(ok=>cv.toBlob(ok,"image/png"))), f=MEAS_F.find(x=>x[0]===k), v=measMm(measNum((data.text||"").trim()),f[3],b.unit);
-        if(isFinite(v)&&(data.confidence||0)>=60) best[k]=v; }catch(e){} } }
+          cx.putImageData(id,0,0); }
+        let r0=-1,r1=-1; for(let y=0;y<H2;y++){ let on=0; for(let x=0;x<W2;x+=2) if(d[(y*W2+x)*4]===0){ on=1; break; } if(on){ if(r0<0) r0=y; r1=y; } }
+        const f=MEAS_F.find(x=>x[0]===k);
+        for(const fac of [0.45,0.22,0]){ let src=cv;
+          if(fac){ const gap=Math.max(4,Math.round((r1-r0+1)*fac)); let st=-1,en=-1,empty=0;
+            for(let x=0;x<W2;x++){ if(col[x]>0){ if(st<0) st=x; en=x; empty=0; } else if(st>=0){ if(++empty>gap) break; } }
+            if(!(st>=0&&en>st)) continue; src=document.createElement("canvas"); src.width=en-st+40; src.height=H2; const x2=src.getContext("2d"); x2.fillStyle="#fff"; x2.fillRect(0,0,src.width,H2); x2.drawImage(cv,st,0,en-st+1,H2,20,0,en-st+1,H2); }
+          const {data}=await w.recognize(await new Promise(ok=>src.toBlob(ok,"image/png"))), v=measMm(measNum((data.text||"").trim()),f[3],b.unit);
+          if(isFinite(v)&&(data.confidence||0)>=60){ best[k]=v; break; } }
+        }catch(e){} } }
     return best; } finally{ try{ await w.terminate(); }catch(e){} }
 }
 function renderMeasImg(){
@@ -4690,7 +4727,7 @@ function guideBuiltin(){   // Vorlage: Docs-Dokument „Anleitung WiFitPro und W
     {h:"WiFitPro: das ausführliche Bikefitting",blocks:[P("In WiFitPro gehst du die Tabs von links nach rechts durch ({TABS}); „Weiter“ am Ende jedes Tabs führt zum nächsten, „Zurück“ zum vorigen."),
      OL([["Befund",["Unter „Kunde“ Name und Datum eintragen – sie erscheinen auf dem PDF.","Anamnese ausfüllen, z. B. Umfang als Jahreskilometer oder km/Woche.","Beschwerden: erst die Körperregion wählen, dann die Seite (bei Bedarf abwählbar, z. B. Gesäß) und die Art der Beschwerde.","Statikbefund, Dynamischer Befund, Mobilitätstests und Krafttests nach Bedarf. Das kleine Bild neben einem Test zeigt, wie er durchgeführt wird."]],
        ["Bike Set Up",["Die Maße des mitgebrachten Rads als Ist-Zustand eintragen und die optimierte Position in der zweiten Spalte. Leere Felder der optimierten Spalte übernehmen den Ist-Wert."]],
-       ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen, Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
+       ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen (deutsch oder englisch beschriftet), Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
        ["Rad",["Marke, Modell und Größe wählen; der Haken „alle Radkategorien“ neben „Fahrrad“ zeigt auch Räder anderer Radarten. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
        ["Bauteile",["„Ist-Zustand laden“ oder „Optimierte Position laden“ übernimmt die Werte aus dem Bike Set Up.","Lenker, Vorbau, Schalt-/Bremsgriffe, Pedale und Schuhe aus den Listen wählen. Angezeigt werden die Teile zur Radmarke; mit „alle Lenker“ bzw. „alle Vorbauten“ siehst du alle.","Fehlende Maße direkt eintragen; neue Teile unter „Teile verwalten“ anlegen und Radmarken zuordnen."]],
        ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad.","Unter „Vorschlag vergleichen mit“ den Vorschlag neben die aktuelle Einstellung, die Ist- oder die optimierte Position stellen.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
