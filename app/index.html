@@ -1786,20 +1786,21 @@ function renderSug(){
   /* Vorschlag erst, wenn alle Körpermaße eingetragen sind */
   const ready=personReady(); for(const el of [$("sugApply"),$("sugCmp"),document.querySelector('label[for="sugCmp"]'),$("sugParts"),$("autoBack")&&$("autoBack").closest("label")]) if(el) el.classList.toggle("notReady",!ready);
   if(!ready){ $("sugNote").textContent=""; $("sugTable").innerHTML=`<div class="riderHint" style="margin:6px 0;max-width:none">Der Vorschlag erscheint, sobald alle Körpermaße eingetragen sind.<button type="button" class="btn small" onclick="document.querySelector('[data-tab=person]').click()">Zu den Messwerten</button></div>`; return; }
-  const r=suggest(), mode=$("sugCmp").value;
-  const A={sx:r.sb,sy:r.sy,gx:r.grip.x,gy:r.grip.y,...r.ev};
+  const r=suggest(), mode=$("sugCmp").value, CA=crankAdvice(), BW=barWidthIdeal();
+  const A={sx:r.sb,sy:r.sy,gx:r.grip.x,gy:r.grip.y,...r.ev,bw:BW,crank:CA?CA.L:NaN};
   let Bv=null, lbl="";
-  if(mode==="now"){ const g=cur.g, cy=cur.cyc; Bv={sx:-g.seat.x,sy:g.seat.y,gx:g.grip.x,gy:g.grip.y,kneeMax:cy.kneeMax,kops:cur.kops.dx,hipMin:cy.hipMin,back:cur.J.back,shoulder:cur.J.shoulder,elbow:cur.J.elbow}; lbl="Aktuell"; }
+  if(mode==="now"){ const g=cur.g, cy=cur.cyc; Bv={sx:-g.seat.x,sy:g.seat.y,gx:g.grip.x,gy:g.grip.y,bw:S.comp.barWidth,crank:S.comp.crank,kneeMax:cy.kneeMax,kops:cur.kops.dx,hipMin:cy.hipMin,back:cur.J.back,shoulder:cur.J.shoulder,elbow:cur.J.elbow}; lbl="Aktuell"; }
   else if(mode!=="none"){ const p=FIT.setup&&FIT.setup.pos[mode]; if(validPos(p)){ Bv={...p,...evalPos({x:-p.sx,y:p.sy},{x:p.gx,y:p.gy})}; } lbl=mode==="ist"?"Ist":"Optimiert"; }
   const sh=p=>Math.hypot(p.sx,p.sy), drop=p=>p.sy-p.gy, dist=p=>Math.hypot(p.sy-p.gy,p.sx+p.gx);
   const rows=[["Sattel X (hinter Tretlager)",p=>p.sx,"mm"],["Sattel Y (über Tretlager)",p=>p.sy,"mm"],["Sattelhöhe",sh,"mm"],[gripLbl()+" X (vor Tretlager)",p=>p.gx,"mm"],[gripLbl()+" Y (über Tretlager)",p=>p.gy,"mm"],
-    ["Sattelüberhöhung",drop,"mm"],["Abstand Sattel–"+gripLbl(),dist,"mm"],
+    ["Sattelüberhöhung",drop,"mm"],["Abstand Sattel–"+gripLbl(),dist,"mm"],["Lenkerbreite"+(btype()==="mtb"?" (nach Körpergröße)":" (nach Schulterbreite)"),p=>p.bw,"mm"],["Kurbellänge (nach Schrittlänge)",p=>p.crank,"mm1"],
     ["Knie gestreckt",p=>p.kneeMax,"°"],["Knielot (3 Uhr)",p=>p.kops,"mm"],["Hüfte geschlossen",p=>p.hipMin,"°"],["Rücken",p=>p.back,"°"],["Schulter",p=>p.shoulder,"°"],["Ellbogen",p=>p.elbow,"°"]];
   /* Ideal: nur aus Messwerten und Fahrstil (gleich für jedes Rad); Vorschlag: mit diesem Rahmen und den verfügbaren Teilen erreichbar */
-  const Tg=sugT(), I=r.ideal?{sx:r.sb,sy:r.sy,gx:r.ideal.gx,gy:r.ideal.gy,kneeMax:Tg.knee,kops:Tg.kops,hipMin:NaN,back:r.backTarget,shoulder:Tg.shoulder,elbow:Tg.elbow}:null;
+  const Tg=sugT(), I=r.ideal?{sx:r.sb,sy:r.sy,gx:r.ideal.gx,gy:r.ideal.gy,kneeMax:Tg.knee,kops:Tg.kops,hipMin:NaN,back:r.backTarget,shoulder:Tg.shoulder,elbow:Tg.elbow,bw:BW,crank:CA?CA.L:NaN}:null;
   let h=`<table class="t"><tr><th></th>${I?`<th style="white-space:nowrap">Ideal${infoH("Zielposition nur aus Messwerten und Fahrstil: Sattel und Griffpunkt so, dass Kniestreckung, Knielot, Rücken-, Schulter- und Ellbogenwinkel genau die Zielwerte treffen. Für jedes Rad gleich.")}</th>`:""}<th style="white-space:nowrap">Vorschlag${infoH("Die beste Einstellung mit diesem Rahmen und den verfügbaren Teilen: Vorbauten in 10-mm-Stufen, Spacer in 5-mm-Schritten, wenige Vorbauwinkel. Der Sattel liegt immer auf der Idealposition; der Griff weicht je nach Stack und Reach des Rads davon ab.")}</th>${Bv?`<th>${lbl}</th><th>Δ</th>`:""}</tr>`;
+  const fmt=(v,u)=>!isFinite(v)?"–":u==="mm1"?String(Math.round(v*10)/10).replace(".",","):Math.round(v)+(u==="°"?"°":"");
   for(const [n,f,u] of rows){ const a=f(A), b=Bv?f(Bv):NaN, iv=I?f(I):NaN;
-    h+=`<tr><td>${n}</td>${I?`<td class="r">${isFinite(iv)?Math.round(iv)+(u==="°"?"°":""):"–"}</td>`:""}<td>${Math.round(a)}${u==="°"?"°":""}</td>${Bv?`<td>${Math.round(b)}${u==="°"?"°":""}</td><td>${sgn(a-b)}</td>`:""}</tr>`; }
+    h+=`<tr><td>${n}</td>${I?`<td class="r">${fmt(iv,u)}</td>`:""}<td>${fmt(a,u)}</td>${Bv?`<td>${fmt(b,u)}</td><td>${isFinite(a)&&isFinite(b)?(u==="mm1"?(a-b>0?"+":a-b<0?"−":"±")+String(Math.abs(Math.round((a-b)*10)/10)).replace(".",","):sgn(a-b)):"–"}</td>`:""}</tr>`; }
   let idealNote=""; if(I){ const dx=r.grip.x-I.gx, dy=r.grip.y-I.gy, d=Math.hypot(dx,dy);
     idealNote=`<p class="note" id="idealNote">${gripLbl()} im Vorschlag weicht ${d<3?"praktisch nicht":`um ${Math.round(d)} mm`} von der Idealposition ab${d<3?"":` (${Math.abs(dx)<1?"":`${Math.round(Math.abs(dx))} mm ${dx>0?"weiter vorn":"weiter hinten"}`}${Math.abs(dx)>=1&&Math.abs(dy)>=1?", ":""}${Math.abs(dy)<1?"":`${Math.round(Math.abs(dy))} mm ${dy>0?"höher":"tiefer"}`})`}.</p>`+(r.frameHint?`<p class="warn" id="frameHint">⚠ ${r.frameHint}.</p>`:""); }
   $("sugTable").innerHTML=h+"</table>"+idealNote+(Bv||mode==="none"?"":`<p class="note">Für „${lbl}“ gibt es keine Werte im Blatt „Bike Set Up“.</p>`);
@@ -1809,7 +1810,7 @@ function renderSug(){
     const extra=`<br><span class="note">Vorschlag für <b>${esc(cb?`${cb.b} ${cb.m} ${cb.s}`:"–")}</b> (Stack ${Math.round(vals.stack)} / Reach ${Math.round(vals.reach)} mm, Sitzwinkel ${(Math.round(vals.sta*10)/10).toLocaleString("de-DE")}°). Sattelhöhe und -versatz hängen nur von Körper, Kurbel, Pedal und Schuh ab; der Rahmen bestimmt Vorbau und Spacer.</span>`+
       (Math.abs(rs)>35?`<br><span class="bad">Mit dem Sitzwinkel dieses Rahmens liegt der Sattel ${Math.round(Math.abs(rs))} mm ${rs<0?"hinter":"vor"} der Stützenachse – nur mit ${rs<0?"Versatzstütze (Setback)":"nach vorn versetzter Stütze oder einem Rahmen mit steilerem Sitzwinkel"} möglich.</span>`:"");
     var sugExtra=extra; }
-  $("sugParts").innerHTML=`Bauteile für den Vorschlag: Sattelhöhe <b>${shWithCrank(P2.saddleH)} mm</b>, Versatz <b>${P2.setback} mm</b>, Vorbau <b>${P2.stemLen} mm</b> mit <b>${P2.stemAngle}°</b>, Spacer <b>${P2.spacer} mm</b>${isFinite(P2.padStack)?`, Armpad-Höhe <b>${P2.padStack} mm</b>`:""}, Lenkerbreite <b>${barWidthIdeal()} mm</b>${btype()==="mtb"?" (nach Körpergröße)":" (nach Schulterbreite)"}, ${crankTxt(crankAdvice())}. `+
+  $("sugParts").innerHTML=`Bauteile für den Vorschlag: Sattelhöhe <b>${shWithCrank(P2.saddleH)} mm</b>, Versatz <b>${P2.setback} mm</b>, Vorbau <b>${P2.stemLen} mm</b> mit <b>${P2.stemAngle}°</b>, Spacer <b>${P2.spacer} mm</b>${isFinite(P2.padStack)?`, Armpad-Höhe <b>${P2.padStack} mm</b>`:""}. ${(()=>{ const a=crankAdvice(); return a&&!a.ok?`Kurbel ${String(a.L).replace(".",",")} mm: <span class="bad">Hüfte oben ${String(Math.floor(a.hip*10)/10).replace(".",",")}° unter dem Mindestwert (${a.hipT}°), kürzere Kurbel prüfen</span>. `:""; })()}`+
     `${S.bar==="aero"?"Mit dem Ellbogen auf dem Armpad":`Bei Ellbogen ${T.elbow}°`} ergibt das einen Rückenwinkel von ${Math.round(r.back)}° (Ziel ${Math.round(r.backTarget)}°) und einen Schulterwinkel von ${Math.round(r.ev.shoulder)}° (Ziel ${T.shoulder}°).`+
     (Math.abs(r.back-r.backTarget)>5||Math.abs(r.ev.shoulder-T.shoulder)>10?" Mit Vorbau und Spacern lässt sich beides nicht gleichzeitig erreichen – Lenker-Reach oder ein anderer Rahmen (Stack/Reach) wären nötig.":"");
   $("sugParts").innerHTML+=sugExtra;
