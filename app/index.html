@@ -1722,10 +1722,17 @@ function suggest(){
     if(!best||cost<best.cost) best={L,sp,sa,ps,cost,grip:G,back:bk,shoulder:shA};
   }
   if(!best){ const g=compute(vals,base.c); best={L:c0.stemLen,sp:c0.spacer,sa:c0.stemAngle,grip:g.grip,back,shoulder:NaN,cost:Infinity}; }
+  /* Idealposition (radunabhängig): Griffpunkt, an dem bei Ziel-Rückenwinkel auch Schulter- und Ellbogenwinkel genau den Zielwerten entsprechen */
+  let ideal=null; { const seat={x:-sb,y:Math.sqrt(sh*sh-sb*sb)}, Bi={...B,backAngle:back,_back:back};
+    const err=(x,y)=>{ try{ const R=riderPose({seat,grip:{x,y}},c0,Bi,90), J=jointAngles(R); return ((J.shoulder-T.shoulder))**2+((J.elbow-T.elbow)/(aero?50:1))**2+((J.back-back)*2)**2; }catch(e){ return 1e9; } };
+    let bx=600, by=650, be=err(bx,by);   // fester Startpunkt: Ergebnis hängt nicht vom Rad ab
+    for(const st of [20,8,3,1,0.5]){ const R0=st===20?200:st*4; let cx=bx, cy=by;
+      for(let x=cx-R0;x<=cx+R0;x+=st) for(let y=cy-R0;y<=cy+R0;y+=st){ const e=err(x,y); if(e<be){ be=e; bx=x; by=y; } } }
+    if(be<4) ideal={gx:bx,gy:by}; }
   const parts={setback:Math.round(sb),saddleH:Math.round(sh),stemLen:best.L,spacer:best.sp,stemAngle:best.sa};
   if(aero&&best.ps!=null) parts.padStack=best.ps;
   const sy=Math.sqrt(sh*sh-sb*sb);
-  const val={sb,sh,sy,saRef,gt:best.grip,grip:best.grip,parts,back:best.back,backTarget:back,cost:best.cost,
+  const val={sb,sh,sy,saRef,gt:best.grip,grip:best.grip,parts,back:best.back,backTarget:back,cost:best.cost,ideal,
     ev:evalPos({x:-sb,y:sy},best.grip,best.back)};
   sugCache={key,val}; return val;
 }
@@ -1778,10 +1785,14 @@ function renderSug(){
   const rows=[["Sattel X (hinter Tretlager)",p=>p.sx,"mm"],["Sattel Y (über Tretlager)",p=>p.sy,"mm"],["Sattelhöhe",sh,"mm"],[gripLbl()+" X (vor Tretlager)",p=>p.gx,"mm"],[gripLbl()+" Y (über Tretlager)",p=>p.gy,"mm"],
     ["Sattelüberhöhung",drop,"mm"],["Abstand Sattel–"+gripLbl(),dist,"mm"],
     ["Knie gestreckt",p=>p.kneeMax,"°"],["Knielot (3 Uhr)",p=>p.kops,"mm"],["Hüfte geschlossen",p=>p.hipMin,"°"],["Rücken",p=>p.back,"°"],["Schulter",p=>p.shoulder,"°"],["Ellbogen",p=>p.elbow,"°"]];
-  let h=`<table class="t"><tr><th></th><th>Vorschlag</th>${Bv?`<th>${lbl}</th><th>Δ</th>`:""}</tr>`;
-  for(const [n,f,u] of rows){ const a=f(A), b=Bv?f(Bv):NaN;
-    h+=`<tr><td>${n}</td><td>${Math.round(a)}${u==="°"?"°":""}</td>${Bv?`<td>${Math.round(b)}${u==="°"?"°":""}</td><td>${sgn(a-b)}</td>`:""}</tr>`; }
-  $("sugTable").innerHTML=h+"</table>"+(Bv||mode==="none"?"":`<p class="note">Für „${lbl}“ gibt es keine Werte im Blatt „Bike Set Up“.</p>`);
+  /* Ideal: nur aus Messwerten und Fahrstil (gleich für jedes Rad); Vorschlag: mit diesem Rahmen und den verfügbaren Teilen erreichbar */
+  const Tg=sugT(), I=r.ideal?{sx:r.sb,sy:r.sy,gx:r.ideal.gx,gy:r.ideal.gy,kneeMax:Tg.knee,kops:Tg.kops,hipMin:NaN,back:r.backTarget,shoulder:Tg.shoulder,elbow:Tg.elbow}:null;
+  let h=`<table class="t"><tr><th></th>${I?`<th title="nur aus Messwerten und Fahrstil – für jedes Rad gleich">Ideal</th>`:""}<th title="mit diesem Rad und den verfügbaren Teilen erreichbar">Vorschlag</th>${Bv?`<th>${lbl}</th><th>Δ</th>`:""}</tr>`;
+  for(const [n,f,u] of rows){ const a=f(A), b=Bv?f(Bv):NaN, iv=I?f(I):NaN;
+    h+=`<tr><td>${n}</td>${I?`<td class="r">${isFinite(iv)?Math.round(iv)+(u==="°"?"°":""):"–"}</td>`:""}<td>${Math.round(a)}${u==="°"?"°":""}</td>${Bv?`<td>${Math.round(b)}${u==="°"?"°":""}</td><td>${sgn(a-b)}</td>`:""}</tr>`; }
+  let idealNote=""; if(I){ const dx=r.grip.x-I.gx, dy=r.grip.y-I.gy, d=Math.hypot(dx,dy);
+    idealNote=`<p class="note" id="idealNote"><b>Ideal</b> = Zielposition nur aus Messwerten und Fahrstil, für jedes Rad gleich. <b>Vorschlag</b> = mit diesem Rahmen und den verfügbaren Vorbauten/Spacern erreichbar. ${gripLbl()} weicht ${d<3?"praktisch nicht":`um ${Math.round(d)} mm`} von der Idealposition ab${d<3?"":` (${Math.abs(dx)<1?"":`${Math.round(Math.abs(dx))} mm ${dx>0?"weiter vorn":"weiter hinten"}`}${Math.abs(dx)>=1&&Math.abs(dy)>=1?", ":""}${Math.abs(dy)<1?"":`${Math.round(Math.abs(dy))} mm ${dy>0?"höher":"tiefer"}`})`}.</p>`; }
+  $("sugTable").innerHTML=h+"</table>"+idealNote+(Bv||mode==="none"?"":`<p class="note">Für „${lbl}“ gibt es keine Werte im Blatt „Bike Set Up“.</p>`);
   const P2=r.parts;
   { /* für welches Rad gilt der Vorschlag, und lässt sich der Sattelversatz mit diesem Sitzrohr umsetzen? */
     const cb=findBike(S.sel), gS=compute(vals,{...S.comp,...P2}), rs=gS.railShift;
@@ -4730,7 +4741,7 @@ function guideBuiltin(){   // Vorlage: Docs-Dokument „Anleitung WiFitPro und W
        ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen (deutsch oder englisch beschriftet), Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
        ["Rad",["Marke, Modell und Größe wählen; der Haken „alle Radkategorien“ neben „Fahrrad“ zeigt auch Räder anderer Radarten. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
        ["Bauteile",["„Ist-Zustand laden“ oder „Optimierte Position laden“ übernimmt die Werte aus dem Bike Set Up.","Lenker, Vorbau, Schalt-/Bremsgriffe, Pedale und Schuhe aus den Listen wählen. Angezeigt werden die Teile zur Radmarke; mit „alle Lenker“ bzw. „alle Vorbauten“ siehst du alle.","Fehlende Maße direkt eintragen; neue Teile unter „Teile verwalten“ anlegen und Radmarken zuordnen."]],
-       ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad.","Unter „Vorschlag vergleichen mit“ den Vorschlag neben die aktuelle Einstellung, die Ist- oder die optimierte Position stellen.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
+       ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad. Die Spalte „Ideal“ zeigt die Zielposition nur aus Messwerten und Fahrstil (für jedes Rad gleich), „Vorschlag“ das mit diesem Rad und den verfügbaren Teilen Erreichbare; darunter steht, wie weit der Griff von der Idealposition abweicht.","Unter „Vorschlag vergleichen mit“ den Vorschlag neben die aktuelle Einstellung, die Ist- oder die optimierte Position stellen.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
        ["PDF",["Ein Paket antippen ({PAKETE}) oder Inhalte einzeln anhaken. Eigene Pakete können unter „Eigene Pakete und Voreinstellung“ angelegt und bearbeitet werden.","Bei Bedarf das PDF der Videoanalyse (Contemplas) und der Satteldruckmessung (Everve) hinzufügen; die App übernimmt nur deren Bilder.","Unter „Bericht: Logo und Kontaktdaten“ kann das eigene Logo hochgeladen und die Kontaktdaten eingefügt werden.","„PDF erstellen“ erzeugt den Bericht mit Deckblatt, den ausgewählten Inhalten, deinem Logo und deinen Kontaktdaten."]],
        ["Daten",["Unter „Konto“ das Passwort ändern oder abmelden.","„Bedienungsanleitung herunterladen“ erzeugt diese Anleitung als PDF.","Mit „Daten sichern (.json)“ alles archivieren oder auf ein anderes Gerät mitnehmen; „Sicherung laden“ spielt es wieder ein."]]])]},
     {h:"Bedienung",blocks:[P("Diese Elemente gelten in beiden Ansichten."),
