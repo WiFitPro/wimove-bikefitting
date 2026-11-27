@@ -4682,11 +4682,13 @@ async function guidePdf(){
   const para=(txt,{size=10.5,style="normal",x=M,w=W,gap=1.5,color=[24,34,43]}={})=>{ doc.setFont("helvetica",style); doc.setFontSize(size); doc.setTextColor(...color);
     const lines=doc.splitTextToSize(T(txt),w), lh=size*0.43; for(const ln of lines){ need(lh); doc.text(ln,x,y); y+=lh; } y+=gap; };
   /* Deckblatt */
-  doc.setFillColor(...BLUE); doc.rect(0,0,210,297,"F");
-  try{ const lg=await brandImg("brand/logo_stack.png"); doc.addImage(lg,"PNG",65,205,80,45.3); }catch(e){}
-  doc.setTextColor(255); doc.setFont("helvetica","bolditalic"); doc.setFontSize(34); doc.text("Bedienungsanleitung",M,90);
-  doc.setFont("helvetica","normal"); doc.setFontSize(16); doc.text("WiFitPro und WiFitBasic",M,102);
-  doc.setFontSize(11); doc.text(T(`Stand ${GUIDE_STAND} · ${window.WF?"Web-App":"Claude-App"}`),M,114);
+  let cov=null; try{ cov=await customCover(await brandImg("brand/cover_custom.jpg"),"Bedienungsanleitung"); }catch(e){}   // gleiches Deckblatt wie die Reports
+  if(cov){ doc.addImage(cov,"JPEG",0,0,210,297); doc.setTextColor(255); doc.setFont("helvetica","normal"); doc.setFontSize(15); doc.text("WiFitPro und WiFitBasic",105,146,{align:"center"});
+    doc.setFontSize(10.5); doc.text(T(`Stand ${GUIDE_STAND}`),105,154,{align:"center"}); }
+  else { doc.setFillColor(...BLUE); doc.rect(0,0,210,297,"F");
+    try{ const lg=await brandImg("brand/logo_stack.png"); doc.addImage(lg,"PNG",65,205,80,45.3); }catch(e){}
+    doc.setTextColor(255); doc.setFont("helvetica","bolditalic"); doc.setFontSize(34); doc.text("Bedienungsanleitung",M,90);
+    doc.setFont("helvetica","normal"); doc.setFontSize(16); doc.text("WiFitPro und WiFitBasic",M,102); doc.setFontSize(11); doc.text(T(`Stand ${GUIDE_STAND}`),M,114); }
   page();
   for(const s of guideContent()){
     need(18); doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...BLUE); doc.text(T(s.h),M,y); y+=3;
