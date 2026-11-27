@@ -623,7 +623,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <label class="f">Größe</label>
         <div class="chips" id="sizeChips"></div>
         <p class="note" id="sizeFitNote" style="margin-top:6px"></p>
-        <h3>Rahmen vergleichen mit</h3>
+        <div class="frow" style="margin-top:16px"><h3 style="margin:0">Rahmen vergleichen mit</h3><label class="toggle barAllT" style="margin-left:auto;font-size:13px"><input type="checkbox" id="cmpAll"> alle Radkategorien</label></div>
         <div id="cmpRows"></div>
         <div class="row" id="cmpBtns" style="margin-top:8px">
           <button class="btn ghost small" id="cmpOptBike">Mit Rad der optimierten Position vergleichen</button>
@@ -2395,11 +2395,14 @@ function fillCmp(){
   const slots=cmpSlots(); let last=-1; slots.forEach((sl,i)=>{ if(sl.b) last=i; });
   cmpRowsN=Math.min(CMP_MAX,Math.max(cmpRowsN||0,last+1));   /* standardmäßig kein Vergleich; Zeilen erst über „+“ */
   let h="", pending=false;
+  const ca=$("cmpAll"); if(ca) ca.checked=!!S.cmpAll;
+  const L=S.cmpAll?DB.all:{brands:DB.brands,models:DB.models};   // Haken „alle Radkategorien“: Räder aller Radarten zum Vergleich
   for(let i=0;i<cmpRowsN;i++){
     const sl=slots[i]||EMPTY_CMP(), F=sl.b?cmpFit[cmpFitKey(sl.b,sl.m)]:null; if(sl.b&&!F) pending=true;
+    const brs=sl.b&&!L.brands.includes(sl.b)?[sl.b,...L.brands]:L.brands, mds=sl.b?(L.models[sl.b]||DB.all.models[sl.b]||[]):[];
     h+=`<div class="cmpBlock"><div class="cmpRow">
-      <div><label class="f">Marke</label><select data-cmp="${i}" data-f="b">${opt("","Bitte wählen",!sl.b)+DB.brands.map(x=>opt(x,x,x===sl.b)).join("")}</select></div>
-      <div><label class="f">Modell</label><select data-cmp="${i}" data-f="m"${sl.b?"":" disabled"}>${sl.b?DB.models[sl.b].map(x=>opt(x,x,x===sl.m)).join(""):""}</select></div>
+      <div><label class="f">Marke</label><select data-cmp="${i}" data-f="b">${opt("","Bitte wählen",!sl.b)+brs.map(x=>opt(x,x,x===sl.b)).join("")}</select></div>
+      <div><label class="f">Modell</label><select data-cmp="${i}" data-f="m"${sl.b?"":" disabled"}>${(mds.includes(sl.m)||!sl.m?mds:[sl.m,...mds]).map(x=>opt(x,x,x===sl.m)).join("")}</select></div>
       ${sl.b?`<label class="cmpVis" style="--cc:${CMP_COLORS[i]}" title="In der Zeichnung ein-/ausblenden"><input type="checkbox" data-cmpvis="${i}"${sl.off?"":" checked"} aria-label="Vergleich ${i+1} in der Zeichnung zeigen"></label>`:"<span></span>"}
       <button type="button" class="btn ghost small cmpDel" data-cmpdel="${i}" title="Vergleich entfernen" aria-label="Vergleich ${i+1} entfernen">×</button></div>`;
     if(sl.b){ h+=`<label class="f">Größe</label><div class="chips">${sizesOf(sl.b,sl.m).map(x=>{ const f=F&&F.res[x.s];
@@ -2417,6 +2420,7 @@ function fillCmp(){
   box.querySelectorAll("[data-cmpdel]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.cmpdel, all=cmpSlots(); all.splice(i,1); all.push(EMPTY_CMP());
     S.cmp=all[0]; S.cmpX=all.slice(1,CMP_MAX); cmpRowsN=Math.max(0,cmpRowsN-1); fillCmp(); renderBikeResults(); render(); save(); });
   if($("cmpAdd")) $("cmpAdd").onclick=()=>{ cmpRowsN=Math.min(CMP_MAX,(cmpRowsN||0)+1); fillCmp(); };
+  if(ca) ca.onchange=()=>{ S.cmpAll=ca.checked; fillCmp(); save(); };
   if(pending) updateCmpFit();
 }
 function selectMain(b,m,s){
@@ -2428,7 +2432,7 @@ function selectMain(b,m,s){
 }
 function selectCmp(b,m,s,i=0){
   let v=EMPTY_CMP();
-  if(b){ if(!DB.models[b].includes(m)) m=DB.models[b][0]; if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s); v={b,m,s}; const o=cmpSlots()[i]; if(o&&o.off) v.off=true; }
+  if(b){ const ms=DB.all.models[b]||DB.models[b]||[]; if(!ms.includes(m)) m=ms[0]; if(!sizesOf(b,m).some(x=>x.s===s&&x.hasData)) s=pickSize(b,m,S.sel.s); v={b,m,s}; const o=cmpSlots()[i]; if(o&&o.off) v.off=true; }
   cmpSlots(); if(i===0) S.cmp=v; else S.cmpX[i-1]=v;
   fillCmp(); renderBikeResults(); render(); save();
 }
@@ -4683,7 +4687,7 @@ function guideBuiltin(){   // Vorlage: Docs-Dokument „Anleitung WiFitPro und W
      OL([["Befund",["Unter „Kunde“ Name und Datum eintragen – sie erscheinen auf dem PDF.","Anamnese ausfüllen, z. B. Umfang als Jahreskilometer oder km/Woche.","Beschwerden: erst die Körperregion wählen, dann die Seite (bei Bedarf abwählbar, z. B. Gesäß) und die Art der Beschwerde.","Statikbefund, Dynamischer Befund, Mobilitätstests und Krafttests nach Bedarf. Das kleine Bild neben einem Test zeigt, wie er durchgeführt wird."]],
        ["Bike Set Up",["Die Maße des mitgebrachten Rads als Ist-Zustand eintragen und die optimierte Position in der zweiten Spalte. Leere Felder der optimierten Spalte übernehmen den Ist-Wert."]],
        ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen, Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
-       ["Rad",["Marke, Modell und Größe wählen. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
+       ["Rad",["Marke, Modell und Größe wählen. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden; mit dem Haken „alle Radkategorien“ stehen auch Räder anderer Radarten zur Wahl.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
        ["Bauteile",["„Ist-Zustand laden“ oder „Optimierte Position laden“ übernimmt die Werte aus dem Bike Set Up.","Lenker, Vorbau, Schalt-/Bremsgriffe, Pedale und Schuhe aus den Listen wählen. Angezeigt werden die Teile zur Radmarke; mit „alle Lenker“ bzw. „alle Vorbauten“ siehst du alle.","Fehlende Maße direkt eintragen; neue Teile unter „Teile verwalten“ anlegen und Radmarken zuordnen."]],
        ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad.","Unter „Vorschlag vergleichen mit“ den Vorschlag neben die aktuelle Einstellung, die Ist- oder die optimierte Position stellen.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
        ["PDF",["Ein Paket antippen ({PAKETE}) oder Inhalte einzeln anhaken. Eigene Pakete können unter „Eigene Pakete und Voreinstellung“ angelegt und bearbeitet werden.","Bei Bedarf das PDF der Videoanalyse (Contemplas) und der Satteldruckmessung (Everve) hinzufügen; die App übernimmt nur deren Bilder.","Unter „Bericht: Logo und Kontaktdaten“ kann das eigene Logo hochgeladen und die Kontaktdaten eingefügt werden.","„PDF erstellen“ erzeugt den Bericht mit Deckblatt, den ausgewählten Inhalten, deinem Logo und deinen Kontaktdaten."]],
