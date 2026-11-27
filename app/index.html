@@ -755,9 +755,6 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div>
         <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="admCopy">Änderungen für alle Radarten übernehmen</button></div><p class="note" id="admCopyNote"></p></section>
       <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
-      <details class="acc" id="guideAdmDetails"><summary>Bedienungsanleitung</summary><p class="note info" style="margin-top:0">Eigene Fassung der Bedienungsanleitung als Word-Datei (.docx) hochladen. Überschrift 2 = Kapitel, nummerierte Liste = Schritte (fett = Titel), Aufzählung = Punkte, Tabellen bleiben Tabellen. Am einfachsten die aktuelle Fassung als Word herunterladen, bearbeiten und wieder hochladen. Platzhalter {TABS}, {PAKETE} und {BASIC_PDF} setzt die App automatisch ein.</p><div id="guideAdm"><p class="note" id="guideAdmState" style="margin-top:0"></p>
-        <div class="row"><input type="file" id="guideFile" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><button class="btn small" type="button" id="guideUpBtn">Word-Datei hochladen</button><button class="btn ghost small" type="button" id="guideDocx">Aktuelle Fassung als Word herunterladen</button><button class="btn ghost small" type="button" id="guideReset" hidden>Standard der App verwenden</button></div>
-        <p class="note" id="guideAdmNote"></p></div></details>
       <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
       <div id="admMore"></div>
       <div id="admStdBox"></div>
@@ -766,6 +763,9 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="row"><button class="btn ghost small" id="userReload" type="button">Liste aktualisieren</button></div>
         <div id="userAdmin"></div>
       </details>
+      <details class="acc" id="guideAdmDetails" style="margin-top:18px"><summary>Bedienungsanleitung</summary><p class="note info" style="margin-top:0">Eigene Fassung der Bedienungsanleitung als Word-Datei (.docx) hochladen. Überschrift 2 = Kapitel, nummerierte Liste = Schritte (fett = Titel), Aufzählung = Punkte, Tabellen bleiben Tabellen. Am einfachsten die aktuelle Fassung als Word herunterladen, bearbeiten und wieder hochladen. Platzhalter {TABS}, {PAKETE} und {BASIC_PDF} setzt die App automatisch ein.</p><div id="guideAdm"><p class="note" id="guideAdmState" style="margin-top:0"></p>
+        <div class="row"><input type="file" id="guideFile" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden><button class="btn small" type="button" id="guideUpBtn">Word-Datei hochladen</button><button class="btn ghost small" type="button" id="guideDocx">Aktuelle Fassung als Word herunterladen</button><button class="btn ghost small" type="button" id="guideReset" hidden>Standard der App verwenden</button></div>
+        <p class="note" id="guideAdmNote"></p></div></details>
     </div>
   </aside>
 </div>
