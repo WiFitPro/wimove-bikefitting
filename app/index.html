@@ -755,7 +755,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div>
         <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="admCopy">Änderungen für alle Radarten übernehmen</button></div><p class="note" id="admCopyNote"></p></section>
       <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
-      <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
+      <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart, getrennt für Männer und Frauen (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
       <div id="admMore"></div>
       <div id="admStdBox"></div>
       <details class="acc adminOnly" style="margin-top:18px"><summary>Benutzerverwaltung</summary>
@@ -1111,7 +1111,10 @@ const isFem=()=>!!(S.person&&S.person.sex==="weiblich");
 /* Modellwerte, die als eigener Standard gespeichert werden können (bleiben bei neuen Excel-Dateien erhalten) */
 const MODEL_KEYS=["hipStand","hipFwd","sitBack","sink","shoulderDrop","protr","kneeBack","ankleH","footAngle","armAdd"];   // Ellbogenwinkel kommt aus den Richtwerten je Fahrstil   // Hüftgelenk über Sattel folgt immer Hüftgelenk über Schritthöhe
 /* Modellwerte (Segmente/Haltung) je Radart: Änderung im Admin-Tab > gespeicherter Standard der Radart > früherer gemeinsamer Standard */
-const stdValT=(bt,k)=>{ const T=S.segOvT&&S.segOvT[bt]; if(T&&isFinite(T[k])) return T[k]; const B=S.modelStd&&S.modelStd.byT&&S.modelStd.byT[bt]; if(B&&isFinite(B[k])) return B[k];
+/* Frauen haben eine eigene Ebene (Schlüssel „radart~w“); solange dort nichts gesetzt ist, gelten die Werte der Männer */
+const SEXK=(bt,w)=>w?bt+"~w":bt;
+const stdValT=(bt,k,w=isFem())=>{ if(w){ const Tw=S.segOvT&&S.segOvT[bt+"~w"]; if(Tw&&isFinite(Tw[k])) return Tw[k]; const Bw=S.modelStd&&S.modelStd.byT&&S.modelStd.byT[bt+"~w"]; if(Bw&&isFinite(Bw[k])) return Bw[k]; }
+  const T=S.segOvT&&S.segOvT[bt]; if(T&&isFinite(T[k])) return T[k]; const B=S.modelStd&&S.modelStd.byT&&S.modelStd.byT[bt]; if(B&&isFinite(B[k])) return B[k];
   return S.modelStd&&isFinite(S.modelStd[k])?S.modelStd[k]:NaN; };
 const stdVal=k=>stdValT(btype(),k);
 const cleatStd=(bt=btype())=>{ const v=stdValT(bt,"cleat"); return isFinite(v)?v:72; };   // Cleatposition-Standard je Radart
@@ -2257,17 +2260,22 @@ const FITM={}; for(const d of FITM_DEF) FITM[d[0]]=d[4];
 const STEM_FACTORY={comfort:90,endurance:100,sportlich:105,ambitioniert:115,professional:125}, SPACER_FACTORY={comfort:25,endurance:20,sportlich:15,ambitioniert:10,professional:5};
 const STEM_FACTORY_T={road:STEM_FACTORY,gravel:{comfort:80,endurance:90,sportlich:95,ambitioniert:105,professional:115},tri:{comfort:80,endurance:85,sportlich:90,ambitioniert:100,professional:110},mtb:{comfort:50,endurance:55,sportlich:60,ambitioniert:70,professional:80}};
 const SPACER_FACTORY_T={road:SPACER_FACTORY,gravel:{comfort:30,endurance:25,sportlich:20,ambitioniert:15,professional:10},tri:{comfort:30,endurance:25,sportlich:20,ambitioniert:10,professional:5},mtb:{comfort:20,endurance:15,sportlich:10,ambitioniert:5,professional:0}};
-let ADM_BT=null; const admBt=()=>BTYPES[ADM_BT]?ADM_BT:btype();   // im Admin-Tab bearbeitete Radart (Standard: aktuelle)
-function renderSegStd(){ const box=$("admSegBox"); if(!box) return; const bt=admBt(), P0=body();
-  const tag=k=>S.segOvT&&S.segOvT[bt]&&isFinite(S.segOvT[bt][k])?'<small class="src edit">geändert</small>':isFinite(stdValT(bt,k))?'<small class="src">Standard</small>':'<small class="src">App-Wert</small>';
+let ADM_BT=null; const admBt=()=>BTYPES[ADM_BT]?ADM_BT:btype();
+let ADM_SEX=null; const admW=()=>ADM_SEX?ADM_SEX==="w":isFem();   // im Admin-Tab bearbeitetes Geschlecht (Standard: Person des Fittings)   // im Admin-Tab bearbeitete Radart (Standard: aktuelle)
+function renderSegStd(){ const box=$("admSegBox"); if(!box) return; const bt=admBt(), w=admW(), sk=SEXK(bt,w), P0=body();
+  const own=k=>{ const T=(S.segOvT||{})[sk], B=((S.modelStd||{}).byT||{})[sk]; return T&&isFinite(T[k])?"edit":B&&isFinite(B[k])?"std":""; };
+  const tag=k=>{ const o=own(k); return o==="edit"?'<small class="src edit">geändert</small>':o==="std"?'<small class="src">Standard</small>':w&&isFinite(stdValT(bt,k,false))?'<small class="src">wie Männer</small>':isFinite(stdValT(bt,k,w))?'<small class="src">Standard</small>':'<small class="src">App-Wert</small>'; };
+  const sexBar=`<div class="btGroup" role="group" aria-label="Geschlecht" style="display:flex;margin:0 0 10px">${[["m","Männer"],["w","Frauen"]].map(([x,l])=>`<button type="button" data-sgsex="${x}" aria-pressed="${(x==="w")===w}" style="flex:1 1 auto"${(x==="w")===isFem()?' title="Geschlecht der Person im aktuellen Fitting"':""}>${l}${(x==="w")===isFem()?" •":""}</button>`).join("")}</div>`
+    +(w?`<p class="note" style="margin:-4px 0 10px">Werte ohne eigenen Frauenwert übernehmen automatisch den Wert der Männer („wie Männer“).</p>`:"");
   const CLD={key:"cleat",label:"Cleatposition (% Fußlänge ab Ferse)",unit:"%",min:40,max:90,step:0.5,f:()=>72};
   const dOf=k=>k==="cleat"?CLD:PERS.find(x=>x.key===k);
-  box.innerHTML=`<div class="fitmGrid">`+[...MODEL_KEYS,"cleat"].map(k=>{ const d=dOf(k); if(!d) return ""; const v=isFinite(stdValT(bt,k))?stdValT(bt,k):d.f(P0);
+  box.innerHTML=sexBar+`<div class="fitmGrid">`+[...MODEL_KEYS,"cleat"].map(k=>{ const d=dOf(k); if(!d) return ""; const v=isFinite(stdValT(bt,k,w))?stdValT(bt,k,w):d.f(P0);
     return `<label for="sg_${k}">${esc(d.label)}</label><div class="fitmIn"><input class="bfi" id="sg_${k}" type="number" step="${d.step||1}" data-seg="${k}" value="${Math.round(v*10)/10}" style="max-width:90px"><span class="note" style="margin:0">${d.unit||"mm"}</span>${tag(k)}</div>`; }).join("")+`</div>`;
   box.querySelectorAll("[data-seg]").forEach(el=>el.onchange=()=>{ const k=el.dataset.seg, d=dOf(k), x=num(el.value); if(!isFinite(x)||x<d.min||x>d.max){ renderSegStd(); return; }
-    S.segOvT=S.segOvT||{}; (S.segOvT[bt]=S.segOvT[bt]||{})[k]=x; if(bt===btype()&&S.person.ov) delete S.person.ov[k];
-    if(k==="cleat"&&bt===btype()){ S.comp.cleat=x; if(S.compBase) S.compBase.cleat=x; try{ syncComp(); }catch(e){} }
-    sugCache.key=""; sizeFitCache.key=""; markEdited(el); setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
+    S.segOvT=S.segOvT||{}; (S.segOvT[sk]=S.segOvT[sk]||{})[k]=x; const cur=bt===btype()&&w===isFem(); if(cur&&S.person.ov) delete S.person.ov[k];
+    if(k==="cleat"&&cur){ S.comp.cleat=x; if(S.compBase) S.compBase.cleat=x; try{ syncComp(); }catch(e){} }
+    sugCache.key=""; sizeFitCache.key=""; markEdited(el); setTimeout(()=>{ syncPerson(); render(); save(); },0); });
+  box.querySelectorAll("[data-sgsex]").forEach(b=>b.onclick=()=>{ ADM_SEX=b.dataset.sgsex; renderSegStd(); }); }
 /* geänderte Werte der gezeigten Radart auf alle anderen Radarten übertragen */
 function admCopyAll(){ const bt=admBt(), others=Object.keys(BTYPES).filter(b=>b!==bt); let n=0;
   for(const [k,v] of Object.entries(S.fitOv||{})){ let m;
@@ -2275,7 +2283,7 @@ function admCopyAll(){ const bt=admBt(), others=Object.keys(BTYPES).filter(b=>b!
     else if((m=k.match(/^(?:([a-z]+)_)?(stem|spacer)_(\w+)$/))&&(m[1]||"road")===(bt==="road"?"road":bt)&&kpT(bt)===(m[1]?m[1]+"_":"")){ for(const o of others) S.fitOv[kpT(o)+m[2]+"_"+m[3]]=v; n++; } }
   const O=styleOvOf(bt); for(const [st,vals] of Object.entries(O)) for(const [k,v] of Object.entries(vals||{})){ if(!isFinite(v)) continue; n++;
     for(const o of others){ let O2; if(o==="road") O2=S.styleOv=S.styleOv||{}; else { S.styleOvT=S.styleOvT||{}; O2=S.styleOvT[o]=S.styleOvT[o]||{}; } (O2[st]=O2[st]||{})[k]=v; } }
-  const G=(S.segOvT||{})[bt]||{}; for(const [k,v] of Object.entries(G)){ n++; for(const o of others) (S.segOvT[o]=S.segOvT[o]||{})[k]=v; if(S.person.ov) delete S.person.ov[k]; }
+  for(const sx of ["","~w"]){ const G=(S.segOvT||{})[bt+sx]||{}; for(const [k,v] of Object.entries(G)){ n++; for(const o of others) (S.segOvT[o+sx]=S.segOvT[o+sx]||{})[k]=v; if(S.person.ov) delete S.person.ov[k]; } }
   applyFitModel(); applyStyleStd(); fitModelChanged(); renderStyleStd(); renderSegStd(); syncPerson(); render(); save();
   $("admCopyNote").textContent=n?`${n} geänderte Werte von „${BTYPES[bt]}“ auf alle Radarten übertragen. Mit „Modellwerte als Standard speichern“ (unten) dauerhaft sichern.`:`Auf der Seite „${BTYPES[bt]}“ gibt es keine geänderten Werte (markiert mit „geändert“) zum Übertragen.`; }
 function renderAdmBt(){ const g=$("admBt"); if(!g) return; const b=admBt();
@@ -2682,7 +2690,7 @@ $("saveStd").onclick=()=>{
   let n=0;
   for(const k of keys){
     /* Modellwerte und von Hand geänderte Längen festschreiben; berechnete Längen bleiben von der Person abhängig */
-    if(MODEL_KEYS.includes(k)){ if(isFinite(S.person.ov[k])){ const by=S.modelStd.byT=S.modelStd.byT||{}; (by[btype()]=by[btype()]||{})[k]=S.person.ov[k]; n++; } }   // Modellwerte je Radart (Feinwert der Person → Standard dieser Radart)
+    if(MODEL_KEYS.includes(k)){ if(isFinite(S.person.ov[k])){ const by=S.modelStd.byT=S.modelStd.byT||{}; const sk=SEXK(btype(),isFem()); (by[sk]=by[sk]||{})[k]=S.person.ov[k]; n++; } }   // Modellwerte je Radart (Feinwert der Person → Standard dieser Radart)
     else if(isFinite(S.person.ov[k])){ S.modelStd[k]=B[k]; n++; }
     else delete S.modelStd[k];
     delete S.person.ov[k];
@@ -2717,7 +2725,7 @@ $("discSel").onchange=e=>{ S.person["disc_"+btype()]=e.target.value; delete S.pe
 $("styleSel").onchange=e=>{ S.person.style=e.target.value; delete S.person.ov.backAngle; delete S.person.ov.shoulderT; delete S.person.ov.elbowT;
   resetSugTargets();   // Zielwerte folgen dem Fahrstil
   syncPerson(); render(); save(); };
-$("sexSel").onchange=e=>{ S.person.sex=e.target.value; syncPerson(); render(); save(); };
+$("sexSel").onchange=e=>{ S.person.sex=e.target.value; sugCache.key=""; sizeFitCache.key=""; syncPerson(); render(); try{ renderSegStd(); }catch(x){} save(); };
 $("autoBack").onchange=e=>{ S.person.autoBack=e.target.checked; delete S.person.ov.backAngle; syncPerson(); render(); save(); };
 if($("resetPerson")) $("resetPerson").onclick=()=>{ S.person=personFrom(); $("styleSel").value=S.person.style; $("sexSel").value=S.person.sex; $("autoBack").checked=false; syncPerson(); render(); save(); };
 /* Kurbel endlos drehen: Drehknopf, Mausrad, Pfeiltasten oder direkt am Pedal in der Zeichnung */
