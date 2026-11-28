@@ -200,6 +200,7 @@ aside section>p.note,aside details>p.note,aside details>div>p.note:first-child{m
 .bfg b{font-size:12px;color:var(--muted)}
 .bfg .bfn{grid-column:1/-1;margin-bottom:8px}
 .pwarn{margin:4px 0 10px;padding:8px 10px;border:1px solid #c0392b;border-radius:8px;font-size:13px;color:var(--ink);background:var(--field)}
+.bfMulti{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:flex-end;font-size:14px}
 .bfg .bfu{font-size:12px;color:var(--muted);padding-left:12px}
 textarea.bfi{resize:vertical}
 .bfl{display:flex;align-items:center;gap:8px;min-width:0}
@@ -4098,7 +4099,7 @@ function migrateUmfang(){   // früher: km pro Woche und Stunden pro Woche als f
 /* Umfang: Zahl + frei wählbare Einheit */
 const UMF_U=["km pro Woche","km pro Monat","km pro Jahr","Stunden pro Woche","Stunden pro Monat","Stunden pro Jahr","Ausfahrten pro Woche"];
 const ANAM=[
-  ["Fahrprofil",[["a_disc","Disziplin","sel",["–","Rennrad","Gravel","MTB","Zeitfahren / Triathlon","Trekking / Fitness","E-Bike"]],
+  ["Fahrprofil",[["a_disc","Disziplin","multi",["Rennrad","Gravel","MTB","Zeitfahren / Triathlon","Trekking / Fitness","E-Bike"]],
     ["a_umf","Umfang","numu",UMF_U],["a_umf2","Umfang (zweite Angabe)","numu",UMF_U],["a_long","Längste Fahrt (km)","num"],["a_years","Fahrerfahrung (Jahre)","num"],
     ["a_race","Wettkampf","sel",YN],["a_indoor","Indoor-Anteil (Rolle)","sel",["–","kein","unter 25 %","25–50 %","über 50 %"]]]],
   ["Ziele und Prioritäten",[["a_goal1","Hauptziel","sel",GOALS],["a_goal2","Zweites Ziel","sel",GOALS],["t_ziele","Geplante Events und Saisonziele","area",null,"z. B. Ötztaler Radmarathon 30.08., Saisonziel Alpencross"]]],
@@ -4441,6 +4442,8 @@ function renderBefund(){
   /* gleiche kompakte Darstellung wie Statik- und Dynamikbefund: Bezeichnung links, Feld rechts */
   $("bfText").innerHTML=`<div class="bfg">`+ANAM.map(([grp,rows])=>`<div class="suh">${grp}</div>`+rows.map(([k,l,t,o,ph])=>{
       const id="bf_"+k, lab=`<label for="${id}">${l}</label>`, sp=' style="grid-column:2/4"';
+      if(t==="multi"){ const cur=String(B[k]||"").split(/\s*,\s*/).filter(Boolean);   // Mehrfachauswahl, gespeichert als „A, B“
+        return `<span>${l}</span><div class="bfMulti" role="group" aria-label="${esc(l)}"${sp}>${o.map(x=>`<label class="toggle"><input type="checkbox" data-bfm="${k}" value="${esc(x)}"${cur.includes(x)?" checked":""}> ${esc(x)}</label>`).join("")}</div>`; }
       if(t==="sel") return lab+`<select class="bfi" id="${id}" data-bf="${k}"${sp}>${o.map(x=>`<option${(B[k]||o[0])===x?" selected":""}>${esc(x)}</option>`).join("")}</select>`;
       if(t==="numu") return lab+`<input class="bfi" id="${id}" data-bf="${k}" value="${v(k)}" inputmode="decimal"><select class="bfi" data-bf="${k}_u" aria-label="Einheit ${esc(l)}">${o.map(x=>`<option${(B[k+"_u"]||o[0])===x?" selected":""}>${esc(x)}</option>`).join("")}</select>`;
       if(t==="area") return lab+`<textarea class="bfi" rows="3" id="${id}" data-bf="${k}"${sp}${ph?` placeholder="${esc(ph)}"`:""}>${v(k)}</textarea>`;
@@ -4469,6 +4472,8 @@ function renderBefund(){
       return s; }).join("")+`</div>`; }
   if(!B.date) B.date=new Date().toISOString().slice(0,10);
   $("bfName").value=B.name||""; $("bfDate").value=B.date; syncPName();
+  document.querySelectorAll("[data-bfm]").forEach(el=>el.onchange=()=>{ const k=el.dataset.bfm, o=((ANAM.flatMap(g=>g[1]).find(r=>r[0]===k))||[])[3]||[];
+    bf()[k]=o.filter(x=>document.querySelector(`[data-bfm="${k}"][value="${CSS.escape(x)}"]`)?.checked).join(", "); save(); });
   document.querySelectorAll("[data-bf]").forEach(el=>{ el.oninput=el.onchange=()=>{ bf()[el.dataset.bf]=el.value; save(); if(el.dataset.bf==="s_beinlaenge"||el.dataset.bf==="s_becken"||/^[mk]_.+_[lr]$/.test(el.dataset.bf)) setTimeout(()=>{ const k=el.dataset.bf; renderBefund();   // Fokus nach dem Neuaufbau zurück aufs Feld, damit Tab zum nächsten Feld springt
       const n=document.querySelector(`[data-bf="${k}"]`); if(n) try{ n.focus({preventScroll:true}); }catch(e){} },0); }; });
 }
