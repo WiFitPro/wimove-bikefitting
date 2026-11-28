@@ -755,7 +755,7 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
         <div class="btGroup" id="admBt" role="group" aria-label="Einstellungsseite der Radart" style="display:flex;margin-top:6px"></div>
         <div class="row" style="margin-top:8px"><button class="btn ghost small" type="button" id="admCopy">Änderungen für alle Radarten übernehmen</button></div><p class="note" id="admCopyNote"></p></section>
       <details class="acc" id="admStyle"><summary>Richtwerte je Fahrstil</summary><div id="admStyleBox"></div></details>
-      <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
+      <details class="acc" id="admSeg"><summary>Personenmodell: Segmente und Haltung</summary><p class="note info" style="margin-top:0">Grundwerte des Körpermodells für diese Radart, getrennt für Männer und Frauen (z. B. Einsinken im Sattel, Sitzpunkt). Gelten für jede Person, solange bei ihr nichts anderes eingestellt ist (Feinwerte einer einzelnen Person: Tab Person → Segmente).</p><div id="admSegBox"></div><div id="admHaltBox"></div><div id="admCleatBox"></div></details>
       <div id="admMore"></div>
       <div id="admStdBox"></div>
       <details class="acc adminOnly" style="margin-top:18px"><summary>Benutzerverwaltung</summary>
@@ -1111,7 +1111,10 @@ const isFem=()=>!!(S.person&&S.person.sex==="weiblich");
 /* Modellwerte, die als eigener Standard gespeichert werden können (bleiben bei neuen Excel-Dateien erhalten) */
 const MODEL_KEYS=["hipStand","hipFwd","sitBack","sink","shoulderDrop","protr","kneeBack","ankleH","footAngle","armAdd"];   // Ellbogenwinkel kommt aus den Richtwerten je Fahrstil   // Hüftgelenk über Sattel folgt immer Hüftgelenk über Schritthöhe
 /* Modellwerte (Segmente/Haltung) je Radart: Änderung im Admin-Tab > gespeicherter Standard der Radart > früherer gemeinsamer Standard */
-const stdValT=(bt,k)=>{ const T=S.segOvT&&S.segOvT[bt]; if(T&&isFinite(T[k])) return T[k]; const B=S.modelStd&&S.modelStd.byT&&S.modelStd.byT[bt]; if(B&&isFinite(B[k])) return B[k];
+/* Frauen haben eine eigene Ebene (Schlüssel „radart~w“); solange dort nichts gesetzt ist, gelten die Werte der Männer */
+const SEXK=(bt,w)=>w?bt+"~w":bt;
+const stdValT=(bt,k,w=isFem())=>{ if(w){ const Tw=S.segOvT&&S.segOvT[bt+"~w"]; if(Tw&&isFinite(Tw[k])) return Tw[k]; const Bw=S.modelStd&&S.modelStd.byT&&S.modelStd.byT[bt+"~w"]; if(Bw&&isFinite(Bw[k])) return Bw[k]; }
+  const T=S.segOvT&&S.segOvT[bt]; if(T&&isFinite(T[k])) return T[k]; const B=S.modelStd&&S.modelStd.byT&&S.modelStd.byT[bt]; if(B&&isFinite(B[k])) return B[k];
   return S.modelStd&&isFinite(S.modelStd[k])?S.modelStd[k]:NaN; };
 const stdVal=k=>stdValT(btype(),k);
 const cleatStd=(bt=btype())=>{ const v=stdValT(bt,"cleat"); return isFinite(v)?v:72; };   // Cleatposition-Standard je Radart
@@ -1689,7 +1692,7 @@ const spacerIdeal=()=>{ const v=SPACER_BY_STYLE[S.person&&S.person.style]; retur
 function suggest(){
   const B=body(), c0={...S.comp}, T=sugT();
   const back=isFinite(T.back)?T.back:styleBack();
-  const SI=stemIdeal(), bt=btype(), aero=S.bar==="aero", key=JSON.stringify([vals,c0,B,T,S.bar,bt,back,S.compSel&&S.compSel.bar,SI]);
+  const SI=stemIdeal(), bt=btype(), aero=S.bar==="aero", key=JSON.stringify([vals,c0,B,T,S.bar,bt,back,S.compSel&&S.compSel.bar,SI,personReady()]);
   if(sugCache.key===key) return sugCache.val;
   const Bx={...B,backAngle:back,_back:back};
   const setup=(sb,sh,extra)=>{ const c={...c0,setback:sb,saddleH:sh,...(extra||{})}; return {c,g:compute(vals,c)}; };
@@ -1708,7 +1711,7 @@ function suggest(){
   const integ=(()=>{ const b=FIT.lists.bars.find(x=>x.name===S.compSel.bar); return !!(b&&isFinite(b.angle)); })();
   /* Vorbauwinkel: mit gewähltem Vorbau/Cockpit dessen Winkel, sonst Standard −6°; steilere Winkel nur wenn die Position es deutlich verlangt */
   const saRef=(integ||S.compSel.stem)?c0.stemAngle:STEM_ANGLE_T[bt];
-  const angles=[...new Set([saRef,...((integ||S.compSel.stem)?[]:STEM_ANGLES_T[bt])])],   // gewählter Vorbau/integriertes Cockpit: nur dessen Winkel
+  const angles=[...new Set([saRef,...((integ||S.compSel.stem||!personReady())?[]:STEM_ANGLES_T[bt])])],   // gewählter Vorbau/integriertes Cockpit: nur dessen Winkel; ohne Messwerte (Standardperson beim Öffnen): nur der Standardwinkel
     SR=STEM_RANGE_T[bt], pads=aero?PAD_STACKS:[null];
   /* Idealposition (radunabhängig): Griffpunkt, an dem bei Ziel-Rückenwinkel auch Schulter- und Ellbogenwinkel genau den Zielwerten entsprechen */
   let ideal=null; { const seat={x:-sb,y:Math.sqrt(sh*sh-sb*sb)}, Bi={...B,backAngle:back,_back:back};
@@ -1726,7 +1729,7 @@ function suggest(){
     const bk=degs(Math.atan2(Sh.y-hip.y,Sh.x-hip.x));
     const E=aero?G:ik(Sh,G,L1,L2,-1).mid, shA=angAt(Sh,hip,E);
     const cost=ideal
-      ? (Math.hypot(G.x-ideal.gx,G.y-ideal.gy)/5)**2+0.15*(((bk-back)/4)**2+((shA-T.shoulder)/8)**2)+(sa!==saRef?2+Math.abs(sa-saRef)*0.1:0)+0.15*((L-SI)/20)**2+sp/400+(ps===null?0:Math.abs(ps-70)/250)   /* Griff möglichst nah am Idealpunkt; anderer Vorbauwinkel nur, wenn er ≈ 7 mm näher bringt */
+      ? (Math.hypot(G.x-ideal.gx,G.y-ideal.gy)/5)**2+0.15*(((bk-back)/4)**2+((shA-T.shoulder)/8)**2)+(sa!==saRef?9+Math.abs(sa-saRef)*0.4:0)+0.15*((L-SI)/20)**2+sp/400+(ps===null?0:Math.abs(ps-70)/250)   /* Griff möglichst nah am Idealpunkt; anderer Vorbauwinkel als der Standard nur, wenn er den Griff deutlich (≈ 15–20 mm) näher bringt */
       : ((bk-back)/4)**2+((shA-T.shoulder)/8)**2+(sa!==saRef?0.3+Math.abs(sa-saRef)*0.06:0)+Math.abs(L-c0.stemLen)/400+Math.abs(sp-c0.spacer)/400
       +STEM_PREF*((L-SI)/20)**2+(ps===null?0:Math.abs(ps-70)/250);   /* Vorliebe für die zur Sitzposition passende Vorbaulänge (comfort 90 … professional 125 mm), Abweichung nur wenn die Winkel es verlangen */
     if(!best||cost<best.cost) best={L,sp,sa,ps,cost,grip:G,back:bk,shoulder:shA};
@@ -2257,17 +2260,22 @@ const FITM={}; for(const d of FITM_DEF) FITM[d[0]]=d[4];
 const STEM_FACTORY={comfort:90,endurance:100,sportlich:105,ambitioniert:115,professional:125}, SPACER_FACTORY={comfort:25,endurance:20,sportlich:15,ambitioniert:10,professional:5};
 const STEM_FACTORY_T={road:STEM_FACTORY,gravel:{comfort:80,endurance:90,sportlich:95,ambitioniert:105,professional:115},tri:{comfort:80,endurance:85,sportlich:90,ambitioniert:100,professional:110},mtb:{comfort:50,endurance:55,sportlich:60,ambitioniert:70,professional:80}};
 const SPACER_FACTORY_T={road:SPACER_FACTORY,gravel:{comfort:30,endurance:25,sportlich:20,ambitioniert:15,professional:10},tri:{comfort:30,endurance:25,sportlich:20,ambitioniert:10,professional:5},mtb:{comfort:20,endurance:15,sportlich:10,ambitioniert:5,professional:0}};
-let ADM_BT=null; const admBt=()=>BTYPES[ADM_BT]?ADM_BT:btype();   // im Admin-Tab bearbeitete Radart (Standard: aktuelle)
-function renderSegStd(){ const box=$("admSegBox"); if(!box) return; const bt=admBt(), P0=body();
-  const tag=k=>S.segOvT&&S.segOvT[bt]&&isFinite(S.segOvT[bt][k])?'<small class="src edit">geändert</small>':isFinite(stdValT(bt,k))?'<small class="src">Standard</small>':'<small class="src">App-Wert</small>';
+let ADM_BT=null; const admBt=()=>BTYPES[ADM_BT]?ADM_BT:btype();
+let ADM_SEX=null; const admW=()=>ADM_SEX?ADM_SEX==="w":isFem();   // im Admin-Tab bearbeitetes Geschlecht (Standard: Person des Fittings)   // im Admin-Tab bearbeitete Radart (Standard: aktuelle)
+function renderSegStd(){ const box=$("admSegBox"); if(!box) return; const bt=admBt(), w=admW(), sk=SEXK(bt,w), P0=body();
+  const own=k=>{ const T=(S.segOvT||{})[sk], B=((S.modelStd||{}).byT||{})[sk]; return T&&isFinite(T[k])?"edit":B&&isFinite(B[k])?"std":""; };
+  const tag=k=>{ const o=own(k); return o==="edit"?'<small class="src edit">geändert</small>':o==="std"?'<small class="src">Standard</small>':w&&isFinite(stdValT(bt,k,false))?'<small class="src">wie Männer</small>':isFinite(stdValT(bt,k,w))?'<small class="src">Standard</small>':'<small class="src">App-Wert</small>'; };
+  const sexBar=`<div class="btGroup" role="group" aria-label="Geschlecht" style="display:flex;margin:0 0 10px">${[["m","Männer"],["w","Frauen"]].map(([x,l])=>`<button type="button" data-sgsex="${x}" aria-pressed="${(x==="w")===w}" style="flex:1 1 auto"${(x==="w")===isFem()?' title="Geschlecht der Person im aktuellen Fitting"':""}>${l}${(x==="w")===isFem()?" •":""}</button>`).join("")}</div>`
+    +(w?`<p class="note" style="margin:-4px 0 10px">Werte ohne eigenen Frauenwert übernehmen automatisch den Wert der Männer („wie Männer“).</p>`:"");
   const CLD={key:"cleat",label:"Cleatposition (% Fußlänge ab Ferse)",unit:"%",min:40,max:90,step:0.5,f:()=>72};
   const dOf=k=>k==="cleat"?CLD:PERS.find(x=>x.key===k);
-  box.innerHTML=`<div class="fitmGrid">`+[...MODEL_KEYS,"cleat"].map(k=>{ const d=dOf(k); if(!d) return ""; const v=isFinite(stdValT(bt,k))?stdValT(bt,k):d.f(P0);
+  box.innerHTML=sexBar+`<div class="fitmGrid">`+[...MODEL_KEYS,"cleat"].map(k=>{ const d=dOf(k); if(!d) return ""; const v=isFinite(stdValT(bt,k,w))?stdValT(bt,k,w):d.f(P0);
     return `<label for="sg_${k}">${esc(d.label)}</label><div class="fitmIn"><input class="bfi" id="sg_${k}" type="number" step="${d.step||1}" data-seg="${k}" value="${Math.round(v*10)/10}" style="max-width:90px"><span class="note" style="margin:0">${d.unit||"mm"}</span>${tag(k)}</div>`; }).join("")+`</div>`;
   box.querySelectorAll("[data-seg]").forEach(el=>el.onchange=()=>{ const k=el.dataset.seg, d=dOf(k), x=num(el.value); if(!isFinite(x)||x<d.min||x>d.max){ renderSegStd(); return; }
-    S.segOvT=S.segOvT||{}; (S.segOvT[bt]=S.segOvT[bt]||{})[k]=x; if(bt===btype()&&S.person.ov) delete S.person.ov[k];
-    if(k==="cleat"&&bt===btype()){ S.comp.cleat=x; if(S.compBase) S.compBase.cleat=x; try{ syncComp(); }catch(e){} }
-    sugCache.key=""; sizeFitCache.key=""; markEdited(el); setTimeout(()=>{ syncPerson(); render(); save(); },0); }); }
+    S.segOvT=S.segOvT||{}; (S.segOvT[sk]=S.segOvT[sk]||{})[k]=x; const cur=bt===btype()&&w===isFem(); if(cur&&S.person.ov) delete S.person.ov[k];
+    if(k==="cleat"&&cur){ S.comp.cleat=x; if(S.compBase) S.compBase.cleat=x; try{ syncComp(); }catch(e){} }
+    sugCache.key=""; sizeFitCache.key=""; markEdited(el); setTimeout(()=>{ syncPerson(); render(); save(); },0); });
+  box.querySelectorAll("[data-sgsex]").forEach(b=>b.onclick=()=>{ ADM_SEX=b.dataset.sgsex; renderSegStd(); }); }
 /* geänderte Werte der gezeigten Radart auf alle anderen Radarten übertragen */
 function admCopyAll(){ const bt=admBt(), others=Object.keys(BTYPES).filter(b=>b!==bt); let n=0;
   for(const [k,v] of Object.entries(S.fitOv||{})){ let m;
@@ -2275,7 +2283,7 @@ function admCopyAll(){ const bt=admBt(), others=Object.keys(BTYPES).filter(b=>b!
     else if((m=k.match(/^(?:([a-z]+)_)?(stem|spacer)_(\w+)$/))&&(m[1]||"road")===(bt==="road"?"road":bt)&&kpT(bt)===(m[1]?m[1]+"_":"")){ for(const o of others) S.fitOv[kpT(o)+m[2]+"_"+m[3]]=v; n++; } }
   const O=styleOvOf(bt); for(const [st,vals] of Object.entries(O)) for(const [k,v] of Object.entries(vals||{})){ if(!isFinite(v)) continue; n++;
     for(const o of others){ let O2; if(o==="road") O2=S.styleOv=S.styleOv||{}; else { S.styleOvT=S.styleOvT||{}; O2=S.styleOvT[o]=S.styleOvT[o]||{}; } (O2[st]=O2[st]||{})[k]=v; } }
-  const G=(S.segOvT||{})[bt]||{}; for(const [k,v] of Object.entries(G)){ n++; for(const o of others) (S.segOvT[o]=S.segOvT[o]||{})[k]=v; if(S.person.ov) delete S.person.ov[k]; }
+  for(const sx of ["","~w"]){ const G=(S.segOvT||{})[bt+sx]||{}; for(const [k,v] of Object.entries(G)){ n++; for(const o of others) (S.segOvT[o+sx]=S.segOvT[o+sx]||{})[k]=v; if(S.person.ov) delete S.person.ov[k]; } }
   applyFitModel(); applyStyleStd(); fitModelChanged(); renderStyleStd(); renderSegStd(); syncPerson(); render(); save();
   $("admCopyNote").textContent=n?`${n} geänderte Werte von „${BTYPES[bt]}“ auf alle Radarten übertragen. Mit „Modellwerte als Standard speichern“ (unten) dauerhaft sichern.`:`Auf der Seite „${BTYPES[bt]}“ gibt es keine geänderten Werte (markiert mit „geändert“) zum Übertragen.`; }
 function renderAdmBt(){ const g=$("admBt"); if(!g) return; const b=admBt();
@@ -2682,7 +2690,7 @@ $("saveStd").onclick=()=>{
   let n=0;
   for(const k of keys){
     /* Modellwerte und von Hand geänderte Längen festschreiben; berechnete Längen bleiben von der Person abhängig */
-    if(MODEL_KEYS.includes(k)){ if(isFinite(S.person.ov[k])){ const by=S.modelStd.byT=S.modelStd.byT||{}; (by[btype()]=by[btype()]||{})[k]=S.person.ov[k]; n++; } }   // Modellwerte je Radart (Feinwert der Person → Standard dieser Radart)
+    if(MODEL_KEYS.includes(k)){ if(isFinite(S.person.ov[k])){ const by=S.modelStd.byT=S.modelStd.byT||{}; const sk=SEXK(btype(),isFem()); (by[sk]=by[sk]||{})[k]=S.person.ov[k]; n++; } }   // Modellwerte je Radart (Feinwert der Person → Standard dieser Radart)
     else if(isFinite(S.person.ov[k])){ S.modelStd[k]=B[k]; n++; }
     else delete S.modelStd[k];
     delete S.person.ov[k];
@@ -2717,7 +2725,7 @@ $("discSel").onchange=e=>{ S.person["disc_"+btype()]=e.target.value; delete S.pe
 $("styleSel").onchange=e=>{ S.person.style=e.target.value; delete S.person.ov.backAngle; delete S.person.ov.shoulderT; delete S.person.ov.elbowT;
   resetSugTargets();   // Zielwerte folgen dem Fahrstil
   syncPerson(); render(); save(); };
-$("sexSel").onchange=e=>{ S.person.sex=e.target.value; syncPerson(); render(); save(); };
+$("sexSel").onchange=e=>{ S.person.sex=e.target.value; sugCache.key=""; sizeFitCache.key=""; syncPerson(); render(); try{ renderSegStd(); }catch(x){} save(); };
 $("autoBack").onchange=e=>{ S.person.autoBack=e.target.checked; delete S.person.ov.backAngle; syncPerson(); render(); save(); };
 if($("resetPerson")) $("resetPerson").onclick=()=>{ S.person=personFrom(); $("styleSel").value=S.person.style; $("sexSel").value=S.person.sex; $("autoBack").checked=false; syncPerson(); render(); save(); };
 /* Kurbel endlos drehen: Drehknopf, Mausrad, Pfeiltasten oder direkt am Pedal in der Zeichnung */
@@ -3399,7 +3407,7 @@ function measParseWords(w){
   const found=[], isNum=t=>/\d/.test(t)&&/^[^A-Za-zÄÖÜäöüß]*\d[\d.,]*\s*(mm|cm|m)?[^A-Za-z]*$/i.test(t), unitOf=t=>{ const k=String(t).toLowerCase(); return /\bcm\b|\(cm\)|^cm$/.test(k)?"cm":/\bmm\b|\(mm\)|^mm$/.test(k)?"mm":""; };
   const used=new Set(), firstOf={};
   for(const x of w) if(!(x.line in firstOf)) firstOf[x.line]=measKey(x.t);
-  const DERIVED=/^(armlange|armlaenge|oberarm|unterarm|oberarmlange|unterarmlange|rumpf|rumpflange|oberschenkel|unterschenkel|oberschenkellange|unterschenkellange|beinlange)/;   // berechnete Zeilen (z. B. „Armlänge gesamt … Schulterdach – Handhöhe“) überspringen
+  const DERIVED=/^(oberkorper|armlange|armlaenge|oberarm|unterarm|oberarmlange|unterarmlange|rumpf|rumpflange|oberschenkel|unterschenkel|oberschenkellange|unterschenkellange|beinlange)/;   // berechnete Zeilen (z. B. „Armlänge gesamt … Schulterdach – Handhöhe“) überspringen
   const labelUsed=new Set();
   /* alle Bezeichnungen vorab: ein Wert gehört zu der Bezeichnung links davon, die ihm in der Höhe am nächsten ist */
   const labs=[]; for(let q=0;q<w.length;q++){ const t=w[q].t, nx=w[q+1]&&w[q+1].line===w[q].line?w[q+1].t:"", pv=w[q-1]&&w[q-1].line===w[q].line?w[q-1].t:"";
@@ -4751,7 +4759,7 @@ function guideBuiltin(){   // Vorlage: Docs-Dokument „Anleitung WiFitPro und W
     {h:"WiFitPro: das ausführliche Bikefitting",blocks:[P("In WiFitPro gehst du die Tabs von links nach rechts durch ({TABS}); „Weiter“ am Ende jedes Tabs führt zum nächsten, „Zurück“ zum vorigen."),
      OL([["Befund",["Unter „Kunde“ Name und Datum eintragen – sie erscheinen auf dem PDF.","Anamnese ausfüllen, z. B. Umfang als Jahreskilometer oder km/Woche.","Beschwerden: erst die Körperregion wählen, dann die Seite (bei Bedarf abwählbar, z. B. Gesäß) und die Art der Beschwerde.","Statikbefund, Dynamischer Befund, Mobilitätstests und Krafttests nach Bedarf. Das kleine Bild neben einem Test zeigt, wie er durchgeführt wird."]],
        ["Bike Set Up",["Die Maße des mitgebrachten Rads als Ist-Zustand eintragen und die optimierte Position in der zweiten Spalte. Leere Felder der optimierten Spalte übernehmen den Ist-Wert."]],
-       ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen (deutsch oder englisch beschriftet), Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
+       ["Person",["Name, Datum, Sitzposition/Fahrstil (comfort bis professional), Disziplin (bei Triathlon und Mountainbike) und Geschlecht wählen.","Alle Messwerte eintragen: Körpergröße, Brustbeinhöhe, Schrittlänge, Fußlänge, Schulterhöhe und Handhöhe je links und rechts, Schulterbreite. Schneller geht es mit „Messwerte aus Bild übernehmen“: Screenshot oder Foto einfügen (deutsch oder englisch beschriftet), Werte prüfen, übernehmen.","Neben jedem Maß zeigt die Ampel, wie stark es von der Norm abweicht; bei Gelb oder Rot lohnt sich ein Nachmessen. Aus den Eingaben berechnet die App die Oberkörperlänge (Brustbein – Schrittlänge) und die Armlänge (Schulterdach – Handhöhe), ebenfalls mit Normvergleich.","Sind alle Werte da, zeichnet die App die Person und wählt die Kurbellänge passend zur Schrittlänge.","Unter „Haltung“ stehen Rücken-, Schulter- und Ellbogenwinkel des Fahrstils; du kannst sie für den Kunden anpassen."]],
        ["Rad",["Marke, Modell und Größe wählen; der Haken „alle Radkategorien“ neben „Fahrrad“ zeigt auch Räder anderer Radarten. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
        ["Bauteile",["„Ist-Zustand laden“ oder „Optimierte Position laden“ übernimmt die Werte aus dem Bike Set Up.","Lenker, Vorbau, Schalt-/Bremsgriffe, Pedale und Schuhe aus den Listen wählen. Angezeigt werden die Teile zur Radmarke; mit „alle Lenker“ bzw. „alle Vorbauten“ siehst du alle.","Fehlende Maße direkt eintragen; neue Teile unter „Teile verwalten“ anlegen und Radmarken zuordnen."]],
        ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad. Die Spalte „Ideal“ zeigt die Zielposition nur aus Messwerten und Fahrstil (für jedes Rad gleich), „Vorschlag“ das mit diesem Rad und den verfügbaren Teilen Erreichbare; darunter steht, wie weit der Griff von der Idealposition abweicht. Vorbaulänge, -winkel und Spacer wählt die App passend zu den gewählten Bauteilen (Lenker, Griffe) so, dass der Griff dem Idealpunkt möglichst nahe kommt; reicht das nicht, erscheint ein Hinweis zur Rahmengröße.","Unter „Idealposition vergleichen mit“ die aktuelle Einstellung, die Ist- oder die optimierte Position daneben stellen; Δ zeigt, wie viel bis zur Idealposition fehlt.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
@@ -5599,6 +5607,13 @@ function decorateNorms(){
     const lbl=inp.closest(".param").querySelector(".lbl"); const t=lbl.querySelector(".normtag"); if(t) t.remove();
     lbl.insertAdjacentHTML("beforeend",normTag(v,N[k]));
   }
+  { /* Oberkörperlänge = Brustbeinhöhe − Schrittlänge, sobald Körpergröße, Brustbein und Schrittlänge eingetragen sind */
+    const P=S.person||{}, en=P.entered, ok=["height","sternum","inseam"].every(k=>isFinite(+P[k])&&+P[k]>0&&(!en||en[k])), h=document.getElementById("pn_inseam");
+    let row=document.getElementById("torsoTot");
+    if(!ok||!h){ if(row) row.remove(); }
+    else { if(!row){ row=document.createElement("div"); row.id="torsoTot"; row.className="param armtot"; h.closest(".param").after(row); }
+      const tl=+P.sternum-+P.inseam;
+      row.innerHTML=`<span class="lbl">Oberkörperlänge <span class="src">Brustbein – Schrittlänge</span> ${normTag(tl,N.torsoLen)}</span><b class="armval">${Math.round(tl)} mm</b>`; } }
   for(const [side,hk,arm] of [["R","pn_hand",B.acromion-B.hand],["L","pn_handL",(L.acromionL??B.acromion)-(L.handL??B.hand)]]){
     const h=document.getElementById(hk); if(!h) continue;
     const par=h.closest(".param"); let row=document.getElementById("armTot"+side);
