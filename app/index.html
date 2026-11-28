@@ -5184,12 +5184,13 @@ async function makePdf(){
     for(const e of L){   // je Bereich eine Karte mit Schmerzskala
       const lines=[]; if(e.items.length) lines.push(e.items.join(", ")); if(e.qual.length) lines.push("Schmerzqualität: "+e.qual.join(", ")); if(e.when&&e.when!=="–") lines.push("Auftreten: "+e.when);
       const ft=String(Bf["p_"+e.region]||"").trim(); font(9); const wrap=lines.concat(ft?[ft]:[]).flatMap(t=>doc.splitTextToSize(pdfTxt(t),PW-60));
-      const hh=Math.max(14,8+wrap.length*4); need(hh+3);
+      font(10.5,true); const tl=doc.splitTextToSize(pdfTxt(e.regionLabel),47), ty=(tl.length-1)*4.4;   // Bereichsname links umbrechen, damit er nicht in den Text rechts läuft
+      const hh=Math.max(19+ty,8+wrap.length*4); need(hh+3);
       col(C.soft,"Fill"); doc.roundedRect(M,y,PW,hh,2,2,"F");
-      font(10.5,true); col(C.ink); doc.text(pdfTxt(e.regionLabel),M+4,y+6);
+      font(10.5,true); col(C.ink); doc.text(tl,M+4,y+6);
       const v=e.vas!==""&&e.vas!=null?+e.vas:NaN;
-      for(let i=0;i<10;i++){ const c=i<v?(i<3?C.ok:i<6?C.mid:C.bad):[220,225,231]; col(c,"Fill"); doc.rect(M+4+i*4.3,y+8.5,3.6,2.6,"F"); }
-      font(7); col(C.mute); doc.text(isFinite(v)?`Stärke ${v}/10`:"Stärke -",M+4,y+hh-2);
+      for(let i=0;i<10;i++){ const c=i<v?(i<3?C.ok:i<6?C.mid:C.bad):[220,225,231]; col(c,"Fill"); doc.rect(M+4+i*4.3,y+8.5+ty,3.6,2.6,"F"); }
+      font(7); col(C.mute); doc.text(isFinite(v)?`Stärke ${v}/10`:"Stärke -",M+4,y+15.5+ty);   // direkt unter der Skala
       font(9); col(C.ink); doc.text(wrap,M+56,y+5.5);
       y+=hh+3; }
   }
