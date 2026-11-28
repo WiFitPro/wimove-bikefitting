@@ -712,13 +712,13 @@ aside h3{font-size:15px;font-weight:700;color:var(--ink)}
       </section>
       <details class="acc"><summary>Videoanalyse (Contemplas)</summary>
         <p class="note info" style="margin-top:0">PDF aus Contemplas hinzufügen – übernommen werden nur die großen Vergleichsbilder (links vorher, rechts nachher).</p>
-        <button class="btn ghost small" id="cpBtn">Contemplas-PDF hinzufügen</button><input type="file" id="cpIn" accept=".pdf,application/pdf" hidden>
+        <div class="row"><button class="btn ghost small" id="cpBtn">Contemplas-PDF hinzufügen</button><button class="btn ghost small" type="button" id="cpClear" hidden>PDF entfernen</button></div><input type="file" id="cpIn" accept=".pdf,application/pdf" hidden>
         <p class="note" id="cpNote"></p>
         <div id="cpList"></div>
       </details>
       <details class="acc"><summary>Satteldruckmessung (Everve)</summary>
         <p class="note info" style="margin-top:0">PDF aus Everve hinzufügen – übernommen werden nur die Bilder der Druckmessung.</p>
-        <button class="btn ghost small" id="evBtn">Everve-PDF hinzufügen</button><input type="file" id="evIn" accept=".pdf,application/pdf" hidden>
+        <div class="row"><button class="btn ghost small" id="evBtn">Everve-PDF hinzufügen</button><button class="btn ghost small" type="button" id="evClear" hidden>PDF entfernen</button></div><input type="file" id="evIn" accept=".pdf,application/pdf" hidden>
         <p class="note" id="evNote"></p>
         <div id="evList"></div>
       </details>
@@ -4525,13 +4525,12 @@ async function cpImport(file){
 }
 function renderCP(){
   const box=$("cpList"); if(!box) return;
+  $("cpClear").hidden=!(CP&&CP.pages.length); $("cpClear").onclick=()=>{ CP=null; saveCP(); renderCP(); $("cpNote").textContent=""; };
   if(!CP||!CP.pages.length){ box.innerHTML=""; return; }
   box.innerHTML=`<p class="src-line">${esc(CP.name)}</p>`+CP.pages.map((p,i)=>`<div class="cprow"><div class="cpimgs"><img src="${p.a}" alt="Vergleichsbild ${i+1} vorher"><img src="${p.b}" alt="Vergleichsbild ${i+1} nachher"></div>
-    <input class="bfi" data-cpcap="${i}" value="${esc(p.cap||"")}" placeholder="Beschriftung, z. B. Knie gestreckt (6 Uhr)"><button type="button" class="suback" data-cpdel="${i}" title="Bild entfernen" aria-label="Vergleichsbild ${i+1} entfernen">✕</button></div>`).join("")+
-    `<button class="btn ghost small" id="cpClear" style="margin-top:6px">Alle Bilder entfernen</button>`;
+    <input class="bfi" data-cpcap="${i}" value="${esc(p.cap||"")}" placeholder="Beschriftung, z. B. Knie gestreckt (6 Uhr)"><button type="button" class="suback" data-cpdel="${i}" title="Bild entfernen" aria-label="Vergleichsbild ${i+1} entfernen">✕</button></div>`).join("");
   box.querySelectorAll("[data-cpcap]").forEach(el=>el.oninput=()=>{ CP.pages[+el.dataset.cpcap].cap=el.value; saveCP(); });
   box.querySelectorAll("[data-cpdel]").forEach(b=>b.onclick=()=>{ CP.pages.splice(+b.dataset.cpdel,1); if(!CP.pages.length) CP=null; saveCP(); renderCP(); });
-  $("cpClear").onclick=()=>{ CP=null; saveCP(); renderCP(); $("cpNote").textContent=""; };
 }
 
 /* ================= Everve-Satteldruckmessung: nur die Druckbilder aus dem PDF ================= */
@@ -4575,12 +4574,12 @@ async function evImport(file){
 }
 function renderEV(){
   const box=$("evList"); if(!box) return;
+  $("evClear").hidden=!(EV&&EV.pages.length); $("evClear").onclick=()=>{ EV=null; saveEV(); renderEV(); $("evNote").textContent=""; };
   if(!EV||!EV.pages.length){ box.innerHTML=""; return; }
   box.innerHTML=`<p class="src-line">${esc(EV.name)}</p><div class="evgrid">`+EV.pages.map((p,i)=>`<div class="evitem"><img src="${p.img}" alt="Satteldruckbild ${i+1}"><div class="suc"><input class="bfi" data-evcap="${i}" value="${esc(p.cap||"")}" placeholder="Beschriftung"><button type="button" class="suback" data-evdel="${i}" title="Bild entfernen" aria-label="Druckbild ${i+1} entfernen">✕</button></div></div>`).join("")+
-    `</div><button class="btn ghost small" id="evClear" style="margin-top:6px">Alle Druckbilder entfernen</button>`;
+    `</div>`;
   box.querySelectorAll("[data-evcap]").forEach(el=>el.oninput=()=>{ EV.pages[+el.dataset.evcap].cap=el.value; saveEV(); });
   box.querySelectorAll("[data-evdel]").forEach(b=>b.onclick=()=>{ EV.pages.splice(+b.dataset.evdel,1); if(!EV.pages.length) EV=null; saveEV(); renderEV(); });
-  $("evClear").onclick=()=>{ EV=null; saveEV(); renderEV(); $("evNote").textContent=""; };
 }
 
 /* ================= PDF ================= */
@@ -4763,7 +4762,7 @@ function guideBuiltin(){   // Vorlage: Docs-Dokument „Anleitung WiFitPro und W
        ["Rad",["Marke, Modell und Größe wählen; der Haken „alle Radkategorien“ neben „Fahrrad“ zeigt auch Räder anderer Radarten. Die Größen sind eingefärbt: grün passt, orange bedingt, rot passt nicht; die Empfehlung steht darunter.","Mit „+ Rahmen hinzufügen“ andere Räder oder Größen zum Vergleich einblenden.","Fehlt ein Rad, legst du es unter „Räder verwalten“ mit „+ Rad anlegen“ an – von Hand oder per „Geometrie aus Bild“ aus einem Screenshot der Herstellertabelle."]],
        ["Bauteile",["„Ist-Zustand laden“ oder „Optimierte Position laden“ übernimmt die Werte aus dem Bike Set Up.","Lenker, Vorbau, Schalt-/Bremsgriffe, Pedale und Schuhe aus den Listen wählen. Angezeigt werden die Teile zur Radmarke; mit „alle Lenker“ bzw. „alle Vorbauten“ siehst du alle.","Fehlende Maße direkt eintragen; neue Teile unter „Teile verwalten“ anlegen und Radmarken zuordnen."]],
        ["Sitzposition",["Die App rechnet einen Vorschlag für Sattelhöhe, Setback, Vorbau und Spacer aus Körpermaßen, Fahrstil und Rad. Die Spalte „Ideal“ zeigt die Zielposition nur aus Messwerten und Fahrstil (für jedes Rad gleich), „Vorschlag“ das mit diesem Rad und den verfügbaren Teilen Erreichbare; darunter steht, wie weit der Griff von der Idealposition abweicht. Vorbaulänge, -winkel und Spacer wählt die App passend zu den gewählten Bauteilen (Lenker, Griffe) so, dass der Griff dem Idealpunkt möglichst nahe kommt; reicht das nicht, erscheint ein Hinweis zur Rahmengröße.","Unter „Idealposition vergleichen mit“ die aktuelle Einstellung, die Ist- oder die optimierte Position daneben stellen; Δ zeigt, wie viel bis zur Idealposition fehlt.","„Vorschlag übernehmen“ setzt die Werte; Sattel- und Griffposition kannst du danach fein anpassen. Die Gelenkwinkel zeigen Bereich und Richtwerte über eine Kurbelumdrehung."]],
-       ["PDF",["Ein Paket antippen ({PAKETE}) oder Inhalte einzeln anhaken. Eigene Pakete können unter „Eigene Pakete und Voreinstellung“ angelegt und bearbeitet werden.","Bei Bedarf das PDF der Videoanalyse (Contemplas) und der Satteldruckmessung (Everve) hinzufügen; die App übernimmt nur deren Bilder.","Unter „Bericht: Logo und Kontaktdaten“ kann das eigene Logo hochgeladen und die Kontaktdaten eingefügt werden.","„PDF erstellen“ erzeugt den Bericht mit Deckblatt, den ausgewählten Inhalten, deinem Logo und deinen Kontaktdaten."]],
+       ["PDF",["Ein Paket antippen ({PAKETE}) oder Inhalte einzeln anhaken. Eigene Pakete können unter „Eigene Pakete und Voreinstellung“ angelegt und bearbeitet werden.","Bei Bedarf das PDF der Videoanalyse (Contemplas) und der Satteldruckmessung (Everve) hinzufügen; die App übernimmt nur deren Bilder. „PDF entfernen“ nimmt ein hinzugefügtes PDF wieder heraus.","Unter „Bericht: Logo und Kontaktdaten“ kann das eigene Logo hochgeladen und die Kontaktdaten eingefügt werden.","„PDF erstellen“ erzeugt den Bericht mit Deckblatt, den ausgewählten Inhalten, deinem Logo und deinen Kontaktdaten."]],
        ["Daten",["Unter „Konto“ das Passwort ändern oder abmelden.","„Bedienungsanleitung herunterladen“ erzeugt diese Anleitung als PDF.","Mit „Daten sichern (.json)“ alles archivieren oder auf ein anderes Gerät mitnehmen; „Sicherung laden“ spielt es wieder ein."]]])]},
     {h:"Bedienung",blocks:[P("Diese Elemente gelten in beiden Ansichten."),
      {t:"table",rows:[["Element","Wo","Was es tut"],
