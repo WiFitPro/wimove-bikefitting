@@ -5303,10 +5303,14 @@ async function makePdf(){
   }
   if(pdfOn("rw")){
     H1("Empfohlene Richtwerte",lastSec==="sug");   // mit dem Vorschlag auf einer Seite, wenn beides gewählt
-    const T2=sugT(), st=["comfort","endurance","sportlich","ambitioniert","professional"];
-    kv([["Knie gestreckt",`${T2.knee}° (Bereich 140-150°)`],["Knielot (3 Uhr)","Knie senkrecht über der Pedalachse"],["Hüfte geschlossen","mindestens 50°"],["Ellbogen","145-165°"]],2);
+    /* Richtwerte wie im Admin-Tab eingestellt: Radart und Fahrstil der Person */
+    const st=["comfort","endurance","sportlich","ambitioniert","professional"], r1=x=>String(Math.round(x*10)/10), Y=styT(), sty=(S.person&&S.person.style)||"sportlich";
+    const kp=isFinite(Y.kops)?Y.kops:0, kpTxt=Math.abs(kp)<0.5?"Knie senkrecht über der Pedalachse":`Knie ${r1(Math.abs(kp))} mm ${kp>0?"vor":"hinter"} der Pedalachse`;
+    T(`Fahrstil ${sty} · ${BTYPES[btype()]}`,9.5,false,C.mute);
+    kv([["Knie gestreckt",`${r1(Y.kneeT)}° (Bereich ${r1(Y.kneeLo)}-${r1(Y.kneeHi)}°)`],["Knielot (3 Uhr)",kpTxt],["Hüfte geschlossen",`mindestens ${r1(Y.hip)}°`],["Sprunggelenk",`${r1(Y.ankleLo)}-${r1(Y.ankleHi)}°`],
+        ["Rücken",`${r1(STYLE_STD[sty].back)}° (± ${r1(Y.backR)}°)`],["Schulter",`${r1(Y.shoulder)}° (± ${r1(Y.shR)}°)`],["Ellbogen",`${r1(Y.elbowLo)}-${r1(Y.elbowHi)}°`]],2);
     H2("Rückenwinkel je Fahrstil");
-    tiles(st.map(s=>[s,`${STYLE_STD[s].back}°`,"Rücken"]),5);
+    tiles(st.map(s=>[s,`${r1(STYLE_STD[s].back)}°`,`Rücken ± ${r1(STYLE_STD[s].backR)}°`]),5);
   }
   const n=doc.getNumberOfPages(), first=BR?2:1, cnt=n-first+1;
   for(let i=first;i<=n;i++){ doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(120);
