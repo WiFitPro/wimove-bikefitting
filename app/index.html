@@ -3775,9 +3775,12 @@ function renderPainPicker(){
   const box=$("bfPainPick"); if(!box) return;
   const hasList=(bf().painList||[]).length>0, none=noPainOn();
   /* „Keine Beschwerden“ als erster Eintrag der Bereichsauswahl */
-  const regionSel=`<label class="f" for="pp_region">Bereich</label><select class="bfi ppRegion" id="pp_region"><option value="__none"${none?" selected":""}${hasList?" disabled":""}>Keine Beschwerden${hasList?" (erst Einträge löschen)":""}</option>${BF_PAIN.map(([k,l])=>`<option value="${k}"${!none&&k===painDraft.region.replace(/_[lrb]$/,"")?" selected":""}>${l}</option>`).join("")}</select>`;
+  const regionSel=`<label class="f" for="pp_region">Bereich</label><select class="bfi ppRegion" id="pp_region">${!none&&!painDraft.region?`<option value="" selected disabled>${hasList?"Weiteren Bereich wählen …":"Bereich wählen …"}</option>`:""}<option value="__none"${none?" selected":""}${hasList?" disabled":""}>Keine Beschwerden${hasList?" (erst Einträge löschen)":""}</option>${BF_PAIN.map(([k,l])=>`<option value="${k}"${!none&&k===painDraft.region.replace(/_[lrb]$/,"")?" selected":""}>${l}</option>`).join("")}</select>`;
   const onRegion=e=>{ const v=e.target.value; if(v==="__none"){ bf().noPain=true; } else { bf().noPain=false; const lr=(BF_PAIN.find(x=>x[0]===v)||[])[2], side=(painDraft.region.match(/_([lrb])$/)||[])[1]; painDraft.region=lr&&side?v+"_"+side:v; painDraft.items=[]; } save(); renderPainPicker(); };
+  const plist=()=>{ const list=bf().painList||[]; return list.length?`<div class="plist">${list.map((e,i)=>`<div class="pentry"><div><b>${esc(e.regionLabel)}</b>: ${esc(e.items.join(", ")||"–")}<br><span class="note">${esc([e.qual.join(", "),e.vas!==""?`Stärke ${e.vas}/10`:"",e.when&&e.when!=="–"?e.when:""].filter(Boolean).join(" · "))}</span>${bf()["p_"+e.region]?`<br><span class="note"><i>${esc(bf()["p_"+e.region])}</i></span>`:""}</div><button type="button" class="suback" data-pdel="${i}" aria-label="Eintrag entfernen" title="Entfernen">✕</button></div>`).join("")}</div>`:""; };
+  const bindDel=()=>box.querySelectorAll("[data-pdel]").forEach(b=>b.onclick=()=>{ bf().painList.splice(+b.dataset.pdel,1); save(); renderPainPicker(); });
   if(none){ box.innerHTML=regionSel+`<p class="note">Zum Eintragen einen Bereich wählen.</p>`; $("pp_region").onchange=onRegion; return; }
+  if(!painDraft.region){ box.innerHTML=regionSel+plist(); $("pp_region").onchange=onRegion; bindDel(); return; }   // nach „Hinzufügen“: zurück zum Ausgangspunkt (nur Bereichsauswahl)
   const D=painDraft, base=D.region.replace(/_[lrb]$/,""), cat=PAIN_CAT[base]||[], hasSide=!!(BF_PAIN.find(x=>x[0]===base)||[])[2], side=(D.region.match(/_([lrb])$/)||[])[1];
   D.items=D.items.filter(x=>cat.includes(x)||!Object.values(PAIN_CAT).flat().includes(x));
   const chips=(arr,sel,attr)=>arr.map(x=>`<button type="button" class="chip pchip" ${attr}="${esc(x)}" aria-pressed="${sel.includes(x)}">${esc(x)}</button>`).join("");
@@ -3790,7 +3793,7 @@ function renderPainPicker(){
       <div><label class="f" for="pp_when">Auftreten</label><select class="bfi" id="pp_when">${PAIN_WHEN.map(x=>`<option${x===D.when?" selected":""}>${x}</option>`).join("")}</select></div></div>
     <label class="f" for="pp_text">Freitext zu ${esc(painRegions().find(r=>r[0]===D.region)[1])}</label><input class="bfi" id="pp_text" value="${esc(bf()["p_"+D.region]||"")}" placeholder="z. B. seit wann, Auslöser, Besserung">
     <div class="row" style="margin-top:10px"><button type="button" class="btn small" id="pp_add">Hinzufügen</button></div><p class="note warn" id="pp_err"></p>
-    ${list.length?`<div class="plist">${list.map((e,i)=>`<div class="pentry"><div><b>${esc(e.regionLabel)}</b>: ${esc(e.items.join(", ")||"–")}<br><span class="note">${esc([e.qual.join(", "),e.vas!==""?`Stärke ${e.vas}/10`:"",e.when&&e.when!=="–"?e.when:""].filter(Boolean).join(" · "))}</span>${bf()["p_"+e.region]?`<br><span class="note"><i>${esc(bf()["p_"+e.region])}</i></span>`:""}</div><button type="button" class="suback" data-pdel="${i}" aria-label="Eintrag entfernen" title="Entfernen">✕</button></div>`).join("")}</div>`:""}`;
+    ${plist()}`;
   $("pp_region").onchange=onRegion;
   box.querySelectorAll("[data-pside]").forEach(b=>b.onclick=()=>{ D.region=side===b.dataset.pside?base:base+"_"+b.dataset.pside; renderPainPicker(); });   // erneut antippen = keine Seite
   box.querySelectorAll("[data-pitem]").forEach(b=>b.onclick=()=>{ const x=b.dataset.pitem; D.items=D.items.includes(x)?D.items.filter(y=>y!==x):[...D.items,x]; b.setAttribute("aria-pressed",D.items.includes(x)); });
@@ -3802,9 +3805,9 @@ function renderPainPicker(){
     if(!D.items.length&&!D.qual.length){ $("pp_err").textContent="Bitte mindestens eine Beschwerde oder Schmerzqualität auswählen."; return; }
     const B=bf(); B.painList=B.painList||[]; B.noPain=false;
     B.painList.push({region:D.region,regionLabel:painRegions().find(r=>r[0]===D.region)[1],items:[...D.items],qual:[...D.qual],vas:D.vas,when:D.when});
-    painDraft={region:D.region,items:[],qual:[],vas:"",when:"–"}; save(); renderPainPicker();
+    painDraft={region:"",items:[],qual:[],vas:"",when:"–"}; save(); renderPainPicker();   // Bereich wieder auf Ausgangspunkt
   };
-  box.querySelectorAll("[data-pdel]").forEach(b=>b.onclick=()=>{ bf().painList.splice(+b.dataset.pdel,1); save(); renderPainPicker(); });
+  bindDel();
 }
 
 /* ================= Bike Set Up direkt in der App ================= */
